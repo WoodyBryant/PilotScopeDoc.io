@@ -1,0 +1,568 @@
+# Installation
+
+This section provides a comprehensive guidelines on how to install the PilotScope Python package in the ML side, along
+with the necessary
+patches for PostgreSQL and Spark in the DB side.
+
+The PilotScope package is a crucial tool that offers a range of frequently used functions, including database
+connection, data exchange, and the integration of AI algorithms into the database. Additionally, we have developed
+patches for both PostgreSQL and Spark to enhance their capabilities and support a wider array of functionalities.
+
+Required Software Versions:
+
+- Python: 3.8
+- PostgreSQL: 13.1
+- Apache Spark: 3.3.2
+
+Here, we provide two installation methods: installing from a docker image and installing from scratch. You can load test databases and check the installation referring to
+the section [Load Test Databases](#load-test-databases).
+
+## Install from Pre-built Docker Image
+
+We provide a pre-built docker image which contains the pre-installed PilotScope package and the modified PostgreSQL
+13.1 and Spark 3.3.2.
+Here are some key details about this Docker image:
+
+- The provided image is based on Ubuntu 18.04.
+- The PilotScope Core in ML side is located in the `/home/pilotscope/PilotScopeCore` directory.
+- The source code of modified PostgreSQL is located in the `/home/pilotscope/PilotScopePostgreSQL` directory.
+    - PostgreSQL is installed in `/home/pilotscope/pgsql`, with data storage located at `/home/pilotscope/pg_data`.
+- The source code of modified Spark is located in the `/home/pilotscope/PilotScopeSpark/spark-3.3.2` directory.
+- The pre-installed miniconda is located in the `/home/pilotscope/miniconda3` directory with a pre-built Python
+  environment
+  named `pilotscope`.
+- Two system users are pre-created: `root` (password: root) and `pilotscope` (password: pilotscope). User `pilotscope`
+  owns the postgresql database system, and the user must own the server process.
+- Some necessary tools such as `vim`, `wget`, `git`, `ssh`, etc. are pre-installed.
+
+### Start a Container from the Image
+
+You can follow these steps to start a container from our docker image.
+
+#### Step 1: Build an Image
+
+To acquire the Docker image, you can download the `Dockerfile` from the following link and build the image locally.
+
+```bash
+# Navigate to the directory where you want to store the Dockerfile, such as ~/
+cd ~/
+# Download the Dockerfile
+wget https://raw.githubusercontent.com/alibaba/pilotscope/master/Dockerfile
+```
+
+You can execute the following command to build the image for PostgreSQL.
+
+```bash
+docker build -t pilotscope:latest \
+  --build-arg enable_postgresql=true \
+  --build-arg enable_spark=false \
+  .
+```
+
+You can execute the following command to build the image for Spark.
+
+```bash
+docker build -t pilotscope:latest \
+  --build-arg enable_postgresql=true \
+  --build-arg enable_spark=true \
+  .
+```
+
+PilotScope only support PostgreSQL as datasource of Spark. Thus, you should set `enable_postgresql=true`
+and `enable_spark=true` at the same time.
+
+#### Step 2: Start a Container from the Image
+
+You can use the following command to initiate a Docker container:
+
+```bash
+docker run -it  --name pilotscope_test  --shm-size 5gb  --cap-add sys_ptrace  -p 54323:5432 -p 54023:22 -d pilotscope /bin/bash
+```
+
+This command boots up a container named `pilotscope_test`. Port mappings are configured as follows:
+
+- (Optional) The container's port `5432` is mapped to host machine's port `54323`, allowing access to the database
+  inside the container via host port 54323.
+- (Recommended) The container's port `22` (SSH) is mapped to host machine's port `54023`, enabling SSH access to the
+  container from the host via port 54023.
+
+You can map more ports according to your requirements.
+
+#### Step 3: Log into the Container
+
+Access the container using the following command:
+
+```bash
+# Enter the Docker container
+docker exec -it "container_id" /bin/bash
+```
+
+Replace `container_id` with the actual container ID from the previous step.
+
+Once inside the container, enable the SSH service for remote connections:
+
+```bash
+# Start the SSH service
+sudo service ssh start
+```
+
+### Start PostgreSQL in the Container
+
+To begin using PostgreSQL, switch to the pilotscope user and initiate the PostgreSQL service:
+```bash
+# Switch to the pilotscope user
+su pilotscope
+
+# Navigate to PostgreSQL binary path and start the service
+cd $PG_PATH/bin
+./pg_ctl start -D $PG_DATA
+```
+
+### Start Spark in the Container
+
+Pilotscope only support PostgreSQL as datasource of Spark. In order to enable all Spark functionalities, you
+should
+start the PostgreSQL referring to the section [Start PostgreSQL in the Container](#start-postgresql-in-the-container).
+
+After completing above steps, the PostgreSQL/Spark will be ready inside the container.
+You can use a suitable IDE to open the PilotScopeCore project in the `/home/pilotscope/PilotScopeCore`
+directory and start developing your algorithms or try different functionalities by executing the test files
+in `test_pilotscope`.
+
+### Get Started in the Container
+To switch to the PilotScope development environment, run the following command in the container:
+```bash
+# Switch to PilotScope development environment
+conda activate pilotscope
+```
+
+After completing above steps, the PilotScope/PostgreSQL/Spark will be ready inside the container.
+
+You could leverage the PilotScope Python package to establish a connection to the started database. 
+This enables you to access and utilize the extensive range of functionalities, especially the AI4DB algorithms, offered by PilotScope.
+
+We recommend you to open the PilotScopeCore project in the `/home/pilotscope/PilotScopeCore` directory with a suitable IDE.
+
+From now on, you can get started by following these steps:
+
+- Load test databases by referring to the section [Load Test Databases](#load-test-databases) or running the following command:
+```bash
+  # load stats_tiny
+  python -m unittest test_pilotscope.test_pg.skip_test_dataset.TestDataset.test_load_stats_tiny
+
+  # load imdb_tiny 
+  python -m unittest test_pilotscope.test_pg.skip_test_dataset.TestDataset.test_load_imdb_tiny
+```
+- Learn how the PilotScope system works when a SQL query is submitted into PilotScope referring to the chapter [3. System Pipeline](section-system-pipeline).
+- Learn the components of PilotScope Core in ML side by running `test_pilotscope` files in the `/home/pilotscope/PilotScopeCore` directory and referring to the chapter [4. Core Components (ML Side)](section-core-components).
+- Run the algorithm examples referring to `test_example_algorithms` files in the `/home/pilotscope/PilotScopeCore` directory and the chapter [5. Example](section-example).
+
+## Install All Components from Scratch
+
+If you do not prefer to use Docker, you can also install all components independently. Please refer to the following
+sections.
+### Prepare the Environment and Configure the PilotScope User
+Before installing PilotScope, you should ensure that you have prepared the environment and configured the PilotScope user.
+
+#### Prepare the Environment
+Ensure that your system has the required libraries for Database and PilotScope. You can install these libraries on a new Ubuntu Linux system with the following command:
+```bash
+apt-get update && apt-get install -y wget git bzip2 vim gcc openssh-server sudo
+```
+
+#### Configure the PilotScope User
+Some databases are not allowed to be controlled by `root` user. Thus, if you are `root` user, you should create a new user for PilotScope following these commands:
+
+```bash
+# Add a new user (execute as root)
+sudo adduser pilotscope
+
+usermod -aG sudo pilotscope
+
+# Change to the pilotscope user
+su pilotscope
+```
+
+
+### Install PilotScope Package
+
+First, let us obtain the PilotScope repository by cloning it from GitHub:
+
+```bash
+# Clone the repository
+git clone --branch master https://github.com/alibaba/pilotscope.git PilotScopeCore
+
+# Navigate to the PilotScope directory
+cd PilotScopeCore
+
+# Install the minimal package using pip
+pip install -e .
+```
+
+We have included a variety of examples on deploying AI4DB algorithms into the databases using PilotScope.
+To utilize these examples, additional dependencies must be installed. You can do so with this command:
+
+```bash
+pip install -e '.[dev]'
+```
+
+To verify the installation of the PilotScope package, you can run the following sample Python code:
+
+```Python
+import pilotscope
+```
+
+If you did not receive any error messages, you have installed PilotScope package successfully.
+
+Next, you will need to configure PilotScope to interface with the PostgreSQL database. For those who prefer using
+SparkSQL, please refer to the [Spark](#install-spark) section for detailed instructions.
+
+### Install PostgreSQL
+
+We also outline a comprehensive procedures for installing the PilotScope patch onto PostgreSQL from the scratch.
+Users could experience more customized installation through this method.
+
+#### Step 1: Prepare the Environment
+Ensure that your system has the required libraries for PostgreSQL. You can install these libraries on a new Ubuntu Linux system with the following command:
+```bash
+su root
+
+apt-get update && apt-get install -y build-essential libreadline-dev zlib1g-dev bison flex gdb libssl-dev libbz2-dev libsqlite3-dev llvm libncurses5-dev libncursesw5-dev xz-utils libffi-dev liblzma-dev
+
+su pilotscope
+```
+#### Step 2: Install PostgreSQL
+
+Download and extract modified PostgreSQL-13.1 with PilotScope. This is the only version supported by PilotScope at
+now stage.
+
+```bash
+# Navigate to the directory where you want to store the PostgreSQL source code, such as ~/
+cd ~/
+
+# Download PostgreSQL 13.1 with PilotScope
+git clone --branch pilotscope-postgresql https://github.com/alibaba/pilotscope.git PilotScopePostgreSQL
+```
+
+Set the `PG_PATH` environment variable to the desired installation path for PostgreSQL and `PG_DATA` to the path where
+the database data will be stored. Notice that the installation process will fail if this step is skipped.
+It is recommended to create a new directory specifically for this purpose.
+
+```bash
+# Example of setting PG_PATH. A path example is: echo export PG_PATH=~/pgsql/ >> ~/.bashrc 
+echo 'export PG_PATH=/path/to/install/PostgreSQL' >> ~/.bashrc
+
+# Example of setting PG_DATA. A path example is "~/pg_data/"
+echo 'export PG_DATA=/path/to/store/database/data' >> ~/.bashrc
+
+# Updating system paths
+echo 'export PATH=$PG_PATH/bin:$PATH' >> ~/.bashrc
+echo 'export LD_LIBRARY_PATH=$PG_PATH/lib:$LD_LIBRARY_PATH' >> ~/.bashrc
+
+# Apply the changes
+source ~/.bashrc
+```
+
+Compile and install PostgreSQL to the specified path using the following commands:
+
+```bash
+# Navigate to the PostgreSQL source code directory
+cd ~/PilotScopePostgreSQL/
+
+# Run the configuration script with required options
+./configure --prefix=$PG_PATH --enable-depend --enable-cassert --enable-debug CFLAGS="-ggdb -O0"
+
+# Compile and install PostgreSQL
+make && make install
+```
+
+#### Step 3: Install the Extension
+
+After installing PostgreSQL, you need to install some important extensions for enabling all functionalities of
+PilotScope.
+
+```bash
+# Install the PilotScope extension
+sh install_extension.sh
+
+# recompile and install PostgreSQL
+make && make install
+```
+
+#### Step 4: Configure Database Connection Settings
+
+Initialize the database.
+
+```bash
+# Initialize the database
+cd $PG_PATH/bin
+./initdb -D $PG_DATA
+```
+
+To allow remote connections, edit the `postgresql.conf` and `pg_hba.conf` files located in the `PG_DATA` directory.
+
+```bash
+cd $PG_DATA 
+
+# Allow listening on all IP addresses
+echo "listen_addresses = '*'" >> postgresql.conf
+
+# Configure client authentication
+echo "host all all all md5" >> pg_hba.conf
+
+# Enable the PilotScope extension pg_hint_plan
+echo "shared_preload_libraries = 'pg_hint_plan'" >> postgresql.conf
+```
+
+Start the PostgreSQL database:
+
+```bash
+cd $PG_PATH/bin
+
+# Start PostgreSQL
+./pg_ctl -D $PG_DATA start
+```
+
+Set the password for the database user `pilotscope` to enable remote client connections. If you are non-root user and did not create user `pilotscope`, replace `pilotscope` with your username.
+
+```bash
+cd $PG_PATH/bin
+./psql -d template1 -c "create database pilotscope;"
+./psql -c "ALTER USER pilotscope PASSWORD 'pilotscope';"
+```
+
+#### Verify the connection to PostgreSQL via psql
+
+To ensure the PilotScope patch onto PostgreSQL was installed correctly and the database service is running, you can connect to the PostgreSQL database server via `psql` by typing the following command in the terminal.
+
+```bash
+cd $PG_PATH/bin
+./psql -d template1 
+```
+
+If you can access the postgres prompt like following and observe the word `PilotScope` in the prompt, Pilotscope in the DB side has been installed and started correctly.
+```bash
+psql (13.1)
+PilotScope
+Type "help" for help.
+
+template1=#
+```
+
+Finally, you can quit the postgres prompt by using the `\q` command:
+```bash
+template1=# \q
+```
+
+Congratulations! PostgreSQL is fully configured and operational. 
+
+You can get started referring to the section [Get Started](#get-started) 
+
+#### Update the Latest PilotScope Patch for PostgreSQL
+
+Besides, if you want to update the latest modified PostgreSQL, you should pull the latest code and recompile and install
+PostgreSQL.
+
+```bash
+# Navigate to the PostgreSQL source code directory
+cd ~/PilotScopePostgreSQL/
+
+# Pull the latest code
+git pull
+
+# Recompile and install PostgreSQL.
+make clean && make install
+```
+
+#### A Guideline for Installing PilotScope Patch into Your PostgreSQL Database.
+
+Currently, PilotScope only support PostgreSQL 13.1 and have integrated some popular extension such as pg_hint_plan,
+what-if index. Thus, we do not recommend you to deploy PilotScope patch into your PostgreSQL database directly.
+In contrast, we recommend you to install our modified PostgreSQL 13.1 and migrate your origin data into the new
+PostgreSQL.
+This is valid if your origin PostgreSQL version is 13.1.
+
+Specifically, since the data is in your origin PostgreSQL data path, you should skip the command `./initdb -D $PG_DATA`
+when installing our modified PostgreSQL 13.1.
+Then, you can specify the origin PostgreSQL data path when executing the command `./pg_ctl -D $PG_DATA start`.
+We recommend backing up the data before performing this operation.
+
+### Install Spark
+
+We outline a comprehensive procedure for installing the PilotScope patch onto Spark from the scratch. Users could
+experience more customized installation through this method.
+
+#### Step 1: Download PilotScope Patch for Spark
+
+Download the PilotScope patch as follows:
+
+```bash
+# Navigate to the directory where you want to store the PilotScopeSpark repository, such as ~/
+cd ~/
+
+# Clone PilotScopeSpark repository
+git clone --branch pilotscope-spark https://github.com/alibaba/pilotscope.git PilotScopeSpark
+cd PilotScopeSpark/
+```
+
+#### Step 2: Download Spark and Apply Patch for Spark
+
+Download and extract Spark 3.3.2. This is the only version supported by PilotScope at now stage.
+
+```bash
+# Download the Spark 3.3.2
+wget https://archive.apache.org/dist/spark/spark-3.3.2/spark-3.3.2.tgz
+tar -xzvf spark-3.3.2.tgz
+```
+
+Now there is a `spark-3.3.2` directory which contains the source code of Spark in the same directory as `apply_patch.sh`
+.
+Apply the PilotScope patch into Spark as follows:
+
+```bash
+bash apply_patch.sh pilotscope_spark.patch
+```
+
+`apply_patch.sh` will make an initial git commit on the original code when first run, and then apply the patch to this
+source code of Spark.
+
+#### Step 3: Configuring Java Environment Variables
+
+Then, download JDK and configure the relevant environment variables.
+You can use the JDK provided by us (`jdk-8u202-linux-x64.tar.gz`), or download your own JDK.
+
+```bash
+# download and extract the JDK to the current directory
+wget https://github.com/WoodyBryant/JDK/releases/download/v2/jdk-8u202-linux-x64.tar.gz
+tar -xzvf jdk-8u202-linux-x64.tar.gz
+
+# move the JDK to the a directory where you have the access permission, e.g. home directory.
+mv jdk1.8.0_202 ~/ 
+
+# Set necessary environment variables, JAVA_HOME and PATH
+# for example:  echo 'export JAVA_HOME=~/jdk1.8.0_202/' >> ~/.bashrc if your save jdk in "~/jdk1.8.0_202" path
+echo 'export JAVA_HOME=/path/to/your/jdk' >> ~/.bashrc
+echo 'export PATH=$JAVA_HOME/bin:$PATH' >> ~/.bashrc
+source ~/.bashrc
+```
+
+#### Step 4: Compile and Build PilotScope and Spark
+
+Compile and build Spark.
+
+```bash
+cd spark-3.3.2
+./build/mvn -DskipTests clean package
+```
+
+#### Step 5: Install PySpark
+
+Finally, install PySpark for allowing a Python code to control Spark.
+
+You should use the Python environment used by PilotScope Core to install PySpark.
+
+```bash
+# This is provided by Spark 
+cd python
+python3 setup.py install
+```
+
+From now on, the Spark is fully configured and operational. You could leverage the PilotScope Python package to
+establish a connection to the started database. This enables you to access and utilize the extensive range of
+functionalities, especially the AI4DB algorithms, offered by PilotScope.
+
+#### Update the Latest PilotScope Patch for Spark
+
+If you want to update the latest pilotscope patch for Spark , you should pull the latest patch and recompile and install
+Spark.
+
+Note that, `apply_patch.sh` will roll back the Spark into original Spark and then apply the lastest patch. Thus, if you
+have modified Spark codes for your requirements, you should not to execute the command directly.
+
+```bash
+cd PilotScopeSpark/
+
+bash apply_patch.sh patch_to_update.patch
+```
+
+This script will update the code for Spark. Then follow steps 5-6 to complete the update, just like the first
+installing.
+
+### Get Started
+
+After completing above steps, the PilotScope/PostgreSQL/Spark will be ready.
+
+You could leverage the PilotScope Python package to establish a connection to the started database. 
+This enables you to access and utilize the extensive range of functionalities, especially the AI4DB algorithms, offered by PilotScope.
+
+Get started by following these steps:
+
+- Load test databases referring to the section [Load Test Databases](#load-test-databases)
+- Learn how the PilotScope system works when a SQL query is submitted into PilotScope referring to the chapter [3. System Pipeline](section-system-pipeline).
+- Learn the components of PilotScope Core in ML side referring to the chapter [4. Core Components (ML Side)](section-core-components).
+- Learn the algorithm examples referring to the chapter [5. Example](section-example).
+
+## Load Test Databases
+
+Regardless of the installation method used from the above, you can follow these steps to load two test databases into PostgreSQL using PilotScope.
+
+Please ensure that: 
+
+1. your database and pilotscope environment are in the same machine with the same user.
+2. modify the following Python code according to your actual database configuration.
+
+Here you will create a connection to PostgreSQL server at `localhost`, port `5432` using the username `pilotscope` and the password `pilotscope` and load `stats_tiny` database and `imdb_tiny` database into PostgreSQL.
+
+```python
+from pilotscope.Dataset.ImdbTinyDataset import ImdbTinyDataset
+from pilotscope.Dataset.StatsTinyDataset import StatsTinyDataset
+from pilotscope.PilotConfig import PostgreSQLConfig
+from pilotscope.PilotEnum import DatabaseEnum
+
+# configure database settings 
+db_port = "5432"  # database server port (default: "5432")
+db_user = "pilotscope"  # database user name (default: "pilotscope")
+db_user_pwd = "pilotscope"  # database user password (default: "pilotscope")
+pg_bin_path = "/path/to/install/PostgreSQL/bin"  # database bin path, i.e. $PG_PATH/bin (default: None)
+pg_data_path = "/path/to/store/database/data"  # database data path, i.e. $PG_DATA  (default: None)
+
+db_config = PostgreSQLConfig(db_port=db_port, db_user=db_user, db_user_pwd=db_user_pwd)
+# Please ensure that your database and pilotscope Core are in the same machine with the same user.
+db_config.enable_deep_control_local(pg_bin_path, pg_data_path)
+
+# load stats_tiny
+ds = StatsTinyDataset(DatabaseEnum.POSTGRESQL, created_db_name="stats_tiny")
+ds.load_to_db(db_config)
+
+# load imdb_tiny
+ds = ImdbTinyDataset(DatabaseEnum.POSTGRESQL, created_db_name="imdb_tiny")
+ds.load_to_db(db_config)
+```
+
+If you can observe the following messages, these databases have been loaded successfully.
+
+```bash
+...
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+...
+```
+
+Congratulations! You have successfully installed complete PilotScope components.
+

@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>1. Overview &mdash; PilotScope 1.0 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="2. Installation" href="install.html" />
+    <link rel="prev" title="Contents" href="../index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            PilotScope
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">1. Overview</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#how-to-apply-pilotscope">1.1. How to Apply PilotScope?</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#supported-tasks-and-algorithms">1.1.1. Supported Tasks and Algorithms</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#knob-tuning">1.1.1.1. Knob Tuning</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#index-recommendation">1.1.1.2. Index Recommendation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cardinality-estimation">1.1.1.3. Cardinality Estimation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#end-to-end-learned-query-optimizer">1.1.1.4. End-to-end Learned Query Optimizer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#more-ai4db-methods">1.1.1.5. More AI4DB Methods …</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#usage-details">1.1.1.6. Usage Details</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#how-to-develop-in-pilotscope">1.2. How to Develop in PilotScope?</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#developing-details">1.2.1. Developing Details</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#what-to-do-in-pilotscope">1.3. What to Do in PilotScope?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#license">1.4. License</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#references">1.5. References</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">2. Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="system_pipeline.html">3. System Pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="core_modules.html">4. Core Components (ML Side)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example.html">5. Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">6. API (ML Side)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="database_develop.html">7. Database Side Develop</a></li>
+<li class="toctree-l1"><a class="reference internal" href="annotations.html">8. Annotations</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">PilotScope</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active"><span class="section-number">1. </span>Overview</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/references/overview.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div style="text-align:center">
+  <img src="../_static/banner.png", alt="PilotScope" />
+</div>
+<p><img alt="" src="https://img.shields.io/badge/language-Python-blue.svg" />
+<img alt="" src="https://img.shields.io/badge/language-C-blue.svg" />
+<img alt="" src="https://img.shields.io/badge/language-Scala-blue.svg" />
+<img alt="" src="https://img.shields.io/badge/license-Apache_2.0-000000.svg" /> <img alt="" src="https://img.shields.io/badge/contributions-Welcome-brightgreen.svg" /></p>
+<p><img alt="" src="https://img.shields.io/badge/docs-Usage_Guideline-purple.svg" />
+<img alt="" src="https://img.shields.io/badge/docs-Develop_Guideline-purple.svg" />
+<img alt="" src="https://img.shields.io/badge/docs-API_Reference-purple.svg" /></p>
+<p><img alt="" src="https://img.shields.io/badge/AI4DB_driver-Knob_Tuning-4E29FF.svg" />
+<img alt="" src="https://img.shields.io/badge/AI4DB_driver-Index_Recommendation-4E29FF.svg" />
+<img alt="" src="https://img.shields.io/badge/AI4DB_driver-Cardinality_Estimation-4E29FF.svg" />
+<img alt="" src="https://img.shields.io/badge/AI4DB_driver-E2E_Query_Optimizer-4E29FF.svg" /></p>
+<p><img alt="" src="https://img.shields.io/badge/database-PostgreSQL_13.1-FFD21E.svg" />
+<img alt="" src="https://img.shields.io/badge/database-Spark_3.3.2-FFD21E.svg" /></p>
+<p><strong>PilotScope</strong> is a middleware to bridge the gaps of deploying AI4DB (Artificial Intelligence for Databases) algorithms into actual database systems. It aims at hindering the underlying details of different databases so that an AI4DB driver could steer any database in a unified manner. By applying PilotScope, we obtain the following benefits:</p>
+<ul class="simple">
+<li><p>The DB users could experience any AI4DB algorithm as a plug-in unit on their databases with little cost. The cloud computing service providers could operate and maintain AI4DB algorithms on their database products as a service to users. <strong>(More Convenient for Usage! 👏👏👏)</strong></p></li>
+<li><p>The ML researchers could easily benchmark and iterate their AI4DB algorithms in practical scenarios. <strong>(Much Faster to Iterate! ⬆️⬆️⬆️)</strong></p></li>
+<li><p>The ML and DB developers are liberated from learning the details in other side. They could play their own strengths to write the codes in their own sides. <strong>(More Freedom to Develop! 🏄‍♀️🏄‍♀️🏄‍♀️)</strong></p></li>
+<li><p>All contributors could extend PilotScope to support more AI4DB algorithms, more databases and more functions. <strong>(We highly encourage this! 😊😊😊)</strong></p></li>
+</ul>
+<p>For more details, please kindly read this document and refer to our <strong><a class="reference external" href="https://github.com/alibaba/pilotscope/tree/master/paper">paper</a></strong>.</p>
+<hr class="docutils" />
+<p><strong><span style="color:red; font-size:4;">News</span></strong></p>
+<ul class="simple">
+<li><p>🎉 [2023-12-15] Our <strong><a class="reference external" href="https://github.com/alibaba/pilotscope/tree/master/paper">paper</a></strong> on PilotScope has been accepted by VLDB 2024!</p></li>
+</ul>
+<hr class="docutils" />
+<section class="tex2jax_ignore mathjax_ignore" id="overview">
+<h1><span class="section-number">1. </span>Overview<a class="headerlink" href="#overview" title="Permalink to this headline"></a></h1>
+<p>At first, we illustrate the general system architecture of PilotScope as follows:</p>
+<div style="text-align:center">
+  <img src="../_static/sysarch.png", width=620px, alt="PilotScope System Architecture" />
+</div>
+<p>PilotScope provides a <em><strong>console</strong></em> to operate the whole system. It manages multiple <em><strong>AI4DB drivers</strong></em>  and the <em><strong>DB interactor</strong></em>. The DB interactor contains an <em><strong>interface</strong></em> connecting AI4DB drivers with databases. It contains multiple APIs, namely <em><strong>injection interface</strong></em> to inject AI4DB algorithms to replace database tasks,
+<em><strong>data collection</strong></em> to collect training data and <em><strong>push/pull operators</strong></em> to allow AI4DB algorithms to exchange data with the databases. Each database steered by the AI4DB drivers is attached with its specific <em><strong>implementations of DB interactor</strong></em>.</p>
+<p>For the detailed working pineline of PilotScope and in-depth description of each component in PilotScope, please refer to the section <strong><a class="reference internal" href="system_pipeline.html#section-system-pipeline"><span class="std std-ref">System Pipeline</span></a></strong> and section <strong><a class="reference internal" href="core_modules.html#section-core-components"><span class="std std-ref">Core Component</span></a></strong>, respectively.</p>
+<section id="how-to-apply-pilotscope">
+<h2><span class="section-number">1.1. </span>How to Apply PilotScope?<a class="headerlink" href="#how-to-apply-pilotscope" title="Permalink to this headline"></a></h2>
+<p>To database users (👨‍💼 , 👩‍⚕️ or 👤), PilotScope is totally transparent. The database user can access PilotScope through its console, log into the native database, and then perform database operations using the same commands as usual. The user can start any AI4DB driver using a simple command. Then, PilotScope would automatically execute the AI4DB algorithm whenever necessary. For example, if the user starts the AI4DB driver of a learned query optimizer, the database would automatically apply this learned query optimizer to generate execution plan for each input SQL query.</p>
+<p>The general workflow on applying an AI4DB driver in PilotScope is illustrated as follows:</p>
+<div style="text-align:center">
+  <img src="../_static/psworkflow.png", width=420px, alt="PilotScope Workflow" />
+</div>
+<section id="supported-tasks-and-algorithms">
+<h3><span class="section-number">1.1.1. </span>Supported Tasks and Algorithms<a class="headerlink" href="#supported-tasks-and-algorithms" title="Permalink to this headline"></a></h3>
+<p>Currently, PilotScope focuses on database tasks in the query optimization workflow shown as follows.</p>
+<div style="text-align:center">
+  <img src="../_static/qoworkflow.png", width=400px, alt="Query Optimizer Workflow" />
+</div>
+<p>At the moment, PilotScope supports to apply 15 AI4DB algorithms on 2 well-known databases for 4 representative database tasks. We list the details as follows:</p>
+<section id="knob-tuning">
+<h4><span class="section-number">1.1.1.1. </span>Knob Tuning<a class="headerlink" href="#knob-tuning" title="Permalink to this headline"></a></h4>
+<p>Supported Databases: <img src="https://www.postgresql.org/media/img/about/press/elephant.png" alt="PostgreSQL" width=15px/> PostgreSQL and <img src="https://pic3.zhimg.com/dc91f429a42b5caeccedc452e5a398e0_r.jpg" alt="Spark" width=35px/> Spark</p>
+<ul class="simple">
+<li><p>Bayesian Optimization Method:</p>
+<ul>
+<li><p>SMAC: <em>Sequential Model-Based Optimization for General Algorithm Configuration</em></p></li>
+<li><p>GP-BO: <em>Bayesian Optimisation over Multiple Continuous and Categorical
+Inputs</em></p></li>
+</ul>
+</li>
+<li><p>RL-based Method:</p>
+<ul>
+<li><p>DDPG: <em>An
+End-to-End Automatic Cloud Database Tuning System Using Deep Reinforcement Learning</em></p></li>
+</ul>
+</li>
+</ul>
+<p>For more knob tuning methods, please refer to the LlamaTune <strong><a class="reference external" href="https://github.com/uw-mad-dash/llamatune">benchmark</a></strong> and <strong><a class="reference external" href="https://arxiv.org/abs/2203.05128">paper</a></strong>.</p>
+</section>
+<section id="index-recommendation">
+<h4><span class="section-number">1.1.1.2. </span>Index Recommendation<a class="headerlink" href="#index-recommendation" title="Permalink to this headline"></a></h4>
+<p>Supported Databases: : <img src="https://www.postgresql.org/media/img/about/press/elephant.png" alt = "PostgreSQL" width=15px/> PostgreSQL</p>
+<ul class="simple">
+<li><p>Enlarging Empty Set:</p>
+<ul>
+<li><p>AutoAdmin: <em>An Efficient Cost-Driven Index Selection Tool for Microsoft SQL Server</em> (Applied in Microsoft SQL Server)</p></li>
+<li><p>DB2Advisor: <em>DB2 Advisor: An Optimizer Smart Enough to Recommend Its Own Indexes</em> (Applied in DB2)</p></li>
+<li><p>DTA: <em>Anytime Algorithm of Database Tuning Advisor for Microsoft SQL Server</em> (Applied in Microsoft SQL Server)</p></li>
+<li><p>Extend: <em>Efficient Scalable Multi-attribute Index Selection Using Recursive Strategies</em></p></li>
+</ul>
+</li>
+<li><p>Reducing Large Set:</p>
+<ul>
+<li><p>Drop: <em>Index Selection in Relational Databases</em></p></li>
+<li><p>Relaxation: <em>Automatic Physical Database Tuning: A Relaxation-based Approach</em></p></li>
+</ul>
+</li>
+<li><p>Linear Programming Method:</p>
+<ul>
+<li><p>CoPhy: <em>CoPhy: A Scalable, Portable, and Interactive Index Advisor for Large Workloads</em></p></li>
+</ul>
+</li>
+</ul>
+<p>For more index recommendation methods, please refer to the <strong><a class="reference external" href="https://github.com/hyrise/index_selection_evaluation">benchmark</a></strong> and <strong><a class="reference external" href="http://www.vldb.org/pvldb/vol13/p2382-kossmann.pdf">paper</a></strong>.</p>
+</section>
+<section id="cardinality-estimation">
+<h4><span class="section-number">1.1.1.3. </span>Cardinality Estimation<a class="headerlink" href="#cardinality-estimation" title="Permalink to this headline"></a></h4>
+<p>Supported Databases: : <img src="https://www.postgresql.org/media/img/about/press/elephant.png" alt="PostgreSQL" width=15px/> PostgreSQL and <img src="https://pic3.zhimg.com/dc91f429a42b5caeccedc452e5a398e0_r.jpg" alt="Spark" width=35px/> Spark</p>
+<ul class="simple">
+<li><p>Query-driven Method:</p>
+<ul>
+<li><p>MSCN: <em>Learned Cardinalities: Estimating Correlated Joins with Deep Learning</em></p></li>
+</ul>
+</li>
+<li><p>Data-driven Method:</p>
+<ul>
+<li><p>NeuroCard: <em>NeuroCard: One Cardinality Estimator for All Tables</em></p></li>
+<li><p>DeepDB:	<em>DeepDB: Learn from Data, not from Queries!</em></p></li>
+</ul>
+</li>
+</ul>
+<p>For more cardinality estimation methods, please refer to the section Model Tuning in our <strong><a class="reference external" href="https://github.com/Nathaniel-Han/End-to-End-CardEst-Benchmark">benchmark</a></strong> and <strong><a class="reference external" href="https://arxiv.org/pdf/2109.05877.pdf">paper</a></strong>. There provides the paper and codes for a number of traditional, data-driven and query-driven methods.</p>
+</section>
+<section id="end-to-end-learned-query-optimizer">
+<h4><span class="section-number">1.1.1.4. </span>End-to-end Learned Query Optimizer<a class="headerlink" href="#end-to-end-learned-query-optimizer" title="Permalink to this headline"></a></h4>
+<p>Supported Databases: : <img src="https://www.postgresql.org/media/img/about/press/elephant.png" alt="PostgreSQL" width=15px/> PostgreSQL and <img src="https://pic3.zhimg.com/dc91f429a42b5caeccedc452e5a398e0_r.jpg" alt="Spark" width=35px/> Spark</p>
+<ul class="simple">
+<li><p>Learning-to-rank based Method:</p>
+<ul>
+<li><p>Lero: <em>A Learning-to-rank Query Optimizer</em></p></li>
+</ul>
+</li>
+</ul>
+<p>We could also simply adapt the AI4DB driver for Lero to support some other end-to-end learned query optimizers, including:</p>
+<ul class="simple">
+<li><p>Hint Set Tuning Method:</p>
+<ul>
+<li><p>Bao: <em>Bao: Making Learned Query Optimization Practical</em></p></li>
+<li><p>HyperQO: <em>Cost-based or Learning-based? A Hybrid Query Optimizer for Query Plan Selection</em></p></li>
+</ul>
+</li>
+<li><p>Plan Exploration Method:</p>
+<ul>
+<li><p>Neo: <em>Neo: A Learned Query Optimizer</em></p></li>
+<li><p>Balsa: <em>Balsa: Learning a Query Optimizer Without Expert Demonstrations</em></p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="more-ai4db-methods">
+<h4><span class="section-number">1.1.1.5. </span>More AI4DB Methods …<a class="headerlink" href="#more-ai4db-methods" title="Permalink to this headline"></a></h4>
+<p>For more AI4DB methods, please refer to the AI4DB <strong><a class="reference external" href="https://github.com/LumingSun/ML4DB-paper-list">paper reading list</a></strong>.</p>
+</section>
+<section id="usage-details">
+<h4><span class="section-number">1.1.1.6. </span>Usage Details<a class="headerlink" href="#usage-details" title="Permalink to this headline"></a></h4>
+<p>For the detailed steps to apply these AI4DB drivers in PilotScope, please refer to the chapter <strong><a class="reference internal" href="example.html#section-example"><span class="std std-ref">Example</span></a></strong>.</p>
+</section>
+</section>
+</section>
+<section id="how-to-develop-in-pilotscope">
+<h2><span class="section-number">1.2. </span>How to Develop in PilotScope?<a class="headerlink" href="#how-to-develop-in-pilotscope" title="Permalink to this headline"></a></h2>
+<p>PilotScope could support to deploy any AI4DB method on top of any native database.</p>
+<p>To ML developers (👩‍💻 or 🧑🏻‍💻), as well as researchers (👨‍🔬 or 👩🏻‍🔬), they could focus on writing the ML programs using AI-friendly language, e.g., Python. The ML programms could directly invoke the APIs in the interface of DB interactor to inject the AI4DB method or enforce actions into databases, and exchange data with the databases. The interface of DB interactor keeps the same for any database. In such way, the ML developers are liberated from the underlying details of the database codes. Meanwhile, the same AI4DB dirver could be applied to steer multiple different database systems.</p>
+<p>To DB developers (👨🏻‍💻 or 🥷), they are responsible to implement all APIs in the interface of DB interactor in each specific database. They are familiar with the codebase of the database so they could find the best way to implement these interaction APIs as lightweight patches. Implementing these patches is much easier than integrating a complete ML program into databases. What they do is just like their ordinary work on developing new features on the native database.</p>
+<p>The general working paradigm on developing an AI4DB driver in PilotScope is illustrated as follows:</p>
+<div style="text-align:center">
+  <img src="../_static/psworkpara.png", width=380px, alt="PilotScope Workflow" />
+</div>
+<section id="developing-details">
+<h3><span class="section-number">1.2.1. </span>Developing Details<a class="headerlink" href="#developing-details" title="Permalink to this headline"></a></h3>
+<p>For the details on the interaction and other APIs in PilotScope, please refer to the sections <strong><a class="reference internal" href="api.html#section-api-ml-side"><span class="std std-ref">API (ML Side)</span></a></strong> and <strong><a class="reference internal" href="database_develop.html#section-database-side-develop"><span class="std std-ref">Database Side Develop</span></a></strong>.</p>
+</section>
+</section>
+<section id="what-to-do-in-pilotscope">
+<h2><span class="section-number">1.3. </span>What to Do in PilotScope?<a class="headerlink" href="#what-to-do-in-pilotscope" title="Permalink to this headline"></a></h2>
+<p>PilotScope can be easily extended to support more AI4DB algorithms for more AI4DB tasks on more databases. According to its working paradigm, we warmly welcome the open-source community to contribute their efforts on PilotScope from these aspects:</p>
+<ul class="simple">
+<li><p>Write more AI4DB algorithms into ML programs;</p></li>
+<li><p>Propose more APIs in the interface of the DB interactor;</p></li>
+<li><p>Implement the interaction APIs on more databases;</p></li>
+<li><p>Develop more features to enrich the functionality in PilotScope.</p></li>
+</ul>
+<p><strong>We sincerely invite all contributors (👦, 👩, 👱🏻‍♂️, 👩🏻‍🦳, 🧓, 👵🏻, 👩‍🏫, 👨‍🏫, or 👥) to build this open-source community around PilotScope together! 💪🏻 💪🏻 💪🏻</strong></p>
+<p><strong>We could foster collaborations and accelerate the research iterations 👣 👣 👣 of AI4DB methods, and simultaneously make AI4DB more applicable and viable for production scenarios (🏭, 🖥 or📱).</strong></p>
+</section>
+<section id="license">
+<h2><span class="section-number">1.4. </span>License<a class="headerlink" href="#license" title="Permalink to this headline"></a></h2>
+<p>PilotScope is released under Apache License 2.0.</p>
+</section>
+<section id="references">
+<h2><span class="section-number">1.5. </span>References<a class="headerlink" href="#references" title="Permalink to this headline"></a></h2>
+<p>If you find PilotScope useful for your research, development and product, please kindly cite the following paper:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>@article{zhu2023pilotscope,
+	title={PilotScope: Steering Databases with Machine Learning Drivers},
+	author={Rong Zhu and Lianggui Weng and Wenqing Wei and Di Wu and Jiazhen Peng and Yifan Wang and Bolin Ding and Defu Lian Bolong Zheng and Jingren Zhou},
+	journal = {Proceedings of the VLDB Endowment},
+	year={2024}}
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../index.html" class="btn btn-neutral float-left" title="Contents" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="install.html" class="btn btn-neutral float-right" title="2. Installation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Alibaba.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

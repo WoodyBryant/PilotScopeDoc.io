@@ -1,0 +1,7 @@
+pilotscope.PilotEnum
+===========================
+
+.. automodule:: pilotscope.PilotEnum
+   :members:
+   :undoc-members:
+   :show-inheritance:

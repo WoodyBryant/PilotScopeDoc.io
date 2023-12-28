@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pilotscope.DBController.SparkSQLController &mdash; PilotScope 1.0 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            PilotScope
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../references/overview.html">1. Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references/install.html">2. Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references/system_pipeline.html">3. System Pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references/core_modules.html">4. Core Components (ML Side)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references/example.html">5. Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references/api.html">6. API (ML Side)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references/database_develop.html">7. Database Side Develop</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references/annotations.html">8. Annotations</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">PilotScope</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pilotscope.DBController.SparkSQLController</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pilotscope.DBController.SparkSQLController</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Tuple</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span>
+<span class="kn">from</span> <span class="nn">pyspark.sql</span> <span class="kn">import</span> <span class="n">DataFrame</span>
+<span class="kn">from</span> <span class="nn">pyspark.sql</span> <span class="kn">import</span> <span class="n">SparkSession</span>
+<span class="kn">from</span> <span class="nn">pyspark.sql.types</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="kn">from</span> <span class="nn">pilotscope.Common.Index</span> <span class="kn">import</span> <span class="n">Index</span>
+<span class="kn">from</span> <span class="nn">pilotscope.DBController.BaseDBController</span> <span class="kn">import</span> <span class="n">BaseDBController</span>
+<span class="kn">from</span> <span class="nn">pilotscope.Exception.Exception</span> <span class="kn">import</span> <span class="n">PilotScopeNotSupportedOperationException</span>
+<span class="kn">from</span> <span class="nn">pilotscope.PilotConfig</span> <span class="kn">import</span> <span class="n">SparkConfig</span>
+<span class="kn">from</span> <span class="nn">pilotscope.PilotEnum</span> <span class="kn">import</span> <span class="n">PilotEnum</span><span class="p">,</span> <span class="n">SparkSQLDataSourceEnum</span>
+
+<span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;pyspark&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span><span class="p">)</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;py4j&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span><span class="p">)</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;PilotScope&quot;</span><span class="p">)</span>
+
+<span class="n">SUCCESS</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">FAILURE</span> <span class="o">=</span> <span class="mi">0</span>
+
+
+<span class="k">class</span> <span class="nc">SparkSQLTypeEnum</span><span class="p">(</span><span class="n">PilotEnum</span><span class="p">):</span>
+    <span class="n">String</span> <span class="o">=</span> <span class="n">StringType</span>
+    <span class="n">Integer</span> <span class="o">=</span> <span class="n">IntegerType</span>
+    <span class="n">Float</span> <span class="o">=</span> <span class="n">FloatType</span>
+
+
+<span class="k">class</span> <span class="nc">SparkIOWriteModeEnum</span><span class="p">(</span><span class="n">PilotEnum</span><span class="p">):</span>
+    <span class="n">OVERWRITE</span> <span class="o">=</span> <span class="s2">&quot;overwrite&quot;</span>
+    <span class="n">APPEND</span> <span class="o">=</span> <span class="s2">&quot;append&quot;</span>
+    <span class="n">ERROR_IF_EXISTS</span> <span class="o">=</span> <span class="s2">&quot;errorifexists&quot;</span>
+    <span class="n">IGNORE</span> <span class="o">=</span> <span class="s2">&quot;ignore&quot;</span>
+
+
+<span class="k">def</span> <span class="nf">sparkSessionFromConfig</span><span class="p">(</span><span class="n">spark_config</span><span class="p">:</span> <span class="n">SparkConfig</span><span class="p">):</span>
+    <span class="n">session</span> <span class="o">=</span> <span class="n">SparkSession</span><span class="o">.</span><span class="n">builder</span> \
+        <span class="o">.</span><span class="n">appName</span><span class="p">(</span><span class="n">spark_config</span><span class="o">.</span><span class="n">app_name</span><span class="p">)</span> \
+        <span class="o">.</span><span class="n">master</span><span class="p">(</span><span class="n">spark_config</span><span class="o">.</span><span class="n">master_url</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">config_name</span> <span class="ow">in</span> <span class="n">spark_config</span><span class="o">.</span><span class="n">spark_configs</span><span class="p">:</span>
+        <span class="n">session</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">config</span><span class="p">(</span><span class="n">config_name</span><span class="p">,</span> <span class="n">spark_config</span><span class="o">.</span><span class="n">spark_configs</span><span class="p">[</span><span class="n">config_name</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">spark_config</span><span class="o">.</span><span class="n">datasource_type</span> <span class="o">==</span> <span class="n">SparkSQLDataSourceEnum</span><span class="o">.</span><span class="n">POSTGRESQL</span><span class="p">:</span>
+        <span class="n">session</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">config</span><span class="p">(</span><span class="s2">&quot;spark.jars.packages&quot;</span><span class="p">,</span> <span class="n">spark_config</span><span class="o">.</span><span class="n">jdbc</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">session</span><span class="o">.</span><span class="n">getOrCreate</span><span class="p">()</span>
+
+
+<span class="k">class</span> <span class="nc">SparkColumn</span><span class="p">(</span><span class="n">StructField</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">column_name</span><span class="p">,</span> <span class="n">column_type</span><span class="p">:</span> <span class="n">SparkSQLTypeEnum</span><span class="p">):</span>
+        <span class="c1"># Spark does not support primary key and auto-increment</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">column_name</span><span class="p">,</span> <span class="n">column_type</span><span class="p">())</span>
+
+
+<span class="k">class</span> <span class="nc">SparkTable</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="p">,</span> <span class="n">metadata</span><span class="p">,</span> <span class="o">*</span><span class="n">columns</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">table_name</span> <span class="o">=</span> <span class="n">table_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">columns</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">schema</span> <span class="o">=</span> <span class="n">StructType</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">columns</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">:</span> <span class="n">DataFrame</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">engine</span><span class="p">,</span> <span class="n">analyze</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">table_name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">createOrReplaceTempView</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">table_name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">schema</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">schema</span>
+        <span class="k">if</span> <span class="n">analyze</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">analyzeStats</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">create</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">engine</span><span class="p">,</span> <span class="n">analyze</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">engine</span><span class="o">.</span><span class="n">has_table</span><span class="p">(</span><span class="n">engine</span><span class="o">.</span><span class="n">session</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">table_name</span><span class="p">,</span> <span class="n">where</span><span class="o">=</span><span class="s2">&quot;datasource&quot;</span><span class="p">):</span>
+            <span class="c1"># Table exists in the data source, load it directly</span>
+            <span class="c1"># self.df = engine.io.read(self.table_name)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">engine</span><span class="p">,</span> <span class="n">analyze</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">engine</span><span class="o">.</span><span class="n">has_table</span><span class="p">(</span><span class="n">engine</span><span class="o">.</span><span class="n">session</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">table_name</span><span class="p">,</span> <span class="n">where</span><span class="o">=</span><span class="s2">&quot;session&quot;</span><span class="p">):</span>
+                <span class="c1"># Table exists in the current session. </span>
+                <span class="c1"># To avoid duplicated tables in the same session, an error will be thrown here.</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Duplicated table cannot be created in the current session.&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># No such a table in the data source as well as in the session, </span>
+                <span class="c1"># so create an empty table and persist it to the data source.</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">createDataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">[],</span> <span class="n">schema</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="p">)</span>
+                <span class="c1"># engine.io.write(self.df, mode=SparkIOWriteModeEnum.OVERWRITE, target_table_name=self.table_name)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">createOrReplaceTempView</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">table_name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">analyze</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">analyzeStats</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+        <span class="c1"># engine.session.catalog.cacheTable(self.table_name)</span>
+        <span class="c1"># if analyze:</span>
+        <span class="c1">#    engine.session.sql(&quot;ANALYZE TABLE {} COMPUTE STATISTICS FOR ALL COLUMNS&quot;.format(self.table_name))</span>
+
+    <span class="c1"># get the SQL string for insertion</span>
+    <span class="k">def</span> <span class="nf">insert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">engine</span><span class="p">,</span> <span class="n">column_2_value</span><span class="p">,</span> <span class="n">analyze</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">persist</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="n">column_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">column_2_value</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="n">new_row</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">createDataFrame</span><span class="p">([</span><span class="nb">tuple</span><span class="p">(</span><span class="n">column_2_value</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">column_names</span><span class="p">)],</span> <span class="n">column_names</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="n">new_row</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">createOrReplaceTempView</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">table_name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">analyze</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">analyzeStats</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">persist</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">persist</span><span class="p">(</span>
+                <span class="n">engine</span><span class="p">)</span>  <span class="c1"># persist self.df, now self.df is the table after inserting, so overwriting the whole table is right</span>
+
+    <span class="k">def</span> <span class="nf">nrows</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">cache</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">engine</span><span class="p">):</span>
+        <span class="n">engine</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">catalog</span><span class="o">.</span><span class="n">cacheTable</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">table_name</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">analyzeStats</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">engine</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cache</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+        <span class="n">engine</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;ANALYZE TABLE </span><span class="si">{}</span><span class="s2"> COMPUTE STATISTICS FOR ALL COLUMNS&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">table_name</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">persist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">engine</span><span class="p">):</span>
+        <span class="n">engine</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">SparkIOWriteModeEnum</span><span class="o">.</span><span class="n">OVERWRITE</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">clear_rows</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">engine</span><span class="p">,</span> <span class="n">persist</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">createDataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">[],</span> <span class="n">schema</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">createOrReplaceTempView</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">table_name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">analyzeStats</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">persist</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">persist</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">SparkIO</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">datasource_type</span><span class="p">:</span> <span class="n">SparkSQLDataSourceEnum</span><span class="p">,</span> <span class="n">engine</span><span class="p">,</span> <span class="o">**</span><span class="n">datasource_conn_info</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reader</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conn_info</span> <span class="o">=</span> <span class="n">datasource_conn_info</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">datasource_type</span> <span class="o">=</span> <span class="n">datasource_type</span>
+        <span class="k">if</span> <span class="n">datasource_type</span> <span class="o">!=</span> <span class="n">SparkSQLDataSourceEnum</span><span class="o">.</span><span class="n">POSTGRESQL</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;SparkIO has not been tested on any other data source types than &#39;postgresql&#39;.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">datasource_type</span> <span class="o">==</span> <span class="n">SparkSQLDataSourceEnum</span><span class="o">.</span><span class="n">POSTGRESQL</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reader</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">read</span> \
+                <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;jdbc&quot;</span><span class="p">)</span> \
+                <span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s2">&quot;driver&quot;</span><span class="p">,</span> <span class="s2">&quot;org.postgresql.Driver&quot;</span><span class="p">)</span> \
+                <span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s2">&quot;url&quot;</span><span class="p">,</span> <span class="s2">&quot;jdbc:postgresql://</span><span class="si">{}</span><span class="s2">:</span><span class="si">{}</span><span class="s2">/</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conn_info</span><span class="p">[</span><span class="s1">&#39;host&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">conn_info</span><span class="p">[</span><span class="s2">&quot;port&quot;</span><span class="p">],</span>
+                                                                   <span class="bp">self</span><span class="o">.</span><span class="n">conn_info</span><span class="p">[</span><span class="s1">&#39;db&#39;</span><span class="p">]))</span> \
+                <span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">conn_info</span><span class="p">[</span><span class="s1">&#39;user&#39;</span><span class="p">])</span> \
+                <span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s2">&quot;password&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">conn_info</span><span class="p">[</span><span class="s1">&#39;pwd&#39;</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrame</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="p">(</span><span class="n">table_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">query</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="p">(</span><span class="n">table_name</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">query</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">table_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reader</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s2">&quot;dbtable&quot;</span><span class="p">,</span> <span class="n">table_name</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">query</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reader</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s2">&quot;query&quot;</span><span class="p">,</span> <span class="n">query</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">reader</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_or_rows</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">SparkTable</span><span class="p">,</span> <span class="n">DataFrame</span><span class="p">],</span> <span class="n">mode</span><span class="p">:</span> <span class="n">SparkIOWriteModeEnum</span><span class="p">,</span> <span class="n">target_table_name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">table_or_rows</span><span class="p">,</span> <span class="n">SparkTable</span><span class="p">):</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">table_or_rows</span><span class="o">.</span><span class="n">df</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">table_or_rows</span>
+        <span class="k">if</span> <span class="n">target_table_name</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">table_or_rows</span><span class="p">,</span> <span class="n">SparkTable</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Target table name not specified.&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">target_table_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">table_name</span> <span class="o">=</span> <span class="n">target_table_name</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">table_or_rows</span><span class="p">,</span> <span class="n">SparkTable</span><span class="p">):</span>
+                <span class="n">table_name</span> <span class="o">=</span> <span class="n">table_or_rows</span><span class="o">.</span><span class="n">table_name</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">datasource_type</span> <span class="o">==</span> <span class="n">SparkSQLDataSourceEnum</span><span class="o">.</span><span class="n">POSTGRESQL</span><span class="p">:</span>
+            <span class="n">df</span><span class="o">.</span><span class="n">cache</span><span class="p">()</span>
+            <span class="n">rows</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>  <span class="c1"># do not delete this read operation of df, which make it possible to overwrite tables.</span>
+            <span class="n">write</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">write</span> \
+                <span class="o">.</span><span class="n">mode</span><span class="p">(</span><span class="n">mode</span><span class="o">.</span><span class="n">value</span><span class="p">)</span> \
+                <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;jdbc&quot;</span><span class="p">)</span> \
+                <span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s2">&quot;driver&quot;</span><span class="p">,</span> <span class="s2">&quot;org.postgresql.Driver&quot;</span><span class="p">)</span> \
+                <span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s2">&quot;url&quot;</span><span class="p">,</span> <span class="s2">&quot;jdbc:postgresql://</span><span class="si">{}</span><span class="s2">:</span><span class="si">{}</span><span class="s2">/</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conn_info</span><span class="p">[</span><span class="s1">&#39;host&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">conn_info</span><span class="p">[</span><span class="s2">&quot;port&quot;</span><span class="p">],</span>
+                                                                   <span class="bp">self</span><span class="o">.</span><span class="n">conn_info</span><span class="p">[</span><span class="s1">&#39;db&#39;</span><span class="p">]))</span> \
+                <span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">conn_info</span><span class="p">[</span><span class="s1">&#39;user&#39;</span><span class="p">])</span> \
+                <span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s2">&quot;password&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">conn_info</span><span class="p">[</span><span class="s1">&#39;pwd&#39;</span><span class="p">])</span> \
+                <span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s2">&quot;dbtable&quot;</span><span class="p">,</span> <span class="n">table_name</span><span class="p">)</span>
+            <span class="n">write</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+            <span class="k">assert</span> <span class="n">rows</span> <span class="o">==</span> <span class="n">df</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">has_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">table_name</span><span class="o">=</span><span class="s2">&quot;information_schema.tables&quot;</span><span class="p">)</span> \
+                   <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="s2">&quot;table_name = &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">table_name</span><span class="p">))</span> \
+                   <span class="o">.</span><span class="n">count</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span>
+
+    <span class="k">def</span> <span class="nf">get_all_table_names_in_datasource</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">table_name</span><span class="o">=</span><span class="s2">&quot;information_schema.tables&quot;</span><span class="p">)</span> \
+            <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="s2">&quot;table_schema == &#39;public&#39;&quot;</span><span class="p">)</span> \
+            <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="s2">&quot;table_type == &#39;BASE TABLE&#39;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">toPandas</span><span class="p">()[</span><span class="s2">&quot;table_name&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+
+
+<span class="k">class</span> <span class="nc">SparkEngine</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">SparkConfig</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">config</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">session</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">io</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">session</span> <span class="o">=</span> <span class="n">sparkSessionFromConfig</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">io</span> <span class="o">=</span> <span class="n">SparkIO</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">datasource_type</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">db_host</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">db_port</span><span class="p">,</span>
+                          <span class="n">db</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">db</span><span class="p">,</span>
+                          <span class="n">user</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">db_user</span><span class="p">,</span> <span class="n">pwd</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">db_user_pwd</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">session</span>
+
+    <span class="k">def</span> <span class="nf">_has_table_in_datasource</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">has_table</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_has_table_in_session</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session</span><span class="p">,</span> <span class="n">table_name</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">session</span><span class="o">.</span><span class="n">catalog</span><span class="o">.</span><span class="n">tableExists</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">has_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">connection</span><span class="p">:</span> <span class="n">SparkSession</span><span class="p">,</span> <span class="n">table_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">where</span><span class="o">=</span><span class="s2">&quot;datasource&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">where</span> <span class="o">==</span> <span class="s2">&quot;datasource&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_has_table_in_datasource</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">where</span> <span class="o">==</span> <span class="s2">&quot;session&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_has_table_in_session</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="n">table_name</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Unsupport &#39;where&#39; value: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">where</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">get_all_table_names_in_datasource</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">get_all_table_names_in_datasource</span><span class="p">()</span>
+
+    <span class="c1"># def clearCachedTables(self):</span>
+    <span class="c1">#    self.session.catalog.clearCache()</span>
+
+
+<div class="viewcode-block" id="SparkSQLController"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.SparkSQLController.html#pilotscope.DBController.SparkSQLController.SparkSQLController">[docs]</a><span class="k">class</span> <span class="nc">SparkSQLController</span><span class="p">(</span><span class="n">BaseDBController</span><span class="p">):</span>
+
+<div class="viewcode-block" id="SparkSQLController.__init__"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.SparkSQLController.html#pilotscope.DBController.SparkSQLController.SparkSQLController.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">SparkConfig</span><span class="p">,</span> <span class="n">echo</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">echo</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_db_init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name_2_table</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="p">:</span> <span class="n">SparkEngine</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_engine</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_connect_if_loss</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_create_conn_str</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">_create_engine</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">SparkEngine</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SparkSQLController.load_all_tables_from_datasource"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.SparkSQLController.html#pilotscope.DBController.SparkSQLController.SparkSQLController.load_all_tables_from_datasource">[docs]</a>    <span class="k">def</span> <span class="nf">load_all_tables_from_datasource</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">all_user_created_table_names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">get_all_table_names_in_datasource</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">table_name</span> <span class="ow">in</span> <span class="n">all_user_created_table_names</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">load_table_if_exists_in_datasource</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_connect_if_loss</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_connect</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">connection_thread</span><span class="o">.</span><span class="n">conn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
+            <span class="n">all_user_created_table_names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">get_all_table_names_in_datasource</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">table_name</span> <span class="ow">in</span> <span class="n">all_user_created_table_names</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">load_table_if_exists_in_datasource</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;[connect_if_loss] Loaded table &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">table_name</span><span class="p">))</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">_disconnect</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_connection</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># try:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">persist_tables</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">clearCachedTables</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">connection_thread</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">connection_thread</span><span class="o">.</span><span class="n">conn</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="c1"># except: # deal with connection already stopped</span>
+            <span class="c1">#    pass</span>
+
+<div class="viewcode-block" id="SparkSQLController.persist_table"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.SparkSQLController.html#pilotscope.DBController.SparkSQLController.SparkSQLController.persist_table">[docs]</a>    <span class="k">def</span> <span class="nf">persist_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name_2_table</span><span class="p">[</span><span class="n">table_name</span><span class="p">]</span><span class="o">.</span><span class="n">persist</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SparkSQLController.persist_tables"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.SparkSQLController.html#pilotscope.DBController.SparkSQLController.SparkSQLController.persist_tables">[docs]</a>    <span class="k">def</span> <span class="nf">persist_tables</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">table</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">name_2_table</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">table</span><span class="o">.</span><span class="n">persist</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SparkSQLController.exist_table"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.SparkSQLController.html#pilotscope.DBController.SparkSQLController.SparkSQLController.exist_table">[docs]</a>    <span class="k">def</span> <span class="nf">exist_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="p">,</span> <span class="n">where</span><span class="o">=</span><span class="s2">&quot;session&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="n">has_table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">has_table</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_connection</span><span class="p">(),</span> <span class="n">table_name</span><span class="p">,</span> <span class="n">where</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">has_table</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="SparkSQLController.load_table_if_exists_in_datasource"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.SparkSQLController.html#pilotscope.DBController.SparkSQLController.SparkSQLController.load_table_if_exists_in_datasource">[docs]</a>    <span class="k">def</span> <span class="nf">load_table_if_exists_in_datasource</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="p">):</span>
+        <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">exist_table</span><span class="p">(</span><span class="n">table_name</span><span class="p">,</span> <span class="n">where</span><span class="o">=</span><span class="s2">&quot;session&quot;</span><span class="p">))</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">exist_table</span><span class="p">(</span><span class="n">table_name</span><span class="p">,</span> <span class="n">where</span><span class="o">=</span><span class="s2">&quot;datasource&quot;</span><span class="p">):</span>
+            <span class="c1"># If the table exists in the data source but not in the current session, </span>
+            <span class="c1">#   then the table will be loaded from the data source.</span>
+
+            <span class="c1"># logger.debug(</span>
+            <span class="c1">#    &quot;[create_table_if_absences] Table &#39;{}&#39; exists in the data source but not in the current session, &quot;.format(</span>
+            <span class="c1">#        table_name) +</span>
+            <span class="c1">#    &quot;so it will be loaded from the data source and your input schema will be ignored.&quot;)</span>
+
+            <span class="n">table</span> <span class="o">=</span> <span class="n">SparkTable</span><span class="p">(</span><span class="n">table_name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">table</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">name_2_table</span><span class="p">[</span><span class="n">table_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">table</span></div>
+
+    <span class="c1"># collect statistics for the given table</span>
+<div class="viewcode-block" id="SparkSQLController.analyze_table_stats"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.SparkSQLController.html#pilotscope.DBController.SparkSQLController.SparkSQLController.analyze_table_stats">[docs]</a>    <span class="k">def</span> <span class="nf">analyze_table_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">load_table_if_exists_in_datasource</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name_2_table</span><span class="p">[</span><span class="n">table_name</span><span class="p">]</span><span class="o">.</span><span class="n">analyzeStats</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SparkSQLController.analyze_all_table_stats"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.SparkSQLController.html#pilotscope.DBController.SparkSQLController.SparkSQLController.analyze_all_table_stats">[docs]</a>    <span class="k">def</span> <span class="nf">analyze_all_table_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">table</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">name_2_table</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">table</span><span class="o">.</span><span class="n">analyzeStats</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="p">)</span></div>
+
+    <span class="c1"># clear all SparkTable instances in cache </span>
+<div class="viewcode-block" id="SparkSQLController.clear_all_tables"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.SparkSQLController.html#pilotscope.DBController.SparkSQLController.SparkSQLController.clear_all_tables">[docs]</a>    <span class="k">def</span> <span class="nf">clear_all_tables</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">conn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_connection</span><span class="p">()</span>
+        <span class="n">conn</span><span class="o">.</span><span class="n">catalog</span><span class="o">.</span><span class="n">clearCache</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">table_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">name_2_table</span><span class="p">:</span>
+            <span class="n">conn</span><span class="o">.</span><span class="n">catalog</span><span class="o">.</span><span class="n">dropTempView</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name_2_table</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span></div>
+
+    <span class="c1"># check whether the input key (config name) is modifiable in runtime</span>
+    <span class="c1"># and set its value to the given value if it is modifiable</span>
+<div class="viewcode-block" id="SparkSQLController.set_hint"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.SparkSQLController.html#pilotscope.DBController.SparkSQLController.SparkSQLController.set_hint">[docs]</a>    <span class="k">def</span> <span class="nf">set_hint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_connection</span><span class="p">()</span><span class="o">.</span><span class="n">conf</span><span class="o">.</span><span class="n">isModifiable</span><span class="p">(</span><span class="n">key</span><span class="p">):</span>
+            <span class="c1"># self.connection.conf.set(key, value)</span>
+            <span class="n">sql</span> <span class="o">=</span> <span class="s2">&quot;SET </span><span class="si">{}</span><span class="s2"> = </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s2">&quot;[get_hint_sql] Configuration &#39;</span><span class="si">{}</span><span class="s2">&#39; is not modifiable in runtime, nothing changed&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">key</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="SparkSQLController.create_table_if_absences"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.SparkSQLController.html#pilotscope.DBController.SparkSQLController.SparkSQLController.create_table_if_absences">[docs]</a>    <span class="k">def</span> <span class="nf">create_table_if_absences</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="p">,</span> <span class="n">column_2_value</span><span class="p">,</span> <span class="n">primary_key_column</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                 <span class="n">enable_autoincrement_id_key</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_connect_if_loss</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">primary_key_column</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s2">&quot;[create_table_if_absences] Spark SQL does not support specifying primary key while creating table.&quot;</span><span class="p">)</span>
+            <span class="n">primary_key_column</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">column_2_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_db_data_type</span><span class="p">(</span><span class="n">column_2_value</span><span class="p">)</span>
+        <span class="c1"># metadata_obj = self.metadata</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">exist_table</span><span class="p">(</span><span class="n">table_name</span><span class="p">,</span> <span class="n">where</span><span class="o">=</span><span class="s2">&quot;session&quot;</span><span class="p">):</span>
+            <span class="c1"># Only checks whether the table exists in current session.</span>
+            <span class="c1"># If the table exists in the data source but not in the session, </span>
+            <span class="c1">#   here self.exist_table simply returns False, </span>
+            <span class="c1">#   then table.create will load it from the data source.</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exist_table</span><span class="p">(</span><span class="n">table_name</span><span class="p">,</span> <span class="n">where</span><span class="o">=</span><span class="s2">&quot;datasource&quot;</span><span class="p">):</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                    <span class="s2">&quot;[create_table_if_absences] Table &#39;</span><span class="si">{}</span><span class="s2">&#39; exists in the data source but not in the current session, &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                        <span class="n">table_name</span><span class="p">)</span> <span class="o">+</span>
+                    <span class="s2">&quot;so it will be loaded from the data source and your input schema will be ignored.&quot;</span><span class="p">)</span>
+            <span class="n">columns</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">column</span><span class="p">,</span> <span class="n">column_type</span> <span class="ow">in</span> <span class="n">column_2_type</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">columns</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">SparkColumn</span><span class="p">(</span><span class="n">column</span><span class="p">,</span> <span class="n">column_type</span><span class="p">))</span>
+            <span class="n">table</span> <span class="o">=</span> <span class="n">SparkTable</span><span class="p">(</span><span class="n">table_name</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="n">columns</span><span class="p">)</span>
+            <span class="n">table</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">name_2_table</span><span class="p">[</span><span class="n">table_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">table</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;[create_table_if_absences] Table &#39;</span><span class="si">{}</span><span class="s2">&#39; exists, nothing changed.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">table_name</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="SparkSQLController.get_table_row_count"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.SparkSQLController.html#pilotscope.DBController.SparkSQLController.SparkSQLController.get_table_row_count">[docs]</a>    <span class="k">def</span> <span class="nf">get_table_row_count</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">load_table_if_exists_in_datasource</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">table_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">name_2_table</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="s2">&quot;The table &#39;</span><span class="si">{}</span><span class="s2">&#39; not found in both current session and the data source.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">table_name</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">name_2_table</span><span class="p">[</span><span class="n">table_name</span><span class="p">]</span><span class="o">.</span><span class="n">nrows</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="SparkSQLController.insert"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.SparkSQLController.html#pilotscope.DBController.SparkSQLController.SparkSQLController.insert">[docs]</a>    <span class="k">def</span> <span class="nf">insert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="p">,</span> <span class="n">column_2_value</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">persist</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">load_table_if_exists_in_datasource</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span>
+        <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name_2_table</span><span class="p">[</span><span class="n">table_name</span><span class="p">]</span>
+        <span class="n">table</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="p">,</span> <span class="n">column_2_value</span><span class="p">,</span> <span class="n">persist</span><span class="o">=</span><span class="n">persist</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SparkSQLController.execute"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.SparkSQLController.html#pilotscope.DBController.SparkSQLController.SparkSQLController.execute">[docs]</a>    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sql</span><span class="p">,</span> <span class="n">fetch</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">fetch_column_name</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">DataFrame</span><span class="p">]:</span>
+        <span class="n">row</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_connect_if_loss</span><span class="p">()</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_connection</span><span class="p">()</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="n">sql</span><span class="p">)</span>
+            <span class="n">row</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">toPandas</span><span class="p">()</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">fetch</span><span class="p">:</span>
+                <span class="n">row</span> <span class="o">=</span> <span class="n">df</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;PilotScopePullEnd&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="n">e</span>
+        <span class="k">return</span> <span class="n">row</span></div>
+
+    <span class="k">def</span> <span class="nf">_unresolvedLogicalPlan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query_execution</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">query_execution</span><span class="o">.</span><span class="n">logical</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_resolvedLogicalPlan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query_execution</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">query_execution</span><span class="o">.</span><span class="n">spark_analyzed</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_optimizedLogicalPlan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query_execution</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">query_execution</span><span class="o">.</span><span class="n">optimizedPlan</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_logicalPlan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query_execution</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_optimizedLogicalPlan</span><span class="p">(</span><span class="n">query_execution</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_physicalPlan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query_execution</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">query_execution</span><span class="o">.</span><span class="n">executedPlan</span><span class="p">()</span>
+
+<div class="viewcode-block" id="SparkSQLController.explain_physical_plan"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.SparkSQLController.html#pilotscope.DBController.SparkSQLController.SparkSQLController.explain_physical_plan">[docs]</a>    <span class="k">def</span> <span class="nf">explain_physical_plan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sql</span><span class="p">,</span> <span class="n">comment</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+        <span class="n">sql</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">comment</span><span class="p">,</span> <span class="n">sql</span><span class="p">)</span>
+        <span class="n">plan</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_physicalPlan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="p">)</span><span class="o">.</span><span class="n">_jdf</span><span class="o">.</span><span class="n">queryExecution</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">plan</span><span class="o">.</span><span class="n">toJSON</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="SparkSQLController.get_estimated_cost"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.SparkSQLController.html#pilotscope.DBController.SparkSQLController.SparkSQLController.get_estimated_cost">[docs]</a>    <span class="k">def</span> <span class="nf">get_estimated_cost</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sql</span><span class="p">,</span> <span class="n">comment</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+        <span class="k">raise</span> <span class="n">PilotScopeNotSupportedOperationException</span><span class="p">(</span>
+            <span class="s2">&quot;Spark SQL does not support cost estimation.You can use row count or sizeByte instead.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SparkSQLController.write_knob_to_file"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.SparkSQLController.html#pilotscope.DBController.SparkSQLController.SparkSQLController.write_knob_to_file">[docs]</a>    <span class="k">def</span> <span class="nf">write_knob_to_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key_2_value_knob</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">key_2_value_knob</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_hint</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SparkSQLController.recover_config"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.SparkSQLController.html#pilotscope.DBController.SparkSQLController.SparkSQLController.recover_config">[docs]</a>    <span class="k">def</span> <span class="nf">recover_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># reset all modifiable runtime configurations</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_get_connection</span><span class="p">()</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;RESET&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SparkSQLController.shutdown"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.SparkSQLController.html#pilotscope.DBController.SparkSQLController.SparkSQLController.shutdown">[docs]</a>    <span class="k">def</span> <span class="nf">shutdown</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="SparkSQLController.start"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.SparkSQLController.html#pilotscope.DBController.SparkSQLController.SparkSQLController.start">[docs]</a>    <span class="k">def</span> <span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="SparkSQLController.explain_execution_plan"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.SparkSQLController.html#pilotscope.DBController.SparkSQLController.SparkSQLController.explain_execution_plan">[docs]</a>    <span class="k">def</span> <span class="nf">explain_execution_plan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sql</span><span class="p">,</span> <span class="n">comment</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+<div class="viewcode-block" id="SparkSQLController.status"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.SparkSQLController.html#pilotscope.DBController.SparkSQLController.SparkSQLController.status">[docs]</a>    <span class="k">def</span> <span class="nf">status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">PilotScopeNotSupportedOperationException</span></div>
+
+<div class="viewcode-block" id="SparkSQLController.get_buffercache"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.SparkSQLController.html#pilotscope.DBController.SparkSQLController.SparkSQLController.get_buffercache">[docs]</a>    <span class="k">def</span> <span class="nf">get_buffercache</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">PilotScopeNotSupportedOperationException</span></div>
+
+    <span class="k">def</span> <span class="nf">create_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index_name</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">columns</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">PilotScopeNotSupportedOperationException</span>
+
+<div class="viewcode-block" id="SparkSQLController.create_index"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.SparkSQLController.html#pilotscope.DBController.SparkSQLController.SparkSQLController.create_index">[docs]</a>    <span class="k">def</span> <span class="nf">create_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">PilotScopeNotSupportedOperationException</span></div>
+
+<div class="viewcode-block" id="SparkSQLController.drop_index"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.SparkSQLController.html#pilotscope.DBController.SparkSQLController.SparkSQLController.drop_index">[docs]</a>    <span class="k">def</span> <span class="nf">drop_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">PilotScopeNotSupportedOperationException</span></div>
+
+<div class="viewcode-block" id="SparkSQLController.drop_all_indexes"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.SparkSQLController.html#pilotscope.DBController.SparkSQLController.SparkSQLController.drop_all_indexes">[docs]</a>    <span class="k">def</span> <span class="nf">drop_all_indexes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">PilotScopeNotSupportedOperationException</span></div>
+
+<div class="viewcode-block" id="SparkSQLController.get_all_indexes_byte"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.SparkSQLController.html#pilotscope.DBController.SparkSQLController.SparkSQLController.get_all_indexes_byte">[docs]</a>    <span class="k">def</span> <span class="nf">get_all_indexes_byte</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">PilotScopeNotSupportedOperationException</span></div>
+
+<div class="viewcode-block" id="SparkSQLController.get_table_indexes_byte"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.SparkSQLController.html#pilotscope.DBController.SparkSQLController.SparkSQLController.get_table_indexes_byte">[docs]</a>    <span class="k">def</span> <span class="nf">get_table_indexes_byte</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">PilotScopeNotSupportedOperationException</span></div>
+
+<div class="viewcode-block" id="SparkSQLController.get_index_byte"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.SparkSQLController.html#pilotscope.DBController.SparkSQLController.SparkSQLController.get_index_byte">[docs]</a>    <span class="k">def</span> <span class="nf">get_index_byte</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="n">Index</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">PilotScopeNotSupportedOperationException</span></div>
+
+    <span class="k">def</span> <span class="nf">_to_db_data_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">column_2_value</span><span class="p">):</span>
+        <span class="n">column_2_type</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">col</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">column_2_value</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">data_type</span> <span class="o">=</span> <span class="n">SparkSQLTypeEnum</span><span class="o">.</span><span class="n">String</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">==</span> <span class="nb">int</span><span class="p">:</span>
+                <span class="n">data_type</span> <span class="o">=</span> <span class="n">SparkSQLTypeEnum</span><span class="o">.</span><span class="n">Integer</span>
+            <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">==</span> <span class="nb">float</span><span class="p">:</span>
+                <span class="n">data_type</span> <span class="o">=</span> <span class="n">SparkSQLTypeEnum</span><span class="o">.</span><span class="n">Float</span>
+            <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">==</span> <span class="nb">str</span><span class="p">:</span>
+                <span class="n">data_type</span> <span class="o">=</span> <span class="n">SparkSQLTypeEnum</span><span class="o">.</span><span class="n">String</span>
+            <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">==</span> <span class="nb">dict</span><span class="p">:</span>
+                <span class="n">data_type</span> <span class="o">=</span> <span class="n">SparkSQLTypeEnum</span><span class="o">.</span><span class="n">String</span>
+            <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">==</span> <span class="nb">list</span><span class="p">:</span>
+                <span class="n">data_type</span> <span class="o">=</span> <span class="n">SparkSQLTypeEnum</span><span class="o">.</span><span class="n">String</span>
+            <span class="n">column_2_type</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">data_type</span><span class="o">.</span><span class="n">value</span>
+        <span class="k">return</span> <span class="n">column_2_type</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Alibaba.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

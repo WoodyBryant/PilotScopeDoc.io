@@ -1,0 +1,7 @@
+pilotscope.DBController.BaseDBController
+===============================================
+
+.. automodule:: pilotscope.DBController.BaseDBController
+   :members:
+   :undoc-members:
+   :show-inheritance:

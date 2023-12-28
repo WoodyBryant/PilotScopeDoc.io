@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>6.2. pilotscope.PilotConfig &mdash; PilotScope 1.0 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="6.3. pilotscope.DBInteractor" href="pilotscope.DBInteractor.html" />
+    <link rel="prev" title="6.1.1.1. pilotscope.Anchor.BaseAnchor.BasePushHandler" href="pilotscope.Anchor.BaseAnchor.BasePushHandler.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            PilotScope
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../overview.html">1. Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">2. Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../system_pipeline.html">3. System Pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../core_modules.html">4. Core Components (ML Side)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../example.html">5. Example</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">6. API (ML Side)</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="pilotscope.Anchor.html">6.1. pilotscope.Anchor</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">6.2. pilotscope.PilotConfig</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pilotscope.DBInteractor.html">6.3. pilotscope.DBInteractor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pilotscope.PilotModel.html">6.4. pilotscope.PilotModel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pilotscope.PilotScheduler.html">6.5. pilotscope.PilotScheduler</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pilotscope.PilotEvent.html">6.6. pilotscope.PilotEvent</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pilotscope.DataManager.html">6.7. pilotscope.DataManager</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pilotscope.PilotTransData.html">6.8. pilotscope.PilotTransData</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pilotscope.Factory.html">6.9. pilotscope.Factory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pilotscope.DBController.html">6.10. pilotscope.DBController</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pilotscope.PilotEnum.html">6.11. pilotscope.PilotEnum</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../database_develop.html">7. Database Side Develop</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../annotations.html">8. Annotations</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">PilotScope</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../api.html"><span class="section-number">6. </span>API (ML Side)</a></li>
+      <li class="breadcrumb-item active"><span class="section-number">6.2. </span>pilotscope.PilotConfig</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/references/api_rst/pilotscope.PilotConfig.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-pilotscope.PilotConfig">
+<span id="pilotscope-pilotconfig"></span><h1><span class="section-number">6.2. </span>pilotscope.PilotConfig<a class="headerlink" href="#module-pilotscope.PilotConfig" title="Permalink to this headline"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="pilotscope.PilotConfig.PilotConfig">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">PilotConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db_type</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="pilotscope.PilotEnum.html#pilotscope.PilotEnum.DatabaseEnum" title="pilotscope.PilotEnum.DatabaseEnum"><span class="pre">pilotscope.PilotEnum.DatabaseEnum</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">db</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'stats_tiny'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pilotscope_core_host</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'localhost'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_data_db_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'PilotScopeUserData'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sql_execution_timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">300</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">once_request_timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">300</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/PilotConfig.html#PilotConfig"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.PilotConfig.PilotConfig" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>The PilotConfig class is used for storing and managing configuration information for PilotScope,
+including the host address of PilotScope, the name of the database to connect to,
+the username and password to log into the database, etc.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.PilotConfig.PilotConfig.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db_type</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="pilotscope.PilotEnum.html#pilotscope.PilotEnum.DatabaseEnum" title="pilotscope.PilotEnum.DatabaseEnum"><span class="pre">pilotscope.PilotEnum.DatabaseEnum</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">db</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'stats_tiny'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pilotscope_core_host</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'localhost'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_data_db_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'PilotScopeUserData'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sql_execution_timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">300</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">once_request_timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">300</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">None</span><a class="reference internal" href="../../_modules/pilotscope/PilotConfig.html#PilotConfig.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.PilotConfig.PilotConfig.__init__" title="Permalink to this definition"></a></dt>
+<dd><p>Initialize the PilotConfig.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>db_type</strong> – the type of database, i.e. PostgreSQL, SparkSQL, etc.</p></li>
+<li><p><strong>db</strong> – the name of connected database</p></li>
+<li><p><strong>pilotscope_core_host</strong> – the host address of PilotScope in ML side.</p></li>
+<li><p><strong>user_data_db_name</strong> – the created database name for saving the user data. If users want to visit these data, they can set db=user_data_db_name.</p></li>
+<li><p><strong>sql_execution_timeout</strong> – the timeout of sql execution, unit: second</p></li>
+<li><p><strong>once_request_timeout</strong> – the timeout of once request, unit: second</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.PilotConfig.PilotConfig.print">
+<span class="sig-name descname"><span class="pre">print</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/PilotConfig.html#PilotConfig.print"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.PilotConfig.PilotConfig.print" title="Permalink to this definition"></a></dt>
+<dd><p>Print the configuration information of PilotScope.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pilotscope.PilotConfig.PostgreSQLConfig">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">PostgreSQLConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pilotscope_core_host</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'localhost'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">db_host</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'localhost'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">db_port</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'5432'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">db_user</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pilotscope'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">db_user_pwd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pilotscope'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">db</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'stats_tiny'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/PilotConfig.html#PostgreSQLConfig"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.PilotConfig.PostgreSQLConfig" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pilotscope.PilotConfig.PilotConfig" title="pilotscope.PilotConfig.PilotConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">pilotscope.PilotConfig.PilotConfig</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.PilotConfig.PostgreSQLConfig.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pilotscope_core_host</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'localhost'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">db_host</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'localhost'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">db_port</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'5432'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">db_user</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pilotscope'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">db_user_pwd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pilotscope'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">db</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'stats_tiny'</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">None</span><a class="reference internal" href="../../_modules/pilotscope/PilotConfig.html#PostgreSQLConfig.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.PilotConfig.PostgreSQLConfig.__init__" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pilotscope_core_host</strong> – the host address of PilotScope in ML side.</p></li>
+<li><p><strong>db_host</strong> – the host address of database</p></li>
+<li><p><strong>db_port</strong> – the port of database</p></li>
+<li><p><strong>db_user</strong> – the username to log into the database</p></li>
+<li><p><strong>db_user_pwd</strong> – the password to log into the database</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.PilotConfig.PostgreSQLConfig.enable_deep_control_local">
+<span class="sig-name descname"><span class="pre">enable_deep_control_local</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pg_bin_path</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pg_data_path</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/PilotConfig.html#PostgreSQLConfig.enable_deep_control_local"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.PilotConfig.PostgreSQLConfig.enable_deep_control_local" title="Permalink to this definition"></a></dt>
+<dd><p>Enable deep control for PostgreSQL, such as  starting and stopping database, changing config file, etc.
+If you do not need these functions, it is not necessary to set these values.
+If the database and PilotScope Core are on the same machine, you can use this function, i.e., pilotscope_core_host != db_host.
+Otherwise, use <cite>enable_deep_control_remote</cite></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pg_bin_path</strong> – the directory of binary file of postgresql, e.g., /postgres_install_path/bin</p></li>
+<li><p><strong>pg_data_path</strong> – location of the database data storage</p></li>
+<li><p><strong>db_host_user</strong> – the username to log into the database host</p></li>
+<li><p><strong>db_host_pwd</strong> – the password to log into the database host</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.PilotConfig.PostgreSQLConfig.enable_deep_control_remote">
+<span class="sig-name descname"><span class="pre">enable_deep_control_remote</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pg_bin_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pg_data_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">db_host_user</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">db_host_pwd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">db_host_ssh_port</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">22</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/PilotConfig.html#PostgreSQLConfig.enable_deep_control_remote"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.PilotConfig.PostgreSQLConfig.enable_deep_control_remote" title="Permalink to this definition"></a></dt>
+<dd><p>Enable deep control for PostgreSQL, such as starting and stopping database, changing config file, etc.
+If you do not need these functions, it is not necessary to set these values.
+If the database and PilotScope Core are not on the same machine, you can use this function, i.e., pilotscope_core_host != db_host.
+Otherwise, use <cite>enable_deep_control_local</cite></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pg_bin_path</strong> – the directory of binary file of postgresql, e.g., /postgres_install_path/bin</p></li>
+<li><p><strong>pg_data_path</strong> – location of the database data storage</p></li>
+<li><p><strong>db_host_user</strong> – the username to log into the database host</p></li>
+<li><p><strong>db_host_pwd</strong> – the password to log into the database host</p></li>
+<li><p><strong>db_host_ssh_port</strong> – the port of ssh service on the database host</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pilotscope.PilotConfig.SparkConfig">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">SparkConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">app_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'testApp'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">master_url</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'local[*]'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/PilotConfig.html#SparkConfig"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.PilotConfig.SparkConfig" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pilotscope.PilotConfig.PilotConfig" title="pilotscope.PilotConfig.PilotConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">pilotscope.PilotConfig.PilotConfig</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.PilotConfig.SparkConfig.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">app_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'testApp'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">master_url</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'local[*]'</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">None</span><a class="reference internal" href="../../_modules/pilotscope/PilotConfig.html#SparkConfig.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.PilotConfig.SparkConfig.__init__" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>app_name</strong> – the name of the application of Spark</p></li>
+<li><p><strong>master_url</strong> – the master URL of Spark cluster</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.PilotConfig.SparkConfig.set_spark_session_config">
+<span class="sig-name descname"><span class="pre">set_spark_session_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/PilotConfig.html#SparkConfig.set_spark_session_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.PilotConfig.SparkConfig.set_spark_session_config" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.PilotConfig.SparkConfig.enable_cardinality_estimation">
+<span class="sig-name descname"><span class="pre">enable_cardinality_estimation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/PilotConfig.html#SparkConfig.enable_cardinality_estimation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.PilotConfig.SparkConfig.enable_cardinality_estimation" title="Permalink to this definition"></a></dt>
+<dd><p>Spark SQL support cost-based optimization but it is disabled by default.
+If you need to enable <cite>pull_subquery_card</cite> and <cite>push_card</cite>, please call this function, and PilotScope will set the corresponding parameters.
+This will consume more time, but the performance of the SQL will be better.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.PilotConfig.SparkConfig.use_postgresql_datasource">
+<span class="sig-name descname"><span class="pre">use_postgresql_datasource</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db_host</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'localhost'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">db_port</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'5432'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">db_user</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'postgres'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">db_user_pwd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'postgres'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">db</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'stats_tiny'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/PilotConfig.html#SparkConfig.use_postgresql_datasource"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.PilotConfig.SparkConfig.use_postgresql_datasource" title="Permalink to this definition"></a></dt>
+<dd><p>Set up a PostgreSQL data source.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>db_host</strong> – the host of postgresql, defaults to “localhost”</p></li>
+<li><p><strong>db_port</strong> – the network port of postgresql, defaults to “5432”</p></li>
+<li><p><strong>db_user</strong> – the username to log into postgresql, defaults to “postgres”</p></li>
+<li><p><strong>db_user_pwd</strong> – the password of the user, defaults to “postgres”</p></li>
+<li><p><strong>db</strong> – database name, defaults to “stats_tiny”</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="pilotscope.Anchor.BaseAnchor.BasePushHandler.html" class="btn btn-neutral float-left" title="6.1.1.1. pilotscope.Anchor.BaseAnchor.BasePushHandler" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pilotscope.DBInteractor.html" class="btn btn-neutral float-right" title="6.3. pilotscope.DBInteractor" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Alibaba.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

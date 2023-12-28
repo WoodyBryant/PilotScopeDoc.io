@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pilotscope.DataManager.DataManager &mdash; PilotScope 1.0 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            PilotScope
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../references/overview.html">1. Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references/install.html">2. Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references/system_pipeline.html">3. System Pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references/core_modules.html">4. Core Components (ML Side)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references/example.html">5. Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references/api.html">6. API (ML Side)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references/database_develop.html">7. Database Side Develop</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references/annotations.html">8. Annotations</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">PilotScope</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pilotscope.DataManager.DataManager</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pilotscope.DataManager.DataManager</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+
+<span class="kn">from</span> <span class="nn">pandas</span> <span class="kn">import</span> <span class="n">DataFrame</span>
+
+<span class="kn">from</span> <span class="nn">pilotscope.DBController.BaseDBController</span> <span class="kn">import</span> <span class="n">BaseDBController</span>
+<span class="kn">from</span> <span class="nn">pilotscope.DataManager.TableVisitedTracker</span> <span class="kn">import</span> <span class="n">TableVisitedTracker</span>
+<span class="kn">from</span> <span class="nn">pilotscope.Factory.DBControllerFectory</span> <span class="kn">import</span> <span class="n">DBControllerFactory</span>
+<span class="kn">from</span> <span class="nn">pilotscope.PilotConfig</span> <span class="kn">import</span> <span class="n">PilotConfig</span>
+<span class="kn">from</span> <span class="nn">pilotscope.PilotEnum</span> <span class="kn">import</span> <span class="n">DatabaseEnum</span>
+<span class="kn">from</span> <span class="nn">pilotscope.PilotSysConfig</span> <span class="kn">import</span> <span class="n">PilotSysConfig</span>
+<span class="kn">from</span> <span class="nn">pilotscope.Common.Util</span> <span class="kn">import</span> <span class="n">is_number</span>
+
+
+<div class="viewcode-block" id="DataManager"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DataManager.DataManager.html#pilotscope.DataManager.DataManager.DataManager">[docs]</a><span class="k">class</span> <span class="nc">DataManager</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class provides methods to interact with a database to store and retrieve data.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="DataManager.__init__"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DataManager.DataManager.html#pilotscope.DataManager.DataManager.DataManager.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">PilotConfig</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize the DataManager.</span>
+
+<span class="sd">        :param config: The configuration of PilotScope.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">db</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">user_data_db_name</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">db_controller</span><span class="p">:</span> <span class="n">BaseDBController</span> <span class="o">=</span> <span class="n">DBControllerFactory</span><span class="o">.</span><span class="n">get_db_controller</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
+
+        <span class="c1"># pilotscope add a primary key for all user tables.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">table_primary_key</span> <span class="o">=</span> <span class="n">PilotSysConfig</span><span class="o">.</span><span class="n">DATA_COLLECT_TABLE_PRIMARY_ID</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">table_visited_tracker</span> <span class="o">=</span> <span class="n">TableVisitedTracker</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db_controller</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DataManager.read_all"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DataManager.DataManager.html#pilotscope.DataManager.DataManager.DataManager.read_all">[docs]</a>    <span class="k">def</span> <span class="nf">read_all</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Read all rows from a given table.</span>
+
+<span class="sd">        :param table_name: The name of the table to read from.</span>
+<span class="sd">        :return: All rows in the specified table as a pandas DataFrame.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;select * from </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">DataFrame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db_controller</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">fetch</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_visited_record</span><span class="p">(</span><span class="n">table_name</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">data</span></div>
+
+<div class="viewcode-block" id="DataManager.read_update"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DataManager.DataManager.html#pilotscope.DataManager.DataManager.DataManager.read_update">[docs]</a>    <span class="k">def</span> <span class="nf">read_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Read the new rows from a given table since the last visit.</span>
+<span class="sd">        This function will also update the last visit record in the database.</span>
+
+<span class="sd">        :param table_name: The name of the table to read .</span>
+<span class="sd">        :return: The new rows in the specified table since the last visit as a `pandas DataFrame`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">db_type</span> <span class="o">==</span> <span class="n">DatabaseEnum</span><span class="o">.</span><span class="n">SPARK</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;spark not support read_update&quot;</span><span class="p">)</span>
+
+        <span class="n">last_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table_visited_tracker</span><span class="o">.</span><span class="n">read_data_visit_id</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span>
+        <span class="n">last_id</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="k">if</span> <span class="n">last_id</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">last_id</span>
+
+        <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;select * from </span><span class="si">{}</span><span class="s2"> where </span><span class="si">{}</span><span class="s2"> &gt; </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">table_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">table_primary_key</span><span class="p">,</span> <span class="n">last_id</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">DataFrame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db_controller</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">fetch</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_visited_record</span><span class="p">(</span><span class="n">table_name</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">data</span></div>
+
+<div class="viewcode-block" id="DataManager.save_data"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DataManager.DataManager.html#pilotscope.DataManager.DataManager.DataManager.save_data">[docs]</a>    <span class="k">def</span> <span class="nf">save_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="p">,</span> <span class="n">column_2_value</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Save data to the specified table in the database.</span>
+
+<span class="sd">        :param table_name: The name of the table to insert the data into.</span>
+<span class="sd">        :param column_2_value: A dictionary of column names and their corresponding values, e.g., {&#39;id&#39;: 1, &#39;name&#39;: &#39;John Doe&#39;}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">column_2_value</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">column_2_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convert_data_type</span><span class="p">(</span><span class="n">column_2_value</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_create_table_if_absence</span><span class="p">(</span><span class="n">table_name</span><span class="p">,</span> <span class="n">column_2_value</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db_controller</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">table_name</span><span class="p">,</span> <span class="n">column_2_value</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DataManager.save_data_batch"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DataManager.DataManager.html#pilotscope.DataManager.DataManager.DataManager.save_data_batch">[docs]</a>    <span class="k">def</span> <span class="nf">save_data_batch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="p">,</span> <span class="n">column_2_value_list</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Save data batch.</span>
+
+<span class="sd">        :param table_name: The name of the table to be saved.</span>
+<span class="sd">        :param column_2_value_list: A list of dictionaries, where each dictionary represents one row of data, e.g., [{&#39;id&#39;: 1, &#39;name&#39;: &#39;John Doe&#39;}, {&#39;id&#39;: 2, &#39;name&#39;: &#39;Jane Doe&#39;}]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">column_2_value</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">column_2_value_list</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">save_data</span><span class="p">(</span><span class="n">table_name</span><span class="p">,</span> <span class="n">column_2_value</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DataManager.remove_table_and_tracker"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DataManager.DataManager.html#pilotscope.DataManager.DataManager.DataManager.remove_table_and_tracker">[docs]</a>    <span class="k">def</span> <span class="nf">remove_table_and_tracker</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Drop the table and its corresponding tracker which is used to track the last visit id.</span>
+
+<span class="sd">        :param table_name: The name of the table to be dropped.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">db_controller</span><span class="o">.</span><span class="n">exist_table</span><span class="p">(</span><span class="n">table_name</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db_controller</span><span class="o">.</span><span class="n">drop_table_if_exist</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">table_visited_tracker</span><span class="o">.</span><span class="n">delete_visited_record</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_create_table_if_absence</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="p">,</span> <span class="n">column_2_value</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create a table if it does not exist.</span>
+
+<span class="sd">        :param table_name: The name of the table to create.</span>
+<span class="sd">        :type table_name: str</span>
+
+<span class="sd">        :param column_2_value: A dictionary representing the columns and their default values for the new table, e.g. {&#39;id&#39;: 0, &#39;name&#39;: &#39;&#39;}</span>
+<span class="sd">        :type column_2_value: Dict[str, Any]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">db_type</span> <span class="o">!=</span> <span class="n">DatabaseEnum</span><span class="o">.</span><span class="n">SPARK</span><span class="p">:</span>
+            <span class="n">new_column_2_value</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">column_2_value</span><span class="p">)</span>
+            <span class="n">new_column_2_value</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">table_primary_key</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">new_column_2_value</span> <span class="o">=</span> <span class="n">column_2_value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db_controller</span><span class="o">.</span><span class="n">create_table_if_absences</span><span class="p">(</span><span class="n">table_name</span><span class="p">,</span> <span class="n">new_column_2_value</span><span class="p">,</span>
+                                                    <span class="n">primary_key_column</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">table_primary_key</span><span class="p">,</span>
+                                                    <span class="n">enable_autoincrement_id_key</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_convert_data_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">column_2_value</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">column_2_value</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">is_number</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="k">pass</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                    <span class="s2">&quot;the data written into table should be number, dict and str, the </span><span class="si">{}</span><span class="s2"> is not allowed&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                        <span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)))</span>
+            <span class="n">res</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">return</span> <span class="n">res</span>
+
+    <span class="k">def</span> <span class="nf">_update_visited_record</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="p">,</span> <span class="n">records</span><span class="p">):</span>
+        <span class="c1"># update id</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">db_type</span> <span class="o">!=</span> <span class="n">DatabaseEnum</span><span class="o">.</span><span class="n">SPARK</span><span class="p">:</span>
+            <span class="n">cur_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extract_max_id</span><span class="p">(</span><span class="n">records</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">cur_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">table_visited_tracker</span><span class="o">.</span><span class="n">update_data_visit_id</span><span class="p">(</span><span class="n">table_name</span><span class="p">,</span> <span class="n">cur_id</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_extract_max_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">DataFrame</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="n">data</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">table_primary_key</span><span class="p">])</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Alibaba.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

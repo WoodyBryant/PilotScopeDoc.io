@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>6.6. pilotscope.PilotEvent &mdash; PilotScope 1.0 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="6.7. pilotscope.DataManager" href="pilotscope.DataManager.html" />
+    <link rel="prev" title="6.5. pilotscope.PilotScheduler" href="pilotscope.PilotScheduler.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            PilotScope
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../overview.html">1. Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">2. Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../system_pipeline.html">3. System Pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../core_modules.html">4. Core Components (ML Side)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../example.html">5. Example</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">6. API (ML Side)</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="pilotscope.Anchor.html">6.1. pilotscope.Anchor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pilotscope.PilotConfig.html">6.2. pilotscope.PilotConfig</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pilotscope.DBInteractor.html">6.3. pilotscope.DBInteractor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pilotscope.PilotModel.html">6.4. pilotscope.PilotModel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pilotscope.PilotScheduler.html">6.5. pilotscope.PilotScheduler</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">6.6. pilotscope.PilotEvent</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pilotscope.DataManager.html">6.7. pilotscope.DataManager</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pilotscope.PilotTransData.html">6.8. pilotscope.PilotTransData</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pilotscope.Factory.html">6.9. pilotscope.Factory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pilotscope.DBController.html">6.10. pilotscope.DBController</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pilotscope.PilotEnum.html">6.11. pilotscope.PilotEnum</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../database_develop.html">7. Database Side Develop</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../annotations.html">8. Annotations</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">PilotScope</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../api.html"><span class="section-number">6. </span>API (ML Side)</a></li>
+      <li class="breadcrumb-item active"><span class="section-number">6.6. </span>pilotscope.PilotEvent</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/references/api_rst/pilotscope.PilotEvent.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-pilotscope.PilotEvent">
+<span id="pilotscope-pilotevent"></span><h1><span class="section-number">6.6. </span>pilotscope.PilotEvent<a class="headerlink" href="#module-pilotscope.PilotEvent" title="Permalink to this headline"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="pilotscope.PilotEvent.Event">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">Event</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/PilotEvent.html#Event"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.PilotEvent.Event" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">abc.ABC</span></code></p>
+<p>Abstract base class for an event.</p>
+<p>This class provides the base structure for different event types in an application,
+and is meant to be subclassed to create concrete event implementations.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.PilotEvent.Event.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/PilotEvent.html#Event.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.PilotEvent.Event.__init__" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>config</strong> – The configuration of PilotScope.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pilotscope.PilotEvent.QueryFinishEvent">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">QueryFinishEvent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interval_count</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/PilotEvent.html#QueryFinishEvent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.PilotEvent.QueryFinishEvent" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pilotscope.PilotEvent.Event" title="pilotscope.PilotEvent.Event"><code class="xref py py-class docutils literal notranslate"><span class="pre">pilotscope.PilotEvent.Event</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">abc.ABC</span></code></p>
+<p>The process function will be called when <cite>interval_count</cite> query is finished.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.PilotEvent.QueryFinishEvent.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interval_count</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/PilotEvent.html#QueryFinishEvent.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.PilotEvent.QueryFinishEvent.__init__" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config</strong> – The configuration of PilotScope.</p></li>
+<li><p><strong>interval_count</strong> – This event will be triggered when per <cite>interval_count</cite> query is finished.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.PilotEvent.QueryFinishEvent.process">
+<em class="property"><span class="pre">abstract</span> </em><span class="sig-name descname"><span class="pre">process</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db_controller</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="pilotscope.DBController.BaseDBController.html#pilotscope.DBController.BaseDBController.BaseDBController" title="pilotscope.DBController.BaseDBController.BaseDBController"><span class="pre">pilotscope.DBController.BaseDBController.BaseDBController</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_manager</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="pilotscope.DataManager.DataManager.html#pilotscope.DataManager.DataManager.DataManager" title="pilotscope.DataManager.DataManager.DataManager"><span class="pre">pilotscope.DataManager.DataManager.DataManager</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/PilotEvent.html#QueryFinishEvent.process"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.PilotEvent.QueryFinishEvent.process" title="Permalink to this definition"></a></dt>
+<dd><p>This function will be called when <cite>interval_count</cite> query is finished.
+The user can implement the function to define the process logic.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>db_controller</strong> – A <cite>db_controller</cite> initialized by the user’s <cite>PilotConfig</cite> registered in <cite>PilotScheduler</cite>.</p></li>
+<li><p><strong>data_manager</strong> – A <cite>data_manager</cite> initialized by the user’s <cite>PilotConfig</cite> registered in <cite>PilotScheduler</cite>.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pilotscope.PilotEvent.WorkloadBeforeEvent">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">WorkloadBeforeEvent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/PilotEvent.html#WorkloadBeforeEvent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.PilotEvent.WorkloadBeforeEvent" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pilotscope.PilotEvent.Event" title="pilotscope.PilotEvent.Event"><code class="xref py py-class docutils literal notranslate"><span class="pre">pilotscope.PilotEvent.Event</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">abc.ABC</span></code></p>
+<p>The process function will be called before start to deal with first SQL query of a workload.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.PilotEvent.WorkloadBeforeEvent.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/PilotEvent.html#WorkloadBeforeEvent.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.PilotEvent.WorkloadBeforeEvent.__init__" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config</strong> – The configuration of PilotScope.</p></li>
+<li><p><strong>enable</strong> – The event will be triggered when the value is True.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.PilotEvent.WorkloadBeforeEvent.process">
+<em class="property"><span class="pre">abstract</span> </em><span class="sig-name descname"><span class="pre">process</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db_controller</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="pilotscope.DBController.BaseDBController.html#pilotscope.DBController.BaseDBController.BaseDBController" title="pilotscope.DBController.BaseDBController.BaseDBController"><span class="pre">pilotscope.DBController.BaseDBController.BaseDBController</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_manager</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="pilotscope.DataManager.DataManager.html#pilotscope.DataManager.DataManager.DataManager" title="pilotscope.DataManager.DataManager.DataManager"><span class="pre">pilotscope.DataManager.DataManager.DataManager</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/PilotEvent.html#WorkloadBeforeEvent.process"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.PilotEvent.WorkloadBeforeEvent.process" title="Permalink to this definition"></a></dt>
+<dd><p>This function will be called before start to deal with first SQL query of a workload, i.e., the first call to
+<cite>PilotScheduler.execute()</cite>.
+The user can implement the function to define the process logic.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>db_controller</strong> – A <cite>db_controller</cite> initialized by the user’s <cite>PilotConfig</cite> registered in <cite>PilotScheduler</cite>.</p></li>
+<li><p><strong>data_manager</strong> – A <cite>data_manager</cite> initialized by the user’s <cite>PilotConfig</cite> registered in <cite>PilotScheduler</cite>.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pilotscope.PilotEvent.PeriodicModelUpdateEvent">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">PeriodicModelUpdateEvent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interval_count</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pilot_model</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="pilotscope.PilotModel.html#pilotscope.PilotModel.PilotModel" title="pilotscope.PilotModel.PilotModel"><span class="pre">pilotscope.PilotModel.PilotModel</span></a><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">execute_on_init</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/PilotEvent.html#PeriodicModelUpdateEvent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.PilotEvent.PeriodicModelUpdateEvent" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pilotscope.PilotEvent.QueryFinishEvent" title="pilotscope.PilotEvent.QueryFinishEvent"><code class="xref py py-class docutils literal notranslate"><span class="pre">pilotscope.PilotEvent.QueryFinishEvent</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">abc.ABC</span></code></p>
+<p>The user can inherit this class to implement a periodic model update event.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.PilotEvent.PeriodicModelUpdateEvent.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interval_count</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pilot_model</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="pilotscope.PilotModel.html#pilotscope.PilotModel.PilotModel" title="pilotscope.PilotModel.PilotModel"><span class="pre">pilotscope.PilotModel.PilotModel</span></a><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">execute_on_init</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/PilotEvent.html#PeriodicModelUpdateEvent.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.PilotEvent.PeriodicModelUpdateEvent.__init__" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config</strong> – The configuration of PilotScope.</p></li>
+<li><p><strong>interval_count</strong> – This event will be triggered when per <cite>interval_count</cite> query is finished.</p></li>
+<li><p><strong>pilot_model</strong> – The pilot model to be updated.</p></li>
+<li><p><strong>execute_on_init</strong> – Whether to execute the <cite>custom_model_update</cite> function when the <cite>PilotScheduler</cite> is initialized.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.PilotEvent.PeriodicModelUpdateEvent.process">
+<span class="sig-name descname"><span class="pre">process</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db_controller</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="pilotscope.DBController.BaseDBController.html#pilotscope.DBController.BaseDBController.BaseDBController" title="pilotscope.DBController.BaseDBController.BaseDBController"><span class="pre">pilotscope.DBController.BaseDBController.BaseDBController</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_manager</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="pilotscope.DataManager.DataManager.html#pilotscope.DataManager.DataManager.DataManager" title="pilotscope.DataManager.DataManager.DataManager"><span class="pre">pilotscope.DataManager.DataManager.DataManager</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/PilotEvent.html#PeriodicModelUpdateEvent.process"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.PilotEvent.PeriodicModelUpdateEvent.process" title="Permalink to this definition"></a></dt>
+<dd><p>This function will be called when <cite>interval_count</cite> query is finished.
+The user can implement the function to define the process logic.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>db_controller</strong> – A <cite>db_controller</cite> initialized by the user’s <cite>PilotConfig</cite> registered in <cite>PilotScheduler</cite>.</p></li>
+<li><p><strong>data_manager</strong> – A <cite>data_manager</cite> initialized by the user’s <cite>PilotConfig</cite> registered in <cite>PilotScheduler</cite>.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.PilotEvent.PeriodicModelUpdateEvent.custom_model_update">
+<em class="property"><span class="pre">abstract</span> </em><span class="sig-name descname"><span class="pre">custom_model_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pilot_model</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="pilotscope.PilotModel.html#pilotscope.PilotModel.PilotModel" title="pilotscope.PilotModel.PilotModel"><span class="pre">pilotscope.PilotModel.PilotModel</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">db_controller</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="pilotscope.DBController.BaseDBController.html#pilotscope.DBController.BaseDBController.BaseDBController" title="pilotscope.DBController.BaseDBController.BaseDBController"><span class="pre">pilotscope.DBController.BaseDBController.BaseDBController</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_manager</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="pilotscope.DataManager.DataManager.html#pilotscope.DataManager.DataManager.DataManager" title="pilotscope.DataManager.DataManager.DataManager"><span class="pre">pilotscope.DataManager.DataManager.DataManager</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/PilotEvent.html#PeriodicModelUpdateEvent.custom_model_update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.PilotEvent.PeriodicModelUpdateEvent.custom_model_update" title="Permalink to this definition"></a></dt>
+<dd><p>The user can implement the function to define the process logic of model update.
+PilotScope will call this function periodically (i.e., per <cite>interval_count</cite> queries) for model update.
+You should to return the updated user model, then PilotScope will save it automatically.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pilot_model</strong> – The pilot model to be updated.</p></li>
+<li><p><strong>db_controller</strong> – The database controller to be used for the update operations.</p></li>
+<li><p><strong>data_manager</strong> – The data manager that provides access to the application’s data.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The updated user model (i.e., pilot_model.model).</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pilotscope.PilotEvent.PretrainingModelEvent">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">PretrainingModelEvent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="pilotscope.PilotConfig.html#pilotscope.PilotConfig.PilotConfig" title="pilotscope.PilotConfig.PilotConfig"><span class="pre">pilotscope.PilotConfig.PilotConfig</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">bind_pilot_model</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="pilotscope.PilotModel.html#pilotscope.PilotModel.PilotModel" title="pilotscope.PilotModel.PilotModel"><span class="pre">pilotscope.PilotModel.PilotModel</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_saving_table</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable_collection</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable_training</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/PilotEvent.html#PretrainingModelEvent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.PilotEvent.PretrainingModelEvent" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pilotscope.PilotEvent.Event" title="pilotscope.PilotEvent.Event"><code class="xref py py-class docutils literal notranslate"><span class="pre">pilotscope.PilotEvent.Event</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">abc.ABC</span></code></p>
+<p>A pretraining model event is an event that is used to collect data nad pretrain a model before the application starts.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.PilotEvent.PretrainingModelEvent.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="pilotscope.PilotConfig.html#pilotscope.PilotConfig.PilotConfig" title="pilotscope.PilotConfig.PilotConfig"><span class="pre">pilotscope.PilotConfig.PilotConfig</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">bind_pilot_model</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="pilotscope.PilotModel.html#pilotscope.PilotModel.PilotModel" title="pilotscope.PilotModel.PilotModel"><span class="pre">pilotscope.PilotModel.PilotModel</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_saving_table</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable_collection</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable_training</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/PilotEvent.html#PretrainingModelEvent.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.PilotEvent.PretrainingModelEvent.__init__" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config</strong> – The configuration of PilotScope.</p></li>
+<li><p><strong>bind_pilot_model</strong> – The pilot model to be pre-trained.</p></li>
+<li><p><strong>data_saving_table</strong> – The table to save the collected data.</p></li>
+<li><p><strong>enable_collection</strong> – A flag indicating whether to enable data collection.</p></li>
+<li><p><strong>enable_training</strong> – A flag indicating whether to enable model training.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.PilotEvent.PretrainingModelEvent.iterative_data_collection">
+<em class="property"><span class="pre">abstract</span> </em><span class="sig-name descname"><span class="pre">iterative_data_collection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db_controller</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="pilotscope.DBController.BaseDBController.html#pilotscope.DBController.BaseDBController.BaseDBController" title="pilotscope.DBController.BaseDBController.BaseDBController"><span class="pre">pilotscope.DBController.BaseDBController.BaseDBController</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_data_manager</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="pilotscope.DataManager.DataManager.html#pilotscope.DataManager.DataManager.DataManager" title="pilotscope.DataManager.DataManager.DataManager"><span class="pre">pilotscope.DataManager.DataManager.DataManager</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/PilotEvent.html#PretrainingModelEvent.iterative_data_collection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.PilotEvent.PretrainingModelEvent.iterative_data_collection" title="Permalink to this definition"></a></dt>
+<dd><p>This user should implement this function to define the iterative process of custom data collection.
+Each iteration should return a list where each item is a dict indicating each column’s name and value.
+All column names should be the same as the columns of <cite>self.data_saving_table</cite>.
+PilotScope will save these data into the specified table <cite>self.data_saving_table</cite> automatically.
+In addition, this function should return a bool value to indicate whether the iteration should be terminated.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>db_controller</strong> – The object that controls the database connection.</p></li>
+<li><p><strong>train_data_manager</strong> – The object that manages the training data.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return two values</dt>
+<dd class="field-even"><p>A list where each item is a dict indicate each column’s value and a bool value indicate whether the iteration should be terminated.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.PilotEvent.PretrainingModelEvent.custom_model_training">
+<em class="property"><span class="pre">abstract</span> </em><span class="sig-name descname"><span class="pre">custom_model_training</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bind_pilot_model</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="pilotscope.PilotModel.html#pilotscope.PilotModel.PilotModel" title="pilotscope.PilotModel.PilotModel"><span class="pre">pilotscope.PilotModel.PilotModel</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">db_controller</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="pilotscope.DBController.BaseDBController.html#pilotscope.DBController.BaseDBController.BaseDBController" title="pilotscope.DBController.BaseDBController.BaseDBController"><span class="pre">pilotscope.DBController.BaseDBController.BaseDBController</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_manager</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="pilotscope.DataManager.DataManager.html#pilotscope.DataManager.DataManager.DataManager" title="pilotscope.DataManager.DataManager.DataManager"><span class="pre">pilotscope.DataManager.DataManager.DataManager</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/PilotEvent.html#PretrainingModelEvent.custom_model_training"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.PilotEvent.PretrainingModelEvent.custom_model_training" title="Permalink to this definition"></a></dt>
+<dd><p>This user should implement this function to define the custom logic for training the model.
+PilotScope will call this function after the data collection is finished.
+You should return the updated user model, then PilotScope will save it automatically.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>bind_pilot_model</strong> – The model to be trained.</p></li>
+<li><p><strong>db_controller</strong> – The object that controls the database connection.</p></li>
+<li><p><strong>data_manager</strong> – The object that manages the data used for training the model.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The updated user model (i.e., bind_pilot_model.model).</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="pilotscope.PilotScheduler.html" class="btn btn-neutral float-left" title="6.5. pilotscope.PilotScheduler" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pilotscope.DataManager.html" class="btn btn-neutral float-right" title="6.7. pilotscope.DataManager" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Alibaba.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,7 @@
+pilotscope.PilotEvent
+============================
+
+.. automodule:: pilotscope.PilotEvent
+   :members:
+   :undoc-members:
+   :show-inheritance:

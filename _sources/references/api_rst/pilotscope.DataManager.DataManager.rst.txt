@@ -1,0 +1,7 @@
+pilotscope.DataManager.DataManager
+=========================================
+
+.. automodule:: pilotscope.DataManager.DataManager
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>6.1.1.1. pilotscope.Anchor.BaseAnchor.BasePushHandler &mdash; PilotScope 1.0 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="6.2. pilotscope.PilotConfig" href="pilotscope.PilotConfig.html" />
+    <link rel="prev" title="6.1.1. pilotscope.Anchor.BaseAnchor" href="pilotscope.Anchor.BaseAnchor.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            PilotScope
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../overview.html">1. Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">2. Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../system_pipeline.html">3. System Pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../core_modules.html">4. Core Components (ML Side)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../example.html">5. Example</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">6. API (ML Side)</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="pilotscope.Anchor.html">6.1. pilotscope.Anchor</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="pilotscope.Anchor.BaseAnchor.html">6.1.1. pilotscope.Anchor.BaseAnchor</a><ul class="current">
+<li class="toctree-l4 current"><a class="current reference internal" href="#">6.1.1.1. pilotscope.Anchor.BaseAnchor.BasePushHandler</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pilotscope.PilotConfig.html">6.2. pilotscope.PilotConfig</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pilotscope.DBInteractor.html">6.3. pilotscope.DBInteractor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pilotscope.PilotModel.html">6.4. pilotscope.PilotModel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pilotscope.PilotScheduler.html">6.5. pilotscope.PilotScheduler</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pilotscope.PilotEvent.html">6.6. pilotscope.PilotEvent</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pilotscope.DataManager.html">6.7. pilotscope.DataManager</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pilotscope.PilotTransData.html">6.8. pilotscope.PilotTransData</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pilotscope.Factory.html">6.9. pilotscope.Factory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pilotscope.DBController.html">6.10. pilotscope.DBController</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pilotscope.PilotEnum.html">6.11. pilotscope.PilotEnum</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../database_develop.html">7. Database Side Develop</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../annotations.html">8. Annotations</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">PilotScope</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../api.html"><span class="section-number">6. </span>API (ML Side)</a></li>
+          <li class="breadcrumb-item"><a href="pilotscope.Anchor.html"><span class="section-number">6.1. </span>pilotscope.Anchor</a></li>
+          <li class="breadcrumb-item"><a href="pilotscope.Anchor.BaseAnchor.html"><span class="section-number">6.1.1. </span>pilotscope.Anchor.BaseAnchor</a></li>
+      <li class="breadcrumb-item active"><span class="section-number">6.1.1.1. </span>pilotscope.Anchor.BaseAnchor.BasePushHandler</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/references/api_rst/pilotscope.Anchor.BaseAnchor.BasePushHandler.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-pilotscope.Anchor.BaseAnchor.BasePushHandler">
+<span id="pilotscope-anchor-baseanchor-basepushhandler"></span><h1><span class="section-number">6.1.1.1. </span>pilotscope.Anchor.BaseAnchor.BasePushHandler<a class="headerlink" href="#module-pilotscope.Anchor.BaseAnchor.BasePushHandler" title="Permalink to this headline"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="pilotscope.Anchor.BaseAnchor.BasePushHandler.BasePushHandler">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">BasePushHandler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/Anchor/BaseAnchor/BasePushHandler.html#BasePushHandler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.Anchor.BaseAnchor.BasePushHandler.BasePushHandler" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pilotscope.Anchor.BaseAnchor.BaseAnchorHandler.BaseAnchorHandler</span></code></p>
+<p>Each type of “PushHandler” is responsible for the functionality implementation of a type of data that
+will be set to database.
+The functionality include set data into database by adding parameters(e.g., cardinality estimation)
+or execute some SQL queries in advance (e.g., query hint), roll back database into origin after finishing execution.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.Anchor.BaseAnchor.BasePushHandler.BasePushHandler.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">None</span><a class="reference internal" href="../../_modules/pilotscope/Anchor/BaseAnchor/BasePushHandler.html#BasePushHandler.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.Anchor.BaseAnchor.BasePushHandler.BasePushHandler.__init__" title="Permalink to this definition"></a></dt>
+<dd><p>Initialize the PushHandler.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>config</strong> – the configuration of PilotScope</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.Anchor.BaseAnchor.BasePushHandler.BasePushHandler.acquire_injected_data">
+<span class="sig-name descname"><span class="pre">acquire_injected_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sql</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/Anchor/BaseAnchor/BasePushHandler.html#BasePushHandler.acquire_injected_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.Anchor.BaseAnchor.BasePushHandler.BasePushHandler.acquire_injected_data" title="Permalink to this definition"></a></dt>
+<dd><p>The users should implement the function to return their data from ML algorithms. The pilotscope will set these data
+into database automatically when execute the current SQL query.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>sql</strong> – current SQL query</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the data that will be set into database when execute the SQL query. The type of each data is dependent on the specific the type of “PushHandler”. The user can refer to the specific subclass of “BasePushHandler” for more details.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pilotscope.Anchor.BaseAnchor.BasePushHandler.CardPushHandler">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">CardPushHandler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subquery_2_card</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable_parameterized_subquery</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/Anchor/BaseAnchor/BasePushHandler.html#CardPushHandler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.Anchor.BaseAnchor.BasePushHandler.CardPushHandler" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pilotscope.Anchor.BaseAnchor.BasePushHandler.BasePushHandler" title="pilotscope.Anchor.BaseAnchor.BasePushHandler.BasePushHandler"><code class="xref py py-class docutils literal notranslate"><span class="pre">pilotscope.Anchor.BaseAnchor.BasePushHandler.BasePushHandler</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.Anchor.BaseAnchor.BasePushHandler.CardPushHandler.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subquery_2_card</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable_parameterized_subquery</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">None</span><a class="reference internal" href="../../_modules/pilotscope/Anchor/BaseAnchor/BasePushHandler.html#CardPushHandler.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.Anchor.BaseAnchor.BasePushHandler.CardPushHandler.__init__" title="Permalink to this definition"></a></dt>
+<dd><p>Initialize the PushHandler.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>config</strong> – the configuration of PilotScope</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.Anchor.BaseAnchor.BasePushHandler.CardPushHandler.acquire_injected_data">
+<span class="sig-name descname"><span class="pre">acquire_injected_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sql</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/Anchor/BaseAnchor/BasePushHandler.html#CardPushHandler.acquire_injected_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.Anchor.BaseAnchor.BasePushHandler.CardPushHandler.acquire_injected_data" title="Permalink to this definition"></a></dt>
+<dd><p>The users should implement the function to return their data from cardinality estimation algorithms.
+The pilotscope will set these data into database automatically when execute the current SQL query.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>sql</strong> – current SQL query</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A dict where the key is the subquery and the value is the cardinality estimation of the subquery.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pilotscope.Anchor.BaseAnchor.BasePushHandler.HintPushHandler">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">HintPushHandler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key_2_value_for_hint</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/Anchor/BaseAnchor/BasePushHandler.html#HintPushHandler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.Anchor.BaseAnchor.BasePushHandler.HintPushHandler" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pilotscope.Anchor.BaseAnchor.BasePushHandler.BasePushHandler" title="pilotscope.Anchor.BaseAnchor.BasePushHandler.BasePushHandler"><code class="xref py py-class docutils literal notranslate"><span class="pre">pilotscope.Anchor.BaseAnchor.BasePushHandler.BasePushHandler</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.Anchor.BaseAnchor.BasePushHandler.HintPushHandler.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key_2_value_for_hint</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">None</span><a class="reference internal" href="../../_modules/pilotscope/Anchor/BaseAnchor/BasePushHandler.html#HintPushHandler.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.Anchor.BaseAnchor.BasePushHandler.HintPushHandler.__init__" title="Permalink to this definition"></a></dt>
+<dd><p>Initialize the PushHandler.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>config</strong> – the configuration of PilotScope</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.Anchor.BaseAnchor.BasePushHandler.HintPushHandler.acquire_injected_data">
+<span class="sig-name descname"><span class="pre">acquire_injected_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sql</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/Anchor/BaseAnchor/BasePushHandler.html#HintPushHandler.acquire_injected_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.Anchor.BaseAnchor.BasePushHandler.HintPushHandler.acquire_injected_data" title="Permalink to this definition"></a></dt>
+<dd><p>The users should implement the function to return their data from hint selection algorithms.
+The pilotscope will set these data into database automatically when execute the current SQL query.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>sql</strong> – current SQL query</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A dict where the key is the hint name and the value is the value of the hint.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pilotscope.Anchor.BaseAnchor.BasePushHandler.CommentPushHandler">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">CommentPushHandler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comment_str</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/Anchor/BaseAnchor/BasePushHandler.html#CommentPushHandler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.Anchor.BaseAnchor.BasePushHandler.CommentPushHandler" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pilotscope.Anchor.BaseAnchor.BasePushHandler.BasePushHandler" title="pilotscope.Anchor.BaseAnchor.BasePushHandler.BasePushHandler"><code class="xref py py-class docutils literal notranslate"><span class="pre">pilotscope.Anchor.BaseAnchor.BasePushHandler.BasePushHandler</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.Anchor.BaseAnchor.BasePushHandler.CommentPushHandler.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comment_str</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">None</span><a class="reference internal" href="../../_modules/pilotscope/Anchor/BaseAnchor/BasePushHandler.html#CommentPushHandler.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.Anchor.BaseAnchor.BasePushHandler.CommentPushHandler.__init__" title="Permalink to this definition"></a></dt>
+<dd><p>Initialize the PushHandler.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>config</strong> – the configuration of PilotScope</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.Anchor.BaseAnchor.BasePushHandler.CommentPushHandler.acquire_injected_data">
+<span class="sig-name descname"><span class="pre">acquire_injected_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sql</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/Anchor/BaseAnchor/BasePushHandler.html#CommentPushHandler.acquire_injected_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.Anchor.BaseAnchor.BasePushHandler.CommentPushHandler.acquire_injected_data" title="Permalink to this definition"></a></dt>
+<dd><p>The users should implement the function to return their data from ML algorithms.
+The pilotscope will set these data into database automatically when execute the current SQL query.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>sql</strong> – current SQL query</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A comment string that will be added before the SQL query. This can be used to add <cite>pg_hint_plan</cite> comments, and apply join order alrogithms.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="pilotscope.Anchor.BaseAnchor.html" class="btn btn-neutral float-left" title="6.1.1. pilotscope.Anchor.BaseAnchor" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pilotscope.PilotConfig.html" class="btn btn-neutral float-right" title="6.2. pilotscope.PilotConfig" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Alibaba.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

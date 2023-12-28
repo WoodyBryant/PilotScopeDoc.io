@@ -1,0 +1,206 @@
+
+<div style="text-align:center">
+  <img src="../_static/banner.png", alt="PilotScope" />
+</div>
+
+
+![](https://img.shields.io/badge/language-Python-blue.svg)
+![](https://img.shields.io/badge/language-C-blue.svg)
+![](https://img.shields.io/badge/language-Scala-blue.svg)
+![](https://img.shields.io/badge/license-Apache_2.0-000000.svg) ![](https://img.shields.io/badge/contributions-Welcome-brightgreen.svg)
+
+![](https://img.shields.io/badge/docs-Usage_Guideline-purple.svg)
+![](https://img.shields.io/badge/docs-Develop_Guideline-purple.svg)
+![](https://img.shields.io/badge/docs-API_Reference-purple.svg)
+
+![](https://img.shields.io/badge/AI4DB_driver-Knob_Tuning-4E29FF.svg)
+![](https://img.shields.io/badge/AI4DB_driver-Index_Recommendation-4E29FF.svg)
+![](https://img.shields.io/badge/AI4DB_driver-Cardinality_Estimation-4E29FF.svg)
+![](https://img.shields.io/badge/AI4DB_driver-E2E_Query_Optimizer-4E29FF.svg)
+
+![](https://img.shields.io/badge/database-PostgreSQL_13.1-FFD21E.svg)
+![](https://img.shields.io/badge/database-Spark_3.3.2-FFD21E.svg)
+
+**PilotScope** is a middleware to bridge the gaps of deploying AI4DB (Artificial Intelligence for Databases) algorithms into actual database systems. It aims at hindering the underlying details of different databases so that an AI4DB driver could steer any database in a unified manner. By applying PilotScope, we obtain the following benefits:
+
+* The DB users could experience any AI4DB algorithm as a plug-in unit on their databases with little cost. The cloud computing service providers could operate and maintain AI4DB algorithms on their database products as a service to users. **(More Convenient for Usage! 👏👏👏)**
+
+* The ML researchers could easily benchmark and iterate their AI4DB algorithms in practical scenarios. **(Much Faster to Iterate! ⬆️⬆️⬆️)**
+
+* The ML and DB developers are liberated from learning the details in other side. They could play their own strengths to write the codes in their own sides. **(More Freedom to Develop! 🏄‍♀️🏄‍♀️🏄‍♀️)**
+
+
+* All contributors could extend PilotScope to support more AI4DB algorithms, more databases and more functions. **(We highly encourage this! 😊😊😊)**
+
+
+For more details, please kindly read this document and refer to our **[paper](https://github.com/alibaba/pilotscope/tree/master/paper)**.
+
+***
+
+**<span style="color:red; font-size:4;">News</span>**
+
+* 🎉 [2023-12-15] Our **[paper](https://github.com/alibaba/pilotscope/tree/master/paper)** on PilotScope has been accepted by VLDB 2024!
+
+---
+
+# Overview
+
+At first, we illustrate the general system architecture of PilotScope as follows:
+
+<div style="text-align:center">
+  <img src="../_static/sysarch.png", width=620px, alt="PilotScope System Architecture" />
+</div>
+
+
+PilotScope provides a _**console**_ to operate the whole system. It manages multiple _**AI4DB drivers**_  and the _**DB interactor**_. The DB interactor contains an _**interface**_ connecting AI4DB drivers with databases. It contains multiple APIs, namely _**injection interface**_ to inject AI4DB algorithms to replace database tasks, 
+ _**data collection**_ to collect training data and _**push/pull operators**_ to allow AI4DB algorithms to exchange data with the databases. Each database steered by the AI4DB drivers is attached with its specific _**implementations of DB interactor**_.
+
+
+For the detailed working pineline of PilotScope and in-depth description of each component in PilotScope, please refer to the section **[System Pipeline](section-system-pipeline)** and section **[Core Component](section-core-components)**, respectively.
+
+
+## How to Apply PilotScope?
+
+To database users (👨‍💼 , 👩‍⚕️ or 👤), PilotScope is totally transparent. The database user can access PilotScope through its console, log into the native database, and then perform database operations using the same commands as usual. The user can start any AI4DB driver using a simple command. Then, PilotScope would automatically execute the AI4DB algorithm whenever necessary. For example, if the user starts the AI4DB driver of a learned query optimizer, the database would automatically apply this learned query optimizer to generate execution plan for each input SQL query. 
+
+The general workflow on applying an AI4DB driver in PilotScope is illustrated as follows:
+
+<div style="text-align:center">
+  <img src="../_static/psworkflow.png", width=420px, alt="PilotScope Workflow" />
+</div>
+
+
+### Supported Tasks and Algorithms
+
+Currently, PilotScope focuses on database tasks in the query optimization workflow shown as follows.
+
+<div style="text-align:center">
+  <img src="../_static/qoworkflow.png", width=400px, alt="Query Optimizer Workflow" />
+</div>
+
+At the moment, PilotScope supports to apply 15 AI4DB algorithms on 2 well-known databases for 4 representative database tasks. We list the details as follows:
+
+#### Knob Tuning
+
+Supported Databases: <img src="https://www.postgresql.org/media/img/about/press/elephant.png" alt="PostgreSQL" width=15px/> PostgreSQL and <img src="https://pic3.zhimg.com/dc91f429a42b5caeccedc452e5a398e0_r.jpg" alt="Spark" width=35px/> Spark
+
+* Bayesian Optimization Method:
+	* SMAC: _Sequential Model-Based Optimization for General Algorithm Configuration_
+	* GP-BO: _Bayesian Optimisation over Multiple Continuous and Categorical
+Inputs_
+
+* RL-based Method:
+	* DDPG: _An
+End-to-End Automatic Cloud Database Tuning System Using Deep Reinforcement Learning_
+
+For more knob tuning methods, please refer to the LlamaTune **[benchmark](https://github.com/uw-mad-dash/llamatune)** and **[paper](https://arxiv.org/abs/2203.05128)**.
+
+#### Index Recommendation
+
+Supported Databases: : <img src="https://www.postgresql.org/media/img/about/press/elephant.png" alt = "PostgreSQL" width=15px/> PostgreSQL
+
+* Enlarging Empty Set:
+	* AutoAdmin: _An Efficient Cost-Driven Index Selection Tool for Microsoft SQL Server_ (Applied in Microsoft SQL Server)
+	* DB2Advisor: _DB2 Advisor: An Optimizer Smart Enough to Recommend Its Own Indexes_ (Applied in DB2)
+	* DTA: _Anytime Algorithm of Database Tuning Advisor for Microsoft SQL Server_ (Applied in Microsoft SQL Server)
+	* Extend: _Efficient Scalable Multi-attribute Index Selection Using Recursive Strategies_
+		
+* Reducing Large Set:
+	* Drop: _Index Selection in Relational Databases_
+	* Relaxation: _Automatic Physical Database Tuning: A Relaxation-based Approach_
+
+* Linear Programming Method:
+	*  CoPhy: _CoPhy: A Scalable, Portable, and Interactive Index Advisor for Large Workloads_
+
+For more index recommendation methods, please refer to the **[benchmark](https://github.com/hyrise/index_selection_evaluation)** and **[paper](http://www.vldb.org/pvldb/vol13/p2382-kossmann.pdf)**.
+
+#### Cardinality Estimation
+
+Supported Databases: : <img src="https://www.postgresql.org/media/img/about/press/elephant.png" alt="PostgreSQL" width=15px/> PostgreSQL and <img src="https://pic3.zhimg.com/dc91f429a42b5caeccedc452e5a398e0_r.jpg" alt="Spark" width=35px/> Spark
+
+* Query-driven Method:
+	* MSCN: _Learned Cardinalities: Estimating Correlated Joins with Deep Learning_
+		
+* Data-driven Method:
+	* NeuroCard: _NeuroCard: One Cardinality Estimator for All Tables_
+	* DeepDB:	_DeepDB: Learn from Data, not from Queries!_
+
+For more cardinality estimation methods, please refer to the section Model Tuning in our **[benchmark](https://github.com/Nathaniel-Han/End-to-End-CardEst-Benchmark)** and **[paper](https://arxiv.org/pdf/2109.05877.pdf)**. There provides the paper and codes for a number of traditional, data-driven and query-driven methods.
+
+#### End-to-end Learned Query Optimizer
+Supported Databases: : <img src="https://www.postgresql.org/media/img/about/press/elephant.png" alt="PostgreSQL" width=15px/> PostgreSQL and <img src="https://pic3.zhimg.com/dc91f429a42b5caeccedc452e5a398e0_r.jpg" alt="Spark" width=35px/> Spark
+
+* Learning-to-rank based Method:
+	* Lero: _A Learning-to-rank Query Optimizer_
+
+We could also simply adapt the AI4DB driver for Lero to support some other end-to-end learned query optimizers, including:
+
+* Hint Set Tuning Method:
+	* Bao: _Bao: Making Learned Query Optimization Practical_
+	* HyperQO: _Cost-based or Learning-based? A Hybrid Query Optimizer for Query Plan Selection_
+* Plan Exploration Method:
+	* Neo: _Neo: A Learned Query Optimizer_
+	* Balsa: _Balsa: Learning a Query Optimizer Without Expert Demonstrations_
+
+#### More AI4DB Methods ...
+
+For more AI4DB methods, please refer to the AI4DB **[paper reading list](https://github.com/LumingSun/ML4DB-paper-list)**.
+
+#### Usage Details
+For the detailed steps to apply these AI4DB drivers in PilotScope, please refer to the chapter **[Example](section-example)**.
+
+
+
+
+  
+## How to Develop in PilotScope?
+
+PilotScope could support to deploy any AI4DB method on top of any native database. 
+
+To ML developers (👩‍💻 or 🧑🏻‍💻), as well as researchers (👨‍🔬 or 👩🏻‍🔬), they could focus on writing the ML programs using AI-friendly language, e.g., Python. The ML programms could directly invoke the APIs in the interface of DB interactor to inject the AI4DB method or enforce actions into databases, and exchange data with the databases. The interface of DB interactor keeps the same for any database. In such way, the ML developers are liberated from the underlying details of the database codes. Meanwhile, the same AI4DB dirver could be applied to steer multiple different database systems.
+
+To DB developers (👨🏻‍💻 or 🥷), they are responsible to implement all APIs in the interface of DB interactor in each specific database. They are familiar with the codebase of the database so they could find the best way to implement these interaction APIs as lightweight patches. Implementing these patches is much easier than integrating a complete ML program into databases. What they do is just like their ordinary work on developing new features on the native database.
+
+The general working paradigm on developing an AI4DB driver in PilotScope is illustrated as follows:
+
+
+<div style="text-align:center">
+  <img src="../_static/psworkpara.png", width=380px, alt="PilotScope Workflow" />
+</div>
+
+### Developing Details
+
+For the details on the interaction and other APIs in PilotScope, please refer to the sections **[API (ML Side)](section-api-ml-side)** and **[Database Side Develop](section-database-side-develop)**.
+
+
+## What to Do in PilotScope?
+
+PilotScope can be easily extended to support more AI4DB algorithms for more AI4DB tasks on more databases. According to its working paradigm, we warmly welcome the open-source community to contribute their efforts on PilotScope from these aspects:
+
+* Write more AI4DB algorithms into ML programs;
+
+* Propose more APIs in the interface of the DB interactor;
+
+* Implement the interaction APIs on more databases;
+
+* Develop more features to enrich the functionality in PilotScope.
+
+**We sincerely invite all contributors (👦, 👩, 👱🏻‍♂️, 👩🏻‍🦳, 🧓, 👵🏻, 👩‍🏫, 👨‍🏫, or 👥) to build this open-source community around PilotScope together! 💪🏻 💪🏻 💪🏻**
+
+**We could foster collaborations and accelerate the research iterations 👣 👣 👣 of AI4DB methods, and simultaneously make AI4DB more applicable and viable for production scenarios (🏭, 🖥 or📱).**
+
+## License
+
+PilotScope is released under Apache License 2.0.
+
+
+## References
+
+If you find PilotScope useful for your research, development and product, please kindly cite the following paper:
+
+	@article{zhu2023pilotscope,
+  		title={PilotScope: Steering Databases with Machine Learning Drivers},
+  		author={Rong Zhu and Lianggui Weng and Wenqing Wei and Di Wu and Jiazhen Peng and Yifan Wang and Bolin Ding and Defu Lian Bolong Zheng and Jingren Zhou},
+  		journal = {Proceedings of the VLDB Endowment},
+  		year={2024}}
+

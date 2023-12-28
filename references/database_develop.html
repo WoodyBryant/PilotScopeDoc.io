@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>7. Database Side Develop &mdash; PilotScope 1.0 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="8. Annotations" href="annotations.html" />
+    <link rel="prev" title="6.11. pilotscope.PilotEnum" href="api_rst/pilotscope.PilotEnum.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            PilotScope
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="overview.html">1. Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">2. Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="system_pipeline.html">3. System Pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="core_modules.html">4. Core Components (ML Side)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example.html">5. Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">6. API (ML Side)</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">7. Database Side Develop</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#overview">7.1. Overview</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#extended-sql">7.1.1. Extended SQL</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#anchor-information">7.1.1.1. Anchor Information</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#transmission-information">7.1.1.2. Transmission information</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#parse-module">7.1.2. Parse module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#the-pipeline-of-query-optimizer-with-anchors">7.1.3. The pipeline of query optimizer with anchors</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#data-transmission-module">7.1.4. Data transmission module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pilottransdata">7.1.5. PilotTransData</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#implement-in-postgresql">7.2. Implement in PostgreSQL</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id1">7.2.1. Parse Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id2">7.2.2. The pipeline of query optimizer with anchors</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id3">7.2.3. Data Transmission Module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="annotations.html">8. Annotations</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">PilotScope</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active"><span class="section-number">7. </span>Database Side Develop</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/references/database_develop.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="database-side-develop">
+<span id="section-database-side-develop"></span><h1><span class="section-number">7. </span>Database Side Develop<a class="headerlink" href="#database-side-develop" title="Permalink to this headline"></a></h1>
+<p>Here we introduce the modules on DB side, the content of which is suitable for the database developers.</p>
+<hr class="docutils" />
+<section id="overview">
+<h2><span class="section-number">7.1. </span>Overview<a class="headerlink" href="#overview" title="Permalink to this headline"></a></h2>
+<p>In order to integrate ML algorithms into a database, we have made several enhancements on the database side, which enable the following important features:</p>
+<ol class="simple">
+<li><p>The ability to replace all data that the ML algorithm is expected to replace when executing an SQL query.</p></li>
+<li><p>The packaging of all data that users expect to collect into a unified format and sending it to the ML side.</p></li>
+<li><p>The optimization of execution paths by terminating SQL query execution ahead of time when possible.</p></li>
+</ol>
+<p>These modifications include the <code class="docutils literal notranslate"><span class="pre">Parse</span> <span class="pre">Module</span></code>, <code class="docutils literal notranslate"><span class="pre">the</span> <span class="pre">pipeline</span> <span class="pre">of</span> <span class="pre">query</span> <span class="pre">optimizer</span> <span class="pre">with</span> <span class="pre">anchors</span></code>, and <code class="docutils literal notranslate"><span class="pre">Data</span> <span class="pre">transmission</span> <span class="pre">module</span></code>, all implemented sequentially in the DB side of PilotScope.
+We will now describe each of these components in detail, and the overall workflow of the DB side is illustrated in Fig 2.</p>
+<div style="text-align:center">
+  <img src="../_static/database_workflow.png" alt="图片描述" />
+  <p style="font-size: smaller;">Fig2: The Workflow of DB side </p>
+</div>
+<section id="extended-sql">
+<h3><span class="section-number">7.1.1. </span>Extended SQL<a class="headerlink" href="#extended-sql" title="Permalink to this headline"></a></h3>
+<p>In order to deploy the ML algorithm to database, the ML side will send an extended SQL with the “Prefix+SQL” format to database.
+The “Prefix” is written in JSON format and is recorded in the comment of SQL.
+The “Prefix” includes the necessary information to apply the ML algorithm.
+Specifically, the current “Prefix” contains the two type information. The first type of information is anchor information recording the data that user expected to set (Push operator in ML Side) or collect (Pull operator in ML Side) in execution process of SQL.
+The second type is auxiliary information including the port and url of ML side.</p>
+<p>A complete example of “Prefix” is shown in the following:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;anchor&quot;</span><span class="p">:</span>
+<span class="w">  </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;CARD_PUSH_ANCHOR&quot;</span><span class="p">:</span>
+<span class="w">      </span><span class="p">{</span>
+<span class="w">          </span><span class="nt">&quot;enable&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;CARD_PUSH_ANCHOR&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;enable_parameterized_subquery&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;subquery&quot;</span><span class="p">:</span>
+<span class="w">          </span><span class="p">[</span>
+<span class="w">              </span><span class="s2">&quot;SELECT COUNT(*) FROM comments c;&quot;</span><span class="p">,</span>
+<span class="w">              </span><span class="s2">&quot;SELECT COUNT(*) FROM posts p WHERE p.answercount &lt;= 5 AND p.favoritecount &gt;= 0 AND p.posttypeid = 2;&quot;</span><span class="p">,</span>
+<span class="w">              </span><span class="s2">&quot;SELECT COUNT(*) FROM comments c, posts p WHERE c.postid = p.id AND p.answercount &lt;= 5 AND p.favoritecount &gt;= 0 AND p.posttypeid = 2;&quot;</span>
+<span class="w">          </span><span class="p">],</span>
+<span class="w">          </span><span class="nt">&quot;card&quot;</span><span class="p">:</span>
+<span class="w">          </span><span class="p">[</span>
+<span class="w">              </span><span class="mi">17430</span><span class="p">,</span>
+<span class="w">              </span><span class="mi">318</span><span class="p">,</span>
+<span class="w">              </span><span class="mi">59</span>
+<span class="w">          </span><span class="p">]</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">&quot;enableTerminate&quot;</span><span class="p">:</span><span class="kc">true</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;port&quot;</span><span class="p">:</span><span class="mi">5432</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;url&quot;</span><span class="p">:</span><span class="s2">&quot;localhost&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;tid&quot;</span><span class="p">:</span><span class="s2">&quot;123456789&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<section id="anchor-information">
+<h4><span class="section-number">7.1.1.1. </span>Anchor Information<a class="headerlink" href="#anchor-information" title="Permalink to this headline"></a></h4>
+<p><code class="docutils literal notranslate"><span class="pre">CARD_PUSH_ANCHOR</span></code> includes the following crucial attributes. The cardinality of a sub-query can be replaced with a value obtained from the ML
+side.</p>
+<ol class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;enable&quot;:</span> <span class="pre">true</span></code> means the anchor is enabled</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;name&quot;:</span> <span class="pre">&quot;CARD_PUSH_ANCHOR&quot;</span></code> is the name of the anchor.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">subquery</span></code> is a list and indicates all the sub-queries whose cardinality value need to be modified.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">card</span></code> is a list and records the cardinality value of each subquery in <code class="docutils literal notranslate"><span class="pre">subquery</span></code> list. These values will replace the estimated cardinality values from the database optimizer.</p></li>
+</ol>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="w"> </span><span class="nt">&quot;anchor&quot;</span><span class="p">:</span>
+<span class="w"> </span><span class="p">{</span>
+<span class="w">     </span><span class="nt">&quot;CARD_PUSH_ANCHOR&quot;</span><span class="p">:</span>
+<span class="w">     </span><span class="p">{</span>
+<span class="w">         </span><span class="nt">&quot;enable&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">         </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;CARD_PUSH_ANCHOR&quot;</span><span class="p">,</span>
+<span class="w">         </span><span class="nt">&quot;subquery&quot;</span><span class="p">:</span>
+<span class="w">         </span><span class="p">[</span>
+<span class="w">             </span><span class="s2">&quot;SELECT COUNT(*) FROM comments c;&quot;</span><span class="p">,</span>
+<span class="w">             </span><span class="s2">&quot;SELECT COUNT(*) FROM posts p WHERE p.answercount &lt;= 5 AND p.favoritecount &gt;= 0 AND p.posttypeid = 2;&quot;</span><span class="p">,</span>
+<span class="w">             </span><span class="s2">&quot;SELECT COUNT(*) FROM comments c, posts p WHERE c.postid = p.id AND p.answercount &lt;= 5 AND p.favoritecount &gt;= 0 AND p.posttypeid = 2;&quot;</span>
+<span class="w">         </span><span class="p">],</span>
+<span class="w">         </span><span class="nt">&quot;card&quot;</span><span class="p">:</span>
+<span class="w">         </span><span class="p">[</span>
+<span class="w">             </span><span class="mi">17430</span><span class="p">,</span>
+<span class="w">             </span><span class="mi">318</span><span class="p">,</span>
+<span class="w">             </span><span class="mi">59</span>
+<span class="w">         </span><span class="p">]</span>
+<span class="w">     </span><span class="p">}</span>
+<span class="w"> </span><span class="p">}</span>
+</pre></div>
+</div>
+<p>All pull anchors includes three pull anchors currently in the DB side of PilotScope. They are <code class="docutils literal notranslate"><span class="pre">SUBQUERY_PULL_ANCHOR</span></code>,
+<code class="docutils literal notranslate"><span class="pre">EXECUTION_TIME_PULL_AHCHOR</span></code> and <code class="docutils literal notranslate"><span class="pre">RECORD_PULL_ANCHOR</span></code>. <code class="docutils literal notranslate"><span class="pre">SUBQUERY_PULL_ANCHOR</span></code> is an anchor used to retrieve sub-queries associated with a SQL
+query from the database. <code class="docutils literal notranslate"><span class="pre">EXECUTION_TIME_PULL_ANCHOR</span></code> is another anchor used to fetch the execution time of a SQL query. Similarly,
+<code class="docutils literal notranslate"><span class="pre">RECORD_PULL_ANCHOR</span></code> is utilized to retrieve the records generated by a SQL query. These anchors play a crucial role in extracting relevant
+information related to sub-queries, execution time, and query results from the database.</p>
+<p>And each one of them includes the following crucial attributes.</p>
+<ol class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;enable&quot;:</span> <span class="pre">true</span></code> means the anchor is enabled.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">name</span></code> is the name of the anchor.</p></li>
+</ol>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="w"> </span><span class="nt">&quot;anchor&quot;</span><span class="p">:</span>
+<span class="w"> </span><span class="p">{</span>
+<span class="w">     </span><span class="nt">&quot;SUBQUERY_PULL_ANCHOR&quot;</span><span class="p">:</span>
+<span class="w">     </span><span class="p">{</span>
+<span class="w">         </span><span class="nt">&quot;enable&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">         </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;SUBQUERY_PULL_ANCHOR&quot;</span>
+<span class="w">     </span><span class="p">},</span>
+
+<span class="w">     </span><span class="nt">&quot;EXECUTION_TIME_PULL_AHCHOR&quot;</span><span class="p">:</span>
+<span class="w">     </span><span class="p">{</span>
+<span class="w">         </span><span class="nt">&quot;enable&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">         </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;EXECUTION_TIME_PULL_AHCHOR&quot;</span>
+<span class="w">     </span><span class="p">},</span>
+
+<span class="w">     </span><span class="nt">&quot;RECORD_PULL_ANCHOR&quot;</span><span class="p">:</span>
+<span class="w">     </span><span class="p">{</span>
+<span class="w">         </span><span class="nt">&quot;enable&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">         </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;RECORD_PULL_ANCHOR&quot;</span>
+<span class="w">     </span><span class="p">}</span>
+<span class="w"> </span><span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="transmission-information">
+<h4><span class="section-number">7.1.1.2. </span>Transmission information<a class="headerlink" href="#transmission-information" title="Permalink to this headline"></a></h4>
+<p>It includes the following crucial attributes.</p>
+<ol class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">port</span></code> refers to the specific port number used for communication on the ML side, while the <code class="docutils literal notranslate"><span class="pre">url</span></code> represents the specific URL of the ML side. These values are crucial for establishing a connection and sending data between the DB side and the ML side.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tid</span></code> represents the thread ID of the ML side. It is used to uniquely identify each thread in order to facilitate parallel execution within the program. By assigning a distinct tid to each thread, the program can effectively manage and coordinate parallel tasks on the ML side.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">enableTerminate</span></code> is utilized to determine whether the termination should take place after the completion of all pull anchors. In scenarios where only specific anchors like <code class="docutils literal notranslate"><span class="pre">CARD_PUSH_ANCHOR</span></code> exist within the DB, it is unnecessary to proceed with the entire process. Conversely, for anchors like <code class="docutils literal notranslate"><span class="pre">RECORD_PULL_ANCHOR</span></code>, it is essential to follow through the complete procedure.
+It is important to note that the termination process does not involve abruptly killing the entire process. Instead, we deliberately trigger an error using the default error processing method within the DB, such as a runtime error. Then, a string containing the phrase PilotScopePullEnd is generated, and it is serves as an indicator to the ML side, signifying a normal termination after processing all pull anchors.</p></li>
+</ol>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w"> </span><span class="nt">&quot;enableTerminate&quot;</span><span class="p">:</span><span class="kc">true</span><span class="p">,</span>
+<span class="w"> </span><span class="nt">&quot;porr&quot;</span><span class="p">:</span><span class="mi">8888</span><span class="p">,</span>
+<span class="w"> </span><span class="nt">&quot;url&quot;</span><span class="p">:</span><span class="s2">&quot;localhost&quot;</span><span class="p">,</span>
+<span class="w"> </span><span class="nt">&quot;tid&quot;</span><span class="p">:</span><span class="s2">&quot;123456789&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="parse-module">
+<h3><span class="section-number">7.1.2. </span>Parse module<a class="headerlink" href="#parse-module" title="Permalink to this headline"></a></h3>
+<p>The parser module is responsible for parsing the received extended SQL and recording the extracted information for later execution.</p>
+</section>
+<section id="the-pipeline-of-query-optimizer-with-anchors">
+<h3><span class="section-number">7.1.3. </span>The pipeline of query optimizer with anchors<a class="headerlink" href="#the-pipeline-of-query-optimizer-with-anchors" title="Permalink to this headline"></a></h3>
+<p>After the extended SQL is parsed, the query optimizer continues with the execution process.
+During this process, there are various components that may require data replacement or data collection for applying ML algorithms.
+To achieve the goal of replacing or collecting data, we introduce the anchor mechanism to these components. The anchor serves as a reference point for data manipulation.
+For example, when the database’s function that sets the estimated cardinality value of a subquery is called, we replace this estimated value with the cardinality value from the <code class="docutils literal notranslate"><span class="pre">CARD_PUSH_ANCHOR</span></code> anchor.
+This ensures that the query optimizer utilizes the cardinality information generated by ML algorithm.
+Similarly, for data collection, we use the anchor mechanism to collect and store relevant data.
+Finally, any data that needs to be replaced (Push Operator) or collected (Pull Operator) from anchors will be applied during the query execution process.</p>
+</section>
+<section id="data-transmission-module">
+<h3><span class="section-number">7.1.4. </span>Data transmission module<a class="headerlink" href="#data-transmission-module" title="Permalink to this headline"></a></h3>
+<p>Once all the necessary data is collected, PilotScope is prepared to return them to the ML side.
+There are two types of data that will be returned: <code class="docutils literal notranslate"><span class="pre">PilotTransData</span></code> and <code class="docutils literal notranslate"><span class="pre">Records</span></code>.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">PilotTransData</span></code> contains all the collected data and will be sent to the ML side using the HTTP protocol.
+This ensures that the collected data is transmitted efficiently to the ML side for further analysis and processing.
+On the other hand, the <code class="docutils literal notranslate"><span class="pre">Records</span></code> are the query results of the SQL queries.<br />
+These results will be returned using the default transmission method of the database.
+This method could vary depending on the specific database system being used.</p>
+<p>By using different transmission methods for <code class="docutils literal notranslate"><span class="pre">PilotTransData</span></code> and <code class="docutils literal notranslate"><span class="pre">Records</span></code>, PilotScope ensures that query results are delivered to the ML side accurately and the collected data can be transmitted in a unified manner for any database system.</p>
+<p>As for the HTTP protocol, it’s important to note that
+we have the ability to reinitialize and resend the data if we do not receive a response within a certain time
+frame. However, please keep in mind that the number of times we can redo this operation and the duration we should wait to receive the data is limited, so we can tune some parameters.</p>
+</section>
+<section id="pilottransdata">
+<h3><span class="section-number">7.1.5. </span>PilotTransData<a class="headerlink" href="#pilottransdata" title="Permalink to this headline"></a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">PilotTransData</span></code> is a reference to the data that contains essential information needed by all pull anchors.
+This data is collected during the execution of SQL query and will be sent back to the ML side for further processing and analysis.</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;tid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1234&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;subquery&quot;</span><span class="p">:</span>
+<span class="w">  </span><span class="p">[</span>
+<span class="w">    </span><span class="s2">&quot;SELECT COUNT(*) FROM comments c;&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;SELECT COUNT(*) FROM posts p WHERE p.answercount &lt;= 5 AND p.favoritecount &gt;= 0 AND p.posttypeid = 2;&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;SELECT COUNT(*) FROM comments c, posts p WHERE c.postid = p.id AND p.answercount &lt;= 5 AND p.favoritecount &gt;= 0 AND p.posttypeid = 2;&quot;</span>
+<span class="w">  </span><span class="p">],</span>
+<span class="w">  </span><span class="nt">&quot;card&quot;</span><span class="p">:</span>
+<span class="w">  </span><span class="p">[</span>
+<span class="w">    </span><span class="s2">&quot;174305.000&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;3157.472&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">&quot;5982.875&quot;</span>
+<span class="w">  </span><span class="p">],</span>
+<span class="w">  </span><span class="nt">&quot;execution_time&quot;</span><span class="p">:</span><span class="s2">&quot;3.567&quot;</span><span class="p">,</span>
+<span class="w">  </span>
+<span class="w"> </span><span class="p">}</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">PilotTransData</span></code> includes the following crucial attributes.</p>
+<ol class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">tid</span></code> represents the thread ID of the ML side, and it is provided by the user and saved in the “Prefix” of extended SQL.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">subquery</span></code> list stores the sub-queries collected during the DB side execution of PilotScope.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">card</span></code> list is used to record the cardinality values of each subquery within the subquery list. These cardinality values are obtained during the execution of SQL query.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">execution_time</span></code> indicates the total time taken for the execution process to complete, encompassing all the necessary steps and operations involved in processing the query.</p></li>
+</ol>
+</section>
+</section>
+<section id="implement-in-postgresql">
+<h2><span class="section-number">7.2. </span>Implement in PostgreSQL<a class="headerlink" href="#implement-in-postgresql" title="Permalink to this headline"></a></h2>
+<p>Based on the overall idea described in <a class="reference external" href="#overview">Overview</a>, we have successfully implemented all the proposed functionalities in PostgreSQL. We are now prepared to introduce them as follows:</p>
+<section id="id1">
+<h3><span class="section-number">7.2.1. </span>Parse Module<a class="headerlink" href="#id1" title="Permalink to this headline"></a></h3>
+<p>Below are the core codes of the parse module, which are responsible for parsing the extended SQL to extract anchor information and transmission details.</p>
+<p>We begin by attempting to extract a specific prefix with the format <code class="docutils literal notranslate"><span class="pre">/*pilotscope</span> <span class="pre">...</span> <span class="pre">pilotscope*/</span></code>. If this prefix is not found, the program will proceed
+to the <code class="docutils literal notranslate"><span class="pre">standard</span> <span class="pre">planner</span></code> phase. In the initialization step, we define several variables related to anchors.
+Furthermore, we parse the transmission information and obtain the <code class="docutils literal notranslate"><span class="pre">anchor_item</span></code>. This item is then used to parse each anchor individually. In our approach, we employ specialized data structures to store anchor information. To illustrate this, let’s consider the <code class="docutils literal notranslate"><span class="pre">CardPushAnchor</span></code> structure as an example.</p>
+<p>The majority of essential attributes are same as what has been introduced in <a class="reference external" href="#extended-sql">Extended SQL</a>. The purpose of these structures is to store the data received from ML side.</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span><span class="w"> </span><span class="nf">parse_json</span><span class="p">(</span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">queryString</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="c1">// The certain prefix is /*pilotscope     pilotscope*/</span>
+<span class="w">    </span><span class="cm">/*</span>
+<span class="cm">     * Try to Extract the certain prefix. If there is not such prefix,it will return and </span>
+<span class="cm">     * goto standard planner.</span>
+<span class="cm">     */</span>
+<span class="w">    </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">check_start</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">strstr</span><span class="p">(</span><span class="n">queryString</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;/*pilotscope&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">check_end</span><span class="w">   </span><span class="o">=</span><span class="w"> </span><span class="n">strstr</span><span class="p">(</span><span class="n">queryString</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;pilotscope*/&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="p">(</span><span class="n">check_start</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">check_end</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">enablePilotscope</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">        </span><span class="n">elog</span><span class="p">(</span><span class="n">INFO</span><span class="p">,</span><span class="s">&quot;There is no pilotscope comment.&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="n">elog</span><span class="p">(</span><span class="n">INFO</span><span class="p">,</span><span class="s">&quot;Goto standard_planner!&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="k">return</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// init</span>
+<span class="w">    </span><span class="n">init_some_vars</span><span class="p">();</span>
+
+<span class="w">    </span><span class="c1">// parse relative information including tid and so on, and get anchor_item</span>
+<span class="w">    </span><span class="n">cJSON</span><span class="w"> </span><span class="o">*</span><span class="n">anchor_item</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">parse_relative_infomation</span><span class="p">(</span><span class="n">queryString</span><span class="p">,</span><span class="n">check_start</span><span class="p">,</span><span class="n">check_end</span><span class="p">);</span>
+
+<span class="w">    </span><span class="cm">/*</span>
+<span class="cm">     * Process each anchor one by one using parse_one_anchor and count the num</span>
+<span class="cm">     * of anchors to get anchor_num. We deal with the case when anchor_num == 0</span>
+<span class="cm">     * by end_anchor.</span>
+<span class="cm">     */</span>
+<span class="w">    </span><span class="n">cJSON</span><span class="w"> </span><span class="o">*</span><span class="n">anchor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">anchor_item</span><span class="o">-&gt;</span><span class="n">child</span><span class="p">;</span>
+<span class="w">    </span><span class="n">for_each_anchor</span><span class="p">(</span><span class="n">anchor</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">if</span><span class="p">(</span><span class="n">anchor_num</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">end_anchor</span><span class="p">();</span>
+<span class="w">        </span><span class="k">return</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span>
+<span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">enable</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">name</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">char</span><span class="o">**</span><span class="w"> </span><span class="n">subquery</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">double</span><span class="o">*</span><span class="w"> </span><span class="n">card</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">size_t</span><span class="w">  </span><span class="n">subquery_num</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">size_t</span><span class="w">  </span><span class="n">card_num</span><span class="p">;</span>
+<span class="p">}</span><span class="n">CardPushAnchor</span><span class="p">;</span>
+</pre></div>
+</div>
+</section>
+<section id="id2">
+<h3><span class="section-number">7.2.2. </span>The pipeline of query optimizer with anchors<a class="headerlink" href="#id2" title="Permalink to this headline"></a></h3>
+<p>Once the extended SQL is parsed, the query optimizer proceeds with the anchor mechanism, as described in <a class="reference external" href="#the-pipeline-of-query-optimizer-with-anchors">the pipeline of query optimizer with anchors</a>. In PostgreSQL,
+we have implemented three primary anchors: <code class="docutils literal notranslate"><span class="pre">CARD_PUSH_ANCHOR</span></code>, <code class="docutils literal notranslate"><span class="pre">SUBQUERY_CARD_PULL_ANCHOR</span></code>, and <code class="docutils literal notranslate"><span class="pre">EXECUTION_TIME_PULL_ANCHOR</span></code>. Let’s discuss each of them in detail.</p>
+<ol>
+<li><p><code class="docutils literal notranslate"><span class="pre">CARD_PUSH_ANCHOR</span></code></p>
+<p>To incorporate our modifications, we made changes to two functions in the source code of PostgreSQL: <code class="docutils literal notranslate"><span class="pre">set_baserel_size_estimates</span></code> and <code class="docutils literal notranslate"><span class="pre">calc_joinrel_size_estimate</span></code> within the <code class="docutils literal notranslate"><span class="pre">costsize.c</span> </code>file.</p>
+<p>Our initial step involves obtaining the sub-query and subsequently updating the value of <code class="docutils literal notranslate"><span class="pre">nrows</span></code> (cardinality) with the value received from the ML side.</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="w"> </span><span class="k">if</span><span class="p">(</span><span class="n">card_push_anchor</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="nb">NULL</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">card_push_anchor</span><span class="o">-&gt;</span><span class="n">enable</span><span class="w"> </span><span class="o">==</span><span class="w">  </span><span class="mi">1</span><span class="p">)</span>
+<span class="w"> </span><span class="p">{</span>
+<span class="w">   </span><span class="c1">// get subquery</span>
+<span class="w">   </span><span class="n">get_single_rel</span><span class="p">(</span><span class="n">root</span><span class="p">,</span><span class="w"> </span><span class="n">rel</span><span class="p">);</span>
+
+<span class="w">   </span><span class="c1">// set subquery of card if subquery exist in hash_table</span>
+<span class="w">   </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">row_from_push_anchor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">get_card_from_push_anchor</span><span class="w">    </span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="w"> </span><span class="n">sub_query</span><span class="p">);</span>
+<span class="w">   </span><span class="k">if</span><span class="p">(</span><span class="n">row_from_push_anchor</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span>
+<span class="w">   </span><span class="p">{</span>
+<span class="w">   	</span><span class="n">nrows</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">atof</span><span class="p">(</span><span class="n">row_from_push_anchor</span><span class="p">);</span>
+<span class="w">   </span><span class="p">}</span>
+<span class="w"> </span><span class="p">}</span>
+</pre></div>
+</div>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">SUBQUERY_CARD_PULL_ANCHOR</span></code></p>
+<p>Just like the modifications made for the <code class="docutils literal notranslate"><span class="pre">CARD_PUSH_ANCHOR</span></code>, we applied changes to two functions in the PostgreSQL source code: <code class="docutils literal notranslate"><span class="pre">set_baserel_size_estimates</span></code> and <code class="docutils literal notranslate"><span class="pre">calc_joinrel_size_estimate</span></code>, which are located in the <code class="docutils literal notranslate"><span class="pre">costsize.c</span></code> file.</p>
+<p>We retrieve the sub-query and its corresponding <code class="docutils literal notranslate"><span class="pre">nrows</span></code> (cardinality), and subsequently store this information for further processing.</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="w"> </span><span class="k">if</span><span class="p">(</span><span class="n">subquery_card_pull_anchor</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="nb">NULL</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w">     </span><span class="n">subquery_card_pull_anchor</span><span class="o">-&gt;</span><span class="n">enable</span><span class="o">==</span><span class="mi">1</span><span class="p">)</span>
+<span class="w"> </span><span class="p">{</span><span class="w">	</span>
+<span class="w">   </span><span class="c1">// get subquery</span>
+<span class="w">   </span><span class="n">get_join_rel</span><span class="p">(</span><span class="n">root</span><span class="p">,</span><span class="w"> </span><span class="n">joinrel</span><span class="p">,</span><span class="w"> </span><span class="n">outer_rel</span><span class="p">,</span><span class="w"> </span><span class="n">inner_rel</span><span class="p">,</span><span class="w">   </span><span class="n">sjinfo</span><span class="p">,</span><span class="w">   </span><span class="n">restrictlist</span><span class="p">);</span>
+<span class="w">   </span><span class="n">save_subquery_and_card</span><span class="p">(</span><span class="n">nrows</span><span class="p">);</span>
+<span class="w"> </span><span class="p">}</span>
+
+<span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">save_subquery_and_card</span><span class="p">(</span><span class="kt">double</span><span class="w"> </span><span class="n">nrows</span><span class="p">)</span>
+<span class="w"> </span><span class="p">{</span>
+<span class="w">   </span><span class="kt">int</span><span class="w"> </span><span class="n">curr_subquery_length</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">   </span><span class="kt">int</span><span class="w"> </span><span class="n">curr_card_length</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+
+<span class="w">   </span><span class="n">realloc_string_array_object</span><span class="p">(</span><span class="n">pilot_trans_data</span><span class="o">-&gt;</span><span class="n">subquery</span><span class="p">,</span><span class="w">   </span><span class="n">subquery_count</span><span class="o">+</span><span class="mi">1</span><span class="p">);</span>
+<span class="w">   </span><span class="n">realloc_string_array_object</span><span class="p">(</span><span class="n">pilot_trans_data</span><span class="o">-&gt;</span><span class="n">card</span><span class="p">,</span><span class="w">   </span><span class="n">subquery_count</span><span class="o">+</span><span class="mi">1</span><span class="p">);</span>
+
+<span class="w">   </span><span class="c1">//store  subquery </span>
+<span class="w">   </span><span class="n">store_string</span><span class="p">(</span><span class="n">sub_query</span><span class="o">-&gt;</span><span class="n">data</span><span class="p">,</span><span class="n">pilot_trans_data</span><span class="o">-&gt;</span><span class="n">subquery</span><span class="w">   </span><span class="p">[</span><span class="n">subquery_count</span><span class="p">]);</span>
+
+<span class="w">   </span><span class="c1">// store card</span>
+<span class="w">   </span><span class="n">store_string_for_num</span><span class="p">(</span><span class="n">nrows</span><span class="p">,</span><span class="n">pilot_trans_data</span><span class="o">-&gt;</span><span class="n">card</span><span class="w">   </span><span class="p">[</span><span class="n">subquery_count</span><span class="p">]);</span>
+
+<span class="w">   </span><span class="c1">// update subquery num</span>
+<span class="w">   </span><span class="o">++</span><span class="n">subquery_count</span><span class="p">;</span>
+<span class="w"> </span><span class="p">}</span>
+</pre></div>
+</div>
+<p><span style="background-color: #eaf2f8; color: #0366d6; padding: 5px;">Note</span></p>
+<p><code class="docutils literal notranslate"><span class="pre">SUBQUERY_CARD_PULL_ANCHOR</span></code> and <code class="docutils literal notranslate"><span class="pre">CARD_PUSH_ANCHOR</span></code> are two anchors that require obtaining sub-plan queries of user qureies. The generation of sub-plan queries in PostgreSQL are not officially provided. Pilotscope offers an implementation solution with interfaces: <code class="docutils literal notranslate"><span class="pre">get_single_rel</span></code> and <code class="docutils literal notranslate"><span class="pre">get_join_rel</span></code>.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">get_single_rel</span></code> and <code class="docutils literal notranslate"><span class="pre">get_join_rel</span></code> are functions to generate sub-plan queries that requrie rows(cardinality) estimation.</p></li>
+<li><p>Specifically, <code class="docutils literal notranslate"><span class="pre">get_single_rel</span></code> is used to generate sub-plan queries for single-relation queries, while <code class="docutils literal notranslate"><span class="pre">get_join_rel</span></code> is used to generate sub-plan queries for multi-relation queries.</p></li>
+<li><p>These functions deparse the sub-plan nodes that require rows(cardinality) estimation in the plan tree to the corresponding SQL queries.</p></li>
+<li><p>After calling these functions, the generated sub-plan queries will be stored in the global variable <code class="docutils literal notranslate"><span class="pre">sub_query</span></code>, which is a <code class="docutils literal notranslate"><span class="pre">StringInfo</span></code> object in PostgreSQL.</p></li>
+<li><p>These functions are defined and implemented in <code class="docutils literal notranslate"><span class="pre">subplanquery.h</span></code> and <code class="docutils literal notranslate"><span class="pre">subplanquery.c</span></code>.</p></li>
+<li><p>The supported user queries for generating sub-plan queries are currently as follows:</p>
+<ul>
+<li><p>Predicates:</p>
+<ul>
+<li><p>Comparison operators</p></li>
+<li><p>LIKE</p></li>
+<li><p>IN</p></li>
+<li><p>IS NULL</p></li>
+<li><p>BETWEEN … AND …</p></li>
+</ul>
+</li>
+<li><p>Logical Operators:</p>
+<ul>
+<li><p>AND</p></li>
+<li><p>OR</p></li>
+<li><p>NOT</p></li>
+</ul>
+</li>
+<li><p>Join Types:</p>
+<ul>
+<li><p>INNER JOIN</p></li>
+<li><p>OUTER JOIN</p>
+<ul>
+<li><p>LEFT JOIN</p></li>
+<li><p>RIGHT JOIN</p></li>
+<li><p>FULL JOIN</p></li>
+</ul>
+</li>
+<li><p>MIXED (INNER JOIN and OUTER JOIN)</p></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>To support more user queries, including:</p>
+<ul>
+<li><p>Aggregate Queries</p></li>
+<li><p>Nested Queries</p></li>
+<li><p>……</p></li>
+</ul>
+</li>
+<li><p>Common supported test workloads include <code class="docutils literal notranslate"><span class="pre">JOB-light</span></code>, <code class="docutils literal notranslate"><span class="pre">JOB</span></code>, <code class="docutils literal notranslate"><span class="pre">STATS-CEB</span></code>.</p></li>
+<li><p>To support more test workloads, such as <code class="docutils literal notranslate"><span class="pre">TPCH</span></code>.</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">EXECUTION_TIME_PULL_ANCHOR</span></code></p>
+<p>To achieve this functionality, we utilize the hook mechanism provided by PostgreSQL. Specifically, we employ the <code class="docutils literal notranslate"><span class="pre">ExecutorStart_hook_type</span></code> and <code class="docutils literal notranslate"><span class="pre">ExecutorEnd_hook_type</span></code> hooks to implement the required actions during query execution start and end phases respectively.</p>
+<p>In order to accurately record the total execution time of the query, we start by setting a timer. Then, we capture and store the actual execution time of the query.</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="w"> </span><span class="c1">// `ExecutorStart_hook_type`</span>
+<span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">execution_time_pull_anchor</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="nb">NULL</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w">     </span><span class="n">execution_time_pull_anchor</span><span class="o">-&gt;</span><span class="n">enable</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span>
+<span class="w"> </span><span class="p">{</span>
+<span class="w">       </span><span class="c1">// set timer</span>
+<span class="w">   </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">queryDesc</span><span class="o">-&gt;</span><span class="n">totaltime</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span>
+<span class="w">   </span><span class="p">{</span>
+<span class="w">     </span><span class="n">set_timer_for_exeution_time_fetch_anchor</span><span class="p">(</span><span class="n">queryDesc</span><span class="p">);</span>
+<span class="w">   </span><span class="p">}</span>
+<span class="w"> </span><span class="p">}</span>
+
+<span class="w"> </span><span class="c1">// `ExecutorEnd_hook_type`</span>
+<span class="w"> </span><span class="k">if</span><span class="p">(</span><span class="n">execution_time_pull_anchor</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="nb">NULL</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w">    </span><span class="n">execution_time_pull_anchor</span><span class="o">-&gt;</span><span class="n">enable</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span>
+<span class="w"> </span><span class="p">{</span>
+<span class="w">     </span><span class="c1">// get execution time</span>
+<span class="w">     </span><span class="kt">double</span><span class="w">  </span><span class="n">totaltime</span><span class="w"> </span><span class="o">=</span><span class="w">     </span><span class="n">get_totaltime_for_exeution_time_fetch_anchor</span><span class="p">(</span><span class="n">queryDesc</span><span class="p">);</span>
+
+<span class="w">     </span><span class="c1">// store execution time</span>
+<span class="w">     </span><span class="n">store_string_for_num</span><span class="p">(</span><span class="n">totaltime</span><span class="p">,</span><span class="w">   </span><span class="n">pilot_trans_data</span><span class="o">-&gt;</span><span class="n">execution_time</span><span class="p">);</span>
+<span class="w"> </span><span class="p">}</span>
+</pre></div>
+</div>
+</li>
+</ol>
+</section>
+<section id="id3">
+<h3><span class="section-number">7.2.3. </span>Data Transmission Module<a class="headerlink" href="#id3" title="Permalink to this headline"></a></h3>
+<p>We utilize the data transmission module to send the <code class="docutils literal notranslate"><span class="pre">PilotTransData</span></code> to the ML side. Below is the source code for data transmission module.</p>
+<p>Please note that the entry function is <code class="docutils literal notranslate"><span class="pre">send_and_receive</span></code>. Within this function, there are
+<code class="docutils literal notranslate"><span class="pre">init_and_reinit_http</span></code> and <code class="docutils literal notranslate"><span class="pre">send_and_resend</span></code> functions, which are responsible for the initialization,
+reinitialization, sending, and resending processes.</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">int</span><span class="w"> </span><span class="nf">send_and_receive</span><span class="p">(</span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">string_of_pilottransdata</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">  </span><span class="n">init_and_reinit_http</span><span class="p">();</span>
+<span class="w">  </span><span class="kt">int</span><span class="w"> </span><span class="n">send_flag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">send_and_resend</span><span class="p">(</span><span class="n">string_of_pilottransdata</span><span class="p">);</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">send_flag</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">init_and_reinit_http</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">  </span><span class="c1">// init and reinit</span>
+<span class="w">  </span><span class="kt">int</span><span class="w"> </span><span class="n">init_times</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">  </span><span class="k">while</span><span class="p">(</span><span class="n">init_http_conn</span><span class="p">()</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">-1</span><span class="p">)</span>
+<span class="w">  </span><span class="p">{</span><span class="w">			</span>
+<span class="w">    </span><span class="k">if</span><span class="p">(</span><span class="o">++</span><span class="n">init_times</span><span class="o">&gt;</span><span class="n">MAX_SEND_TIMES</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="n">elog</span><span class="p">(</span><span class="n">INFO</span><span class="p">,</span><span class="s">&quot;Reach the maximum number of initing times!&quot;</span><span class="p">);</span>
+<span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">else</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="n">elog</span><span class="p">(</span><span class="n">INFO</span><span class="p">,</span><span class="s">&quot;Init the http error!! Reiniting...&quot;</span><span class="p">);</span>
+<span class="w">      </span><span class="n">sleep</span><span class="p">(</span><span class="n">WAITE_TIME</span><span class="p">);</span><span class="w">			</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">// send and receive</span>
+<span class="k">static</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">send_and_resend</span><span class="p">(</span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">string_of_pilottransdata</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">  </span><span class="c1">// send</span>
+<span class="w">  </span><span class="kt">int</span><span class="w"> </span><span class="n">send_times</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">  </span><span class="n">send_data</span><span class="p">(</span><span class="o">&amp;</span><span class="n">t_client</span><span class="p">,</span><span class="w"> </span><span class="n">string_of_pilottransdata</span><span class="p">);</span>
+
+<span class="w">  </span><span class="c1">// receive、resend</span>
+<span class="w">  </span><span class="kt">int</span><span class="w"> </span><span class="n">sockfd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">t_client</span><span class="p">.</span><span class="n">socket</span><span class="p">;</span>
+<span class="w">  </span><span class="kt">int</span><span class="w"> </span><span class="n">n</span><span class="p">;</span>
+
+<span class="w">  </span><span class="n">fd_set</span><span class="w"> </span><span class="n">rset</span><span class="p">;</span>
+<span class="w">  </span><span class="k">struct</span><span class="w"> </span><span class="nc">timeval</span><span class="w"> </span><span class="n">timeout</span><span class="p">;</span>
+
+<span class="w">  </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="w">  </span><span class="p">{</span><span class="w">	</span>
+<span class="w">    </span><span class="c1">// reach the maximum number of sending times</span>
+<span class="w">    </span><span class="k">if</span><span class="p">(</span><span class="n">send_times</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">MAX_SEND_TIMES</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="n">elog</span><span class="p">(</span><span class="n">INFO</span><span class="p">,</span><span class="s">&quot;Reach the maximum number of sending times!&quot;</span><span class="p">);</span>
+<span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">  </span><span class="c1">// add socket which needs to be listened to rset</span>
+<span class="w">  </span><span class="n">FD_ZERO</span><span class="p">(</span><span class="o">&amp;</span><span class="n">rset</span><span class="p">);</span>
+<span class="w">  </span><span class="n">FD_SET</span><span class="p">(</span><span class="n">sockfd</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">rset</span><span class="p">);</span>
+
+<span class="w">  </span><span class="c1">// set wait time</span>
+<span class="w">  </span><span class="n">timeout</span><span class="p">.</span><span class="n">tv_sec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">WAITE_TIME</span><span class="p">;</span><span class="w"> </span>
+<span class="w">  </span><span class="n">timeout</span><span class="p">.</span><span class="n">tv_usec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">select</span><span class="p">(</span><span class="n">sockfd</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">rset</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">timeout</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">-1</span><span class="p">)</span><span class="w"> </span>
+<span class="w">  </span><span class="p">{</span>
+<span class="w">  	</span><span class="n">elog</span><span class="p">(</span><span class="n">INFO</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Error in select: %s&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;out of memory!&quot;</span><span class="p">);</span>
+<span class="w">  	</span><span class="k">break</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="c1">// there is data in socket if file description socket in file description set is set to 1</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">FD_ISSET</span><span class="p">(</span><span class="n">sockfd</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">rset</span><span class="p">))</span><span class="w"> </span>
+<span class="w">  </span><span class="p">{</span><span class="w">				</span>
+<span class="w">    </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">response</span><span class="p">;</span>
+<span class="w">    </span><span class="c1">// try to receive data</span>
+<span class="w">    </span><span class="n">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">recv_data</span><span class="p">(</span><span class="o">&amp;</span><span class="n">t_client</span><span class="p">,</span><span class="n">string_of_pilottransdata</span><span class="p">,</span><span class="o">&amp;</span><span class="n">response</span><span class="p">);</span>
+
+<span class="w">    </span><span class="c1">// failed to receive if n&lt;0 otherwise succeed</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">    </span><span class="n">elog</span><span class="p">(</span><span class="n">INFO</span><span class="p">,</span><span class="s">&quot;HTTP status code is not 200. Error may occur in the ML side.</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="k">break</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">close_flag</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">shutdown</span><span class="p">(</span><span class="n">t_client</span><span class="p">.</span><span class="n">socket</span><span class="p">,</span><span class="mi">2</span><span class="p">);</span>
+
+<span class="w">    </span><span class="c1">// judge if successfully close socket</span>
+<span class="w">    </span><span class="k">if</span><span class="p">(</span><span class="n">close_flag</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">    </span><span class="n">elog</span><span class="p">(</span><span class="n">INFO</span><span class="p">,</span><span class="s">&quot;Close socket succeed!&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">else</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">    </span><span class="n">elog</span><span class="p">(</span><span class="n">INFO</span><span class="p">,</span><span class="s">&quot;Close socket failed!&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// send and receive done! break &quot;while&quot; and ready to return</span>
+<span class="w">    </span><span class="n">elog</span><span class="p">(</span><span class="n">INFO</span><span class="p">,</span><span class="s">&quot;Send and receive succeed!&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="k">break</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="w">  </span><span class="c1">// no data</span>
+<span class="w">  </span><span class="k">else</span>
+<span class="w">  </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// timeout and resend</span>
+<span class="w">    </span><span class="n">elog</span><span class="p">(</span><span class="n">INFO</span><span class="p">,</span><span class="s">&quot;Timeout!! Resending data...&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="n">send_data</span><span class="p">(</span><span class="o">&amp;</span><span class="n">t_client</span><span class="p">,</span><span class="w"> </span><span class="n">string_of_pilottransdata</span><span class="p">);</span>
+<span class="w">    </span><span class="n">send_times</span><span class="o">++</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="c1">// close fd</span>
+<span class="w">  </span><span class="n">close</span><span class="p">(</span><span class="n">sockfd</span><span class="p">);</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="api_rst/pilotscope.PilotEnum.html" class="btn btn-neutral float-left" title="6.11. pilotscope.PilotEnum" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="annotations.html" class="btn btn-neutral float-right" title="8. Annotations" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Alibaba.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

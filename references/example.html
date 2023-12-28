@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>5. Example &mdash; PilotScope 1.0 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+        <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="6. API (ML Side)" href="api.html" />
+    <link rel="prev" title="4. Core Components (ML Side)" href="core_modules.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            PilotScope
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="overview.html">1. Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">2. Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="system_pipeline.html">3. System Pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="core_modules.html">4. Core Components (ML Side)</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">5. Example</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#knob-tuning-task-example">5.1. Knob Tuning Task Example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#index-recommendation-task-example">5.2. Index Recommendation Task Example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#cardinality-estimation-task-example">5.3. Cardinality Estimation Task Example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#query-optimizer-task-example">5.4. Query Optimizer Task Example</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">6. API (ML Side)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="database_develop.html">7. Database Side Develop</a></li>
+<li class="toctree-l1"><a class="reference internal" href="annotations.html">8. Annotations</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">PilotScope</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active"><span class="section-number">5. </span>Example</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/references/example.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="example">
+<span id="section-example"></span><h1><span class="section-number">5. </span>Example<a class="headerlink" href="#example" title="Permalink to this headline"></a></h1>
+<p>We use four AI4DB algorithm as examples, including the Knob Tuning Task Example, Index Recommendation Task Example,
+Cardinality Estimation Task Example
+and Query Optimizer Task Example to demonstrate how to use PilotScope.</p>
+<p>You can find the complete code of these examples in the <code class="docutils literal notranslate"><span class="pre">test_example_algorithms</span></code> directory.
+Before running these examples, you should quickly load the test dataset (e.g., <code class="docutils literal notranslate"><span class="pre">stats_tiny</span></code> or <code class="docutils literal notranslate"><span class="pre">imdb_tiny</span></code> databases)
+into PostgreSQL by referring to the <a class="reference external" href="core_modules.html#dataset">Dataset</a> section.</p>
+<section id="knob-tuning-task-example">
+<h2><span class="section-number">5.1. </span>Knob Tuning Task Example<a class="headerlink" href="#knob-tuning-task-example" title="Permalink to this headline"></a></h2>
+<p>We provide a Bayesian optimization method called SMAC as our example.</p>
+<p>In the following example, we create a subclass <code class="docutils literal notranslate"><span class="pre">KnobPeriodicModelUpdateEvent</span></code> by inheriting
+from <code class="docutils literal notranslate"><span class="pre">PeriodicModelUpdateEvent</span></code>
+and implementing <code class="docutils literal notranslate"><span class="pre">custom_model_update</span></code> method. This method allows us to update the model periodically.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">llamatune</span></code> library provides multiple knob algorithms. When the <code class="docutils literal notranslate"><span class="pre">KnobPeriodicModelUpdateEvent</span></code> is triggered, we
+update the SMAC algorithm in llamatune and obtain the new knob value, which is saved in the <code class="docutils literal notranslate"><span class="pre">exp_state</span></code> variable.</p>
+<p>Next, we use the <code class="docutils literal notranslate"><span class="pre">db_controller.write_knob_to_file</span></code> function to write the new knob value to the database configuration
+file. Finally, we restart the database to apply the new knob value.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">KnobPeriodicModelUpdateEvent</span><span class="p">(</span><span class="n">PeriodicModelUpdateEvent</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">per_query_count</span><span class="p">,</span> <span class="n">llamatune_config_file</span><span class="p">,</span> <span class="n">execute_on_init</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">optimizer_type</span><span class="o">=</span><span class="s2">&quot;smac&quot;</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">per_query_count</span><span class="p">,</span> <span class="n">execute_on_init</span><span class="o">=</span><span class="n">execute_on_init</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">optimizer_type</span> <span class="o">=</span> <span class="n">optimizer_type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">llamatune_config_file</span> <span class="o">=</span> <span class="n">llamatune_config_file</span>
+
+    <span class="k">def</span> <span class="nf">custom_model_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pilot_model</span><span class="p">:</span> <span class="n">PilotModel</span><span class="p">,</span> <span class="n">db_controller</span><span class="p">:</span> <span class="n">BaseDBController</span><span class="p">,</span>
+                            <span class="n">data_manager</span><span class="p">:</span> <span class="n">DataManager</span><span class="p">):</span>
+        <span class="n">db_controller</span><span class="o">.</span><span class="n">recover_config</span><span class="p">()</span>
+        <span class="n">db_controller</span><span class="o">.</span><span class="n">restart</span><span class="p">()</span>
+
+        <span class="n">conf</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;conf_filepath&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">llamatune_config_file</span><span class="p">,</span>
+            <span class="s2">&quot;seed&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()),</span>
+            <span class="s2">&quot;optimizer&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer_type</span>
+        <span class="p">}</span>
+
+        <span class="n">exp_state</span> <span class="o">=</span> <span class="n">llamatune</span><span class="p">(</span><span class="n">conf</span><span class="p">)</span>
+        <span class="n">db_controller</span><span class="o">.</span><span class="n">write_knob_to_file</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">exp_state</span><span class="o">.</span><span class="n">best_conf</span><span class="p">))</span>
+        <span class="n">db_controller</span><span class="o">.</span><span class="n">restart</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>To updating the SMAC algorithm in llamatune, it is important to obtain the execution time of some queries.
+The follow code used in SMAC algorithm show how to utilize <code class="docutils literal notranslate"><span class="pre">PilotDataInteractor</span></code> to facilitate the data collection
+process. First, we use the <code class="docutils literal notranslate"><span class="pre">data_interactor.push_knob</span></code> function to push the current knob value to the database.
+Then, we use the <code class="docutils literal notranslate"><span class="pre">data_interactor.pull_execution_time</span></code> function to specify the execution time collection.
+Finally, we use the <code class="docutils literal notranslate"><span class="pre">data_interactor.execute</span></code> function to execute the query and obtain the execution time.
+By evaluating the average time of different knob, we can collect enough data to update the SMAC algorithm.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">evaluate_configuration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dbms_info</span><span class="p">,</span> <span class="n">benchmark_info</span><span class="p">):</span>
+    <span class="n">training_sqls</span> <span class="o">=</span> <span class="n">load_sql</span><span class="p">()</span>
+    <span class="n">current_knob_config</span> <span class="o">=</span> <span class="n">smac_algorithm</span><span class="o">.</span><span class="n">get_current_knob_config</span><span class="p">()</span>
+
+    <span class="n">data_interactor</span> <span class="o">=</span> <span class="n">PilotDataInteractor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
+    <span class="n">data_interactor</span><span class="o">.</span><span class="n">push_knob</span><span class="p">(</span><span class="n">current_knob_config</span><span class="p">)</span>
+    <span class="n">data_interactor</span><span class="o">.</span><span class="n">pull_execution_time</span><span class="p">()</span>
+    <span class="n">execution_times</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">sql</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">training_sqls</span><span class="p">[</span><span class="mi">1</span><span class="p">:]):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_interactor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="p">,</span> <span class="n">is_reset</span><span class="o">=</span><span class="p">(</span><span class="n">i</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">sqls</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">execution_times</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">execution_time</span><span class="p">)</span>
+
+    <span class="c1"># return the metric for update the smac_algorithm. We omit the detailed update code because it is dependent on the specific algorithm.</span>
+    <span class="k">return</span> <span class="n">execution_times</span>
+</pre></div>
+</div>
+<p>In the following code, we provide a complete deployment example of knob tuning using PilotScope. Here’s a breakdown of
+the process:</p>
+<ol class="simple">
+<li><p>First, an instance of the <code class="docutils literal notranslate"><span class="pre">PilotScheduler</span></code> class is created using the <code class="docutils literal notranslate"><span class="pre">SchedulerFactory.create_scheduler</span></code> method with
+the necessary configuration <code class="docutils literal notranslate"><span class="pre">config</span></code>.</p></li>
+<li><p>Then, the <code class="docutils literal notranslate"><span class="pre">KnobPeriodicModelUpdateEvent</span></code> event is registered with the scheduler to periodically update the knob
+value. The <code class="docutils literal notranslate"><span class="pre">execute_on_init</span></code> parameter is set to True to ensure that the knob value is updated once when executing
+<code class="docutils literal notranslate"><span class="pre">scheduler.init()</span></code>. The <code class="docutils literal notranslate"><span class="pre">llamatune_config_file</span></code> and <code class="docutils literal notranslate"><span class="pre">optimizer_type</span></code> are used by the SMAC algorithm.</p></li>
+<li><p>The scheduler is configured to collect the execution time of each query by calling the <code class="docutils literal notranslate"><span class="pre">register_required_data</span></code>
+method. These data will be stored in the <code class="docutils literal notranslate"><span class="pre">llamatune_data</span></code> table.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">scheduler.init()</span></code> method is called to initialize PilotScope scheduler.</p></li>
+<li><p>Finally, the SMAC algorithm is evaluated by executing the SQL queries in the test set.</p></li>
+</ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">KnobTest</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">:</span> <span class="n">PostgreSQLConfig</span> <span class="o">=</span> <span class="n">PostgreSQLConfig</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">enable_deep_control_local</span><span class="p">(</span><span class="n">example_pg_bin</span><span class="p">,</span> <span class="n">example_pgdata</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">db</span> <span class="o">=</span> <span class="s2">&quot;stats_tiny&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">algo</span> <span class="o">=</span> <span class="s2">&quot;smac&quot;</span>
+
+    <span class="k">def</span> <span class="nf">test_knob</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">scheduler</span><span class="p">:</span> <span class="n">PilotScheduler</span> <span class="o">=</span> <span class="n">SchedulerFactory</span><span class="o">.</span><span class="n">create_scheduler</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+            <span class="n">scheduler</span><span class="o">.</span><span class="n">db_controller</span><span class="o">.</span><span class="n">backup_config</span><span class="p">()</span>
+
+            <span class="c1"># allow to pretrain model</span>
+            <span class="n">periodic_model_update_event</span> <span class="o">=</span> <span class="n">KnobPeriodicModelUpdateEvent</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span>
+                                                                       <span class="n">execute_on_init</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                                                       <span class="n">llamatune_config_file</span><span class="o">=</span><span class="s2">&quot;../algorithm_examples/KnobTuning/llamatune/configs/llama_config.ini&quot;</span><span class="p">,</span>
+                                                                       <span class="n">optimizer_type</span><span class="o">=</span><span class="s2">&quot;smac&quot;</span><span class="p">)</span>
+            <span class="n">scheduler</span><span class="o">.</span><span class="n">register_events</span><span class="p">([</span><span class="n">periodic_model_update_event</span><span class="p">])</span>
+            <span class="n">scheduler</span><span class="o">.</span><span class="n">register_required_data</span><span class="p">(</span><span class="s2">&quot;llamatune_data&quot;</span><span class="p">,</span> <span class="n">pull_execution_time</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">scheduler</span><span class="o">.</span><span class="n">init</span><span class="p">()</span>
+
+            <span class="c1"># evaluating test set</span>
+            <span class="n">sqls</span> <span class="o">=</span> <span class="n">load_test_sql</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">db</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">sql</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">sqls</span><span class="p">):</span>
+                <span class="n">scheduler</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">pilotscope_exit</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Thanks for the implementation of <a class="reference external" href="https://github.com/uw-mad-dash/llamatune">LlamaTune</a> and its author for allowing the
+code to be inserted into the tools of interested users in its documentation.</p>
+</section>
+<section id="index-recommendation-task-example">
+<h2><span class="section-number">5.2. </span>Index Recommendation Task Example<a class="headerlink" href="#index-recommendation-task-example" title="Permalink to this headline"></a></h2>
+<p>Index recommendation task is similar to knob tuning, where an algorithm interacts with a database to complete the task
+before the actual execution. The difference is that this task involves selecting an index. To improve efficiency during
+the index recommendation algorithm, we do not actually build the index but use<code class="docutils literal notranslate"> <span class="pre">hypothetical</span> <span class="pre">indexes</span></code> instead.
+To use hypothetical indexes, it’s essential that the connected database has
+the <a class="reference external" href="https://github.com/HypoPG/hypopg">HypoPG</a> extension installed.
+Fortunately, PilotScope have already installed HypoPG extension for you and provide an easy way to use it.</p>
+<p>In this example, we have used the <code class="docutils literal notranslate"><span class="pre">Extend</span></code> algorithm as an example, but you can replace <code class="docutils literal notranslate"><span class="pre">ExtendAlgorithm</span></code> with other
+algorithms,
+such as <code class="docutils literal notranslate"><span class="pre">AnytimeAlgorithm</span></code>, <code class="docutils literal notranslate"><span class="pre">AutoAdminAlgorithm</span></code>, <code class="docutils literal notranslate"><span class="pre">DB2AdvisAlgorithm</span></code> and <code class="docutils literal notranslate"><span class="pre">RelaxationAlgorithm</span></code>, and replace the
+parameters accordingly.</p>
+<p>Similarly, we make <code class="docutils literal notranslate"><span class="pre">IndexPeriodicModelUpdateEvent</span></code> inherit from <code class="docutils literal notranslate"><span class="pre">PeriodicModelUpdateEvent</span></code> and
+implement <code class="docutils literal notranslate"><span class="pre">custom_model_update</span></code> to
+complete the task of selecting indexes using an algorithm.
+When the event is triggered, we call the <code class="docutils literal notranslate"><span class="pre">algo.calculate_best_indexes(workload)</span></code> function to obtain the best indexes and
+use the <code class="docutils literal notranslate"><span class="pre">db_controller.create_index</span></code> function to create these indexes.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">IndexPeriodicModelUpdateEvent</span><span class="p">(</span><span class="n">PeriodicModelUpdateEvent</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_load_sql</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">sqls</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="n">load_test_sql</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">db</span><span class="p">)</span>
+        <span class="n">random</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">sqls</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;imdb&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">db</span><span class="p">:</span>
+            <span class="n">sqls</span> <span class="o">=</span> <span class="n">sqls</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">sqls</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">sqls</span>
+
+    <span class="k">def</span> <span class="nf">custom_model_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pilot_model</span><span class="p">:</span> <span class="n">PilotModel</span><span class="p">,</span> <span class="n">db_controller</span><span class="p">:</span> <span class="n">BaseDBController</span><span class="p">,</span>
+                            <span class="n">data_manager</span><span class="p">:</span> <span class="n">DataManager</span><span class="p">):</span>
+        <span class="n">db_controller</span><span class="o">.</span><span class="n">drop_all_indexes</span><span class="p">()</span>
+        <span class="n">sqls</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_sql</span><span class="p">()</span>
+        <span class="n">workload</span> <span class="o">=</span> <span class="n">to_workload</span><span class="p">(</span><span class="n">sqls</span><span class="p">)</span>
+        <span class="n">parameters</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;benchmark_name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">db</span><span class="p">,</span> <span class="s2">&quot;budget_MB&quot;</span><span class="p">:</span> <span class="mi">250</span><span class="p">,</span> <span class="s2">&quot;max_index_width&quot;</span><span class="p">:</span> <span class="mi">2</span>
+        <span class="p">}</span>
+        <span class="c1"># only for adapt the origin ML code with minimal change. Actually, the user need not provide a DbConnector.</span>
+        <span class="n">connector</span> <span class="o">=</span> <span class="n">DbConnector</span><span class="p">(</span><span class="n">PilotDataInteractor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="n">enable_simulate_index</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+        <span class="n">algo</span> <span class="o">=</span> <span class="n">ExtendAlgorithm</span><span class="p">(</span><span class="n">connector</span><span class="p">,</span> <span class="n">parameters</span><span class="o">=</span><span class="n">parameters</span><span class="p">)</span>
+        <span class="n">indexes</span> <span class="o">=</span> <span class="n">algo</span><span class="o">.</span><span class="n">calculate_best_indexes</span><span class="p">(</span><span class="n">workload</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="n">indexes</span><span class="p">:</span>
+            <span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">index</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span>
+            <span class="n">db_controller</span><span class="o">.</span><span class="n">create_index</span><span class="p">(</span><span class="n">PilotIndex</span><span class="p">(</span><span class="n">columns</span><span class="p">,</span> <span class="n">index</span><span class="o">.</span><span class="n">table</span><span class="p">()</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">index</span><span class="o">.</span><span class="n">index_idx</span><span class="p">()))</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;create index </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">index</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>In order to train Extend algorithm, we first need to collect the cost of different indexes. PilotScope can help it
+quickly.
+In the following code, we push all indexes to the database by <code class="docutils literal notranslate"><span class="pre">data_interactor.push_index(pilot_indexes)</span></code> function.
+Then, we use the <code class="docutils literal notranslate"><span class="pre">data_interactor.pull_estimated_cost()</span></code> function to require collect the estimated cost of a SQL query.
+Finally, we use the <code class="docutils literal notranslate"><span class="pre">data_interactor.execute(query)</span></code> function to collect the cost of the query.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">calculate_cost_indexes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">workload</span><span class="p">,</span> <span class="n">indexes</span><span class="p">):</span>
+    <span class="c1"># ... some omitted code</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">current_indexes</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">indexes</span><span class="p">)</span>
+    <span class="n">data_interactor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db_connector</span><span class="o">.</span><span class="n">data_interactor</span>
+    <span class="n">data_interactor</span><span class="o">.</span><span class="n">push_index</span><span class="p">(</span><span class="n">pilot_indexes</span><span class="p">)</span>
+    <span class="n">data_interactor</span><span class="o">.</span><span class="n">pull_estimated_cost</span><span class="p">()</span>
+    <span class="n">total_cost</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">query</span> <span class="ow">in</span> <span class="n">workload</span><span class="o">.</span><span class="n">queries</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cost_requests</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">total_cost</span> <span class="o">+=</span> <span class="n">data_interactor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span><span class="o">.</span><span class="n">estimated_cost</span>
+    <span class="k">return</span> 
+</pre></div>
+</div>
+<p>In the following code, we provide a complete deployment example of index recommendation using PilotScope.
+Here’s a breakdown of the process:</p>
+<ol class="simple">
+<li><p>First, an instance of the <code class="docutils literal notranslate"><span class="pre">PilotScheduler</span></code> class is created using the <code class="docutils literal notranslate"><span class="pre">SchedulerFactory.create_scheduler</span></code> method with
+the necessary configuration <code class="docutils literal notranslate"><span class="pre">config</span></code>.</p></li>
+<li><p>Then, the <code class="docutils literal notranslate"><span class="pre">IndexPeriodicModelUpdateEvent</span></code> event is registered with the scheduler to periodically update the indexes.
+The <code class="docutils literal notranslate"><span class="pre">execute_on_init</span></code> parameter is set to True to ensure that the knob value is updated once when executing
+<code class="docutils literal notranslate"><span class="pre">scheduler.init()</span></code>. The number 200 indicates that the indexes will be updated every 200 queries.</p></li>
+<li><p>The scheduler is configured to collect the execution time of each query by calling the <code class="docutils literal notranslate"><span class="pre">register_required_data</span></code>
+method. These data will be stored in the <code class="docutils literal notranslate"><span class="pre">self.test_data_table</span></code> table.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">scheduler.init()</span></code> method is called to initialize PilotScope scheduler.</p></li>
+<li><p>Finally, the <code class="docutils literal notranslate"><span class="pre">Extend</span></code> algorithm is evaluated by executing the SQL queries in the test set.</p></li>
+</ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">IndexTest</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">:</span> <span class="n">PilotConfig</span> <span class="o">=</span> <span class="n">PostgreSQLConfig</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">db</span> <span class="o">=</span> <span class="s2">&quot;stats_tiny&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">algo</span> <span class="o">=</span> <span class="s2">&quot;extend&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">test_data_table</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">_</span><span class="si">{}</span><span class="s2">_test_data_table&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">algo</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">db</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">test_index</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># core</span>
+            <span class="n">scheduler</span><span class="p">:</span> <span class="n">PilotScheduler</span> <span class="o">=</span> <span class="n">SchedulerFactory</span><span class="o">.</span><span class="n">create_scheduler</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
+
+            <span class="c1"># allow to pretrain model</span>
+            <span class="n">periodic_model_update_event</span> <span class="o">=</span> <span class="n">IndexPeriodicModelUpdateEvent</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="n">execute_on_init</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">scheduler</span><span class="o">.</span><span class="n">register_events</span><span class="p">([</span><span class="n">periodic_model_update_event</span><span class="p">])</span>
+            <span class="n">scheduler</span><span class="o">.</span><span class="n">register_required_data</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">test_data_table</span><span class="p">,</span> <span class="n">pull_execution_time</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+            <span class="c1"># start</span>
+            <span class="n">scheduler</span><span class="o">.</span><span class="n">init</span><span class="p">()</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;start to test sql&quot;</span><span class="p">)</span>
+            <span class="n">sqls</span> <span class="o">=</span> <span class="n">load_test_sql</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">db</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">sql</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">sqls</span><span class="p">):</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;current is the </span><span class="si">{}</span><span class="s2">-th sql, and it is </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">sql</span><span class="p">))</span>
+                <span class="n">scheduler</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="p">)</span>
+
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">pilotscope_exit</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="cardinality-estimation-task-example">
+<h2><span class="section-number">5.3. </span>Cardinality Estimation Task Example<a class="headerlink" href="#cardinality-estimation-task-example" title="Permalink to this headline"></a></h2>
+<p>Here, we show how to utilize PilotScope to deploy a cardinality estimation algorithm called MSCN into database.
+Unlike the knob tuning task and index recommendation task, the cardinality estimation algorithm is triggered by each SQL
+query.</p>
+<p>To achieve this goal, we have created a subclass of <code class="docutils literal notranslate"><span class="pre">CardAnchorHandler</span></code> called <code class="docutils literal notranslate"><span class="pre">MscnParadigmCardAnchorHandler</span></code>. Within
+this subclass, we have implemented the <code class="docutils literal notranslate"><span class="pre">acquire_injected_data</span></code> function, which returns new cardinalities of each
+sub-query.
+When the input SQL query is executed, PilotScope will replace the original cardinalities with these new cardinalities.
+PilotScope will apply the pipeline into each incoming SQL query.</p>
+<p>In the following code, we first use the <code class="docutils literal notranslate"><span class="pre">self.data_interactor.pull_subquery_card()</span></code> function to collect the
+sub-queries of the input SQL query. Then, we utilize the <code class="docutils literal notranslate"><span class="pre">self.mscn_model.model.predict</span></code> function to estimate the
+cardinality of each sub-query. Finally, we return these new cardinalities.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MscnCardPushHandler</span><span class="p">(</span><span class="n">CardPushHandler</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">PilotModel</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">PilotConfig</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mscn_model</span> <span class="o">=</span> <span class="n">model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">config</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_interactor</span> <span class="o">=</span> <span class="n">PilotDataInteractor</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">acquire_injected_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sql</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_interactor</span><span class="o">.</span><span class="n">pull_subquery_card</span><span class="p">()</span>
+        <span class="n">data</span><span class="p">:</span> <span class="n">PilotTransData</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_interactor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="p">)</span>
+        <span class="n">subquery_2_card</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">subquery_2_card</span>
+
+        <span class="c1"># get new cardinalities for each sub-query</span>
+        <span class="n">subquery</span> <span class="o">=</span> <span class="n">subquery_2_card</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">preds_unnorm</span><span class="p">,</span> <span class="n">t_total</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mscn_model</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">subquery</span><span class="p">)</span>
+        <span class="n">new_subquery_2_card</span> <span class="o">=</span> <span class="p">{</span><span class="n">sq</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">pred</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span> <span class="k">for</span> <span class="n">sq</span><span class="p">,</span> <span class="n">pred</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">subquery</span><span class="p">,</span> <span class="n">preds_unnorm</span><span class="p">)}</span>
+
+        <span class="c1"># return new cardinalities for each sub-query</span>
+        <span class="k">return</span> <span class="n">new_subquery_2_card</span>
+</pre></div>
+</div>
+<p>To pretraining MSCN model before executing SQL queries, we create <code class="docutils literal notranslate"><span class="pre">MscnPretrainingModelEvent</span></code> by
+inheriting <code class="docutils literal notranslate"><span class="pre">PretrainingModelEvent</span></code> and implement <code class="docutils literal notranslate"><span class="pre">iterative_data_collection</span></code> and <code class="docutils literal notranslate"><span class="pre">custom_model_training</span></code> to complete the
+custom data collection and model training process.</p>
+<p>In the iterative_data_collection function, we first use <code class="docutils literal notranslate"><span class="pre">self.pilot_data_interactor.pull_subquery_card()</span></code> function to
+collect the sub-queries of the input SQL query.
+Then, we utilize the <code class="docutils literal notranslate"><span class="pre">self.pilot_data_interactor.pull_record</span></code> function to collect the true cardinality of each
+sub-query.
+Finally, we return the <code class="docutils literal notranslate"><span class="pre">column_2_value_list</span></code>, which is a list of dicts. Each dict contains a sub-query and its value.<br />
+These data will be used to train MSCN algorithm.
+PilotScope will store these data into the table named <code class="docutils literal notranslate"><span class="pre">self.data_saving_table</span></code>.</p>
+<p>After collecting all data, the <code class="docutils literal notranslate"><span class="pre">custom_model_training</span></code> function will be called to train the MSCN model.
+In this function, we first read all collected data using <code class="docutils literal notranslate"><span class="pre">data_manager.read_all(self.data_saving_table)</span></code>.
+Then, we train the MSCN model using the <code class="docutils literal notranslate"><span class="pre">model.fit</span></code> function with these collected data.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MscnPretrainingModelEvent</span><span class="p">(</span><span class="n">PretrainingModelEvent</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">PilotConfig</span><span class="p">,</span> <span class="n">bind_model</span><span class="p">:</span> <span class="n">PilotModel</span><span class="p">,</span> <span class="n">data_saving_table</span><span class="p">,</span> <span class="n">enable_collection</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">enable_training</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">bind_model</span><span class="p">,</span> <span class="n">data_saving_table</span><span class="p">,</span> <span class="n">enable_collection</span><span class="p">,</span> <span class="n">enable_training</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sqls</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pilot_data_interactor</span> <span class="o">=</span> <span class="n">PilotDataInteractor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">iterative_data_collection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db_controller</span><span class="p">:</span> <span class="n">BaseDBController</span><span class="p">,</span> <span class="n">train_data_manager</span><span class="p">:</span> <span class="n">DataManager</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sqls</span> <span class="o">=</span> <span class="n">load_training_sql</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">db</span><span class="p">)</span>
+        <span class="n">column_2_value_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">sql</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">sqls</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pilot_data_interactor</span><span class="o">.</span><span class="n">pull_subquery_card</span><span class="p">()</span>
+            <span class="n">data</span><span class="p">:</span> <span class="n">PilotTransData</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pilot_data_interactor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">sub_sql</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">subquery_2_card</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">pilot_data_interactor</span><span class="o">.</span><span class="n">pull_record</span><span class="p">()</span>
+                <span class="n">data</span><span class="p">:</span> <span class="n">PilotTransData</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pilot_data_interactor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sub_sql</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">data</span><span class="o">.</span><span class="n">records</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+                <span class="n">column_2_value</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="n">sub_sql</span><span class="p">,</span> <span class="s2">&quot;card&quot;</span><span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">records</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]}</span>
+            <span class="n">column_2_value_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">column_2_value</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">column_2_value_list</span><span class="p">,</span> <span class="kc">True</span>
+
+    <span class="k">def</span> <span class="nf">custom_model_training</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bind_model</span><span class="p">,</span> <span class="n">db_controller</span><span class="p">:</span> <span class="n">BaseDBController</span><span class="p">,</span>
+                              <span class="n">data_manager</span><span class="p">:</span> <span class="n">DataManager</span><span class="p">):</span>
+        <span class="n">data</span><span class="p">:</span> <span class="n">DataFrame</span> <span class="o">=</span> <span class="n">data_manager</span><span class="o">.</span><span class="n">read_all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_saving_table</span><span class="p">)</span>
+        <span class="n">tables</span><span class="p">,</span> <span class="n">joins</span><span class="p">,</span> <span class="n">predicates</span> <span class="o">=</span> <span class="n">parse_queries</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;query&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+        <span class="n">schema</span> <span class="o">=</span> <span class="n">load_schema</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pilot_data_interactor</span><span class="o">.</span><span class="n">db_controller</span><span class="p">)</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">MscnModel</span><span class="p">()</span>
+        <span class="c1"># Mscn can only handler card that is larger than 0, so we add 1 to all cards. In prediction we minus it by 1.</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">((</span><span class="n">tables</span><span class="p">,</span> <span class="n">joins</span><span class="p">,</span> <span class="n">predicates</span><span class="p">),</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;card&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">schema</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">model</span>
+</pre></div>
+</div>
+<p>In the following code, we provide a complete deployment example of cardinality estimation using PilotScope.
+Here’s a breakdown of the process:</p>
+<ol class="simple">
+<li><p>First, we instance a <code class="docutils literal notranslate"><span class="pre">mscn_pilot_model</span></code> using <code class="docutils literal notranslate"><span class="pre">MscnPilotModel</span></code> class. This class is a subclass of <code class="docutils literal notranslate"><span class="pre">PilotModel</span></code> and
+implements methods to save and load the MSCN model.</p></li>
+<li><p>Then, an instance of the <code class="docutils literal notranslate"><span class="pre">PilotScheduler</span></code> class is created using the <code class="docutils literal notranslate"><span class="pre">SchedulerFactory.create_scheduler</span></code> method with
+the necessary configuration <code class="docutils literal notranslate"><span class="pre">config</span></code>.</p></li>
+<li><p>Then, we create a <code class="docutils literal notranslate"><span class="pre">MscnCardPushHandler</span></code> object and register it with the PilotScheduler, which helps us to replace the
+original cardinalities with new cardinalities generated by MSCN algorithm for each SQL query.</p></li>
+<li><p>Then, the <code class="docutils literal notranslate"><span class="pre">MscnPretrainingModelEvent</span></code> event is registered with the scheduler to pretraining the MSCN model when
+executing <code class="docutils literal notranslate"><span class="pre">scheduler.init()</span></code>. The <code class="docutils literal notranslate"><span class="pre">enable_collection</span></code> and <code class="docutils literal notranslate"><span class="pre">enable_training</span></code> parameters are set to True to enable data
+collection and model training. All collected data in the event will be stored in the <code class="docutils literal notranslate"><span class="pre">mscn_pretrain_data_table</span></code>
+table.</p></li>
+<li><p>The scheduler is configured to collect the execution time of each query by calling the <code class="docutils literal notranslate"><span class="pre">register_required_data</span></code>
+method. These data will be stored in the <code class="docutils literal notranslate"><span class="pre">mscn_data_table</span></code> table.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">scheduler.init()</span></code> method is called to initialize PilotScope deployment.</p></li>
+<li><p>Finally, the MSCN algorithm is evaluated by executing the SQL queries in the test set.</p></li>
+</ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MscnTest</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">:</span> <span class="n">PilotConfig</span> <span class="o">=</span> <span class="n">PostgreSQLConfig</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">db</span> <span class="o">=</span> <span class="s2">&quot;stats_tiny&quot;</span>
+
+    <span class="k">def</span> <span class="nf">test_mscn</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">model_name</span> <span class="o">=</span> <span class="s2">&quot;mscn&quot;</span>
+            <span class="n">mscn_pilot_model</span><span class="p">:</span> <span class="n">PilotModel</span> <span class="o">=</span> <span class="n">MscnPilotModel</span><span class="p">(</span><span class="n">model_name</span><span class="p">)</span>
+            <span class="n">mscn_pilot_model</span><span class="o">.</span><span class="n">load_model</span><span class="p">()</span>
+
+            <span class="n">scheduler</span><span class="p">:</span> <span class="n">PilotScheduler</span> <span class="o">=</span> <span class="n">SchedulerFactory</span><span class="o">.</span><span class="n">create_scheduler</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
+
+            <span class="c1"># register MSCN algorithm for each SQL query.</span>
+            <span class="n">mscn_handler</span> <span class="o">=</span> <span class="n">MscnCardPushHandler</span><span class="p">(</span><span class="n">mscn_pilot_model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
+            <span class="n">scheduler</span><span class="o">.</span><span class="n">register_custom_handlers</span><span class="p">([</span><span class="n">mscn_handler</span><span class="p">])</span>
+
+            <span class="n">pretraining_event</span> <span class="o">=</span> <span class="n">MscnPretrainingModelEvent</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="n">mscn_pilot_model</span><span class="p">,</span> <span class="s2">&quot;mscn_pretrain_data_table&quot;</span><span class="p">,</span>
+                                                          <span class="n">enable_collection</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">enable_training</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                                          <span class="n">training_data_file</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+            <span class="c1"># register required data</span>
+            <span class="n">scheduler</span><span class="o">.</span><span class="n">register_required_data</span><span class="p">(</span><span class="s2">&quot;mscn_data_table&quot;</span><span class="p">,</span> <span class="n">pull_execution_time</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+            <span class="n">scheduler</span><span class="o">.</span><span class="n">register_events</span><span class="p">([</span><span class="n">pretraining_event</span><span class="p">])</span>
+            <span class="n">scheduler</span><span class="o">.</span><span class="n">init</span><span class="p">()</span>
+
+            <span class="c1"># evaluating MSCN algorithm using test set.</span>
+            <span class="n">sqls</span> <span class="o">=</span> <span class="n">load_test_sql</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">db</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">sql</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">sqls</span><span class="p">):</span>
+                <span class="n">scheduler</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">pilotscope_exit</span><span class="p">()</span>
+
+</pre></div>
+</div>
+<p>Although we used the <a class="reference external" href="https://github.com/andreaskipf/learnedcardinalities">MSCN</a> algorithm as an example, any
+cardinality estimation algorithm can be deployed with minimal modification.</p>
+</section>
+<section id="query-optimizer-task-example">
+<h2><span class="section-number">5.4. </span>Query Optimizer Task Example<a class="headerlink" href="#query-optimizer-task-example" title="Permalink to this headline"></a></h2>
+<p>Like the cardinality estimation task, the query optimizer task is triggered by each SQL query. And the query optimizer
+task is to select the efficient plan of the user query to execute. Here, we show how to utilize PilotScope to deploy a
+query optimizer algorithm called <code class="docutils literal notranslate"><span class="pre">Lero</span></code> into database.</p>
+<p>Specially, the core idea of Lero is to generate different candidate plans by scaling the cardinalities, and then select
+the most efficient plan from the candidate plans using a trained learning-to-rank model. To simplify the description, we
+will denote the best plan generated and selected by Lero as <span class="math notranslate nohighlight">\(P^*\)</span>.</p>
+<p>To deploy Lero into database, we have converted the action of injecting <span class="math notranslate nohighlight">\(P^*\)</span> into database to injecting the scaled
+cardinalities which generate the plan <span class="math notranslate nohighlight">\(P^*\)</span>. Because the actions mentioned above are equivalent in terms of effects, but
+the latter is more convenient to implement.</p>
+<p>Therefore, we have created a subclass of <code class="docutils literal notranslate"><span class="pre">CardPushHandler</span></code> called <code class="docutils literal notranslate"><span class="pre">LeroCardPushHandler</span></code>. Within this subclass, we have
+implemented the <code class="docutils literal notranslate"><span class="pre">acquire_injected_data</span></code> method, which returns the scaled cardinalities which generate the plan <span class="math notranslate nohighlight">\(P^*\)</span> of
+the input SQL query.</p>
+<p>In the <code class="docutils literal notranslate"><span class="pre">acquire_injected_data</span></code> method, we first use the <code class="docutils literal notranslate"><span class="pre">self.pilot_data_interactor.pull_subquery_card()</span></code> function to
+collect the subqueries and their original cardinalities of the input SQL query. Then we instantiate an object
+of <code class="docutils literal notranslate"><span class="pre">CardPickerModel</span></code> class, which can scale the cardinalities according to the level of subqueries following by the Lero
+algorithm. Following initialization, the function enters a core loop, where it repeatedly updates the cardinalities,
+pushes these scaled cardinalities to the database by the <code class="docutils literal notranslate"><span class="pre">self.pilot_data_interactor.push_card()</span></code> function, and pulls
+the plan of the scaled cardinalties by the <code class="docutils literal notranslate"><span class="pre">self.pilot_data_interactor.pull_physical_plan()</span></code> function. Once the loop
+finishes, we have collected a list of plans of the input SQL query. Then we utilize the trained <code class="docutils literal notranslate"><span class="pre">LeroModelPairWise</span></code>
+model to predict the best plan from the candidate plans and return the scaled cardinalities of the best plan. When the
+input SQL query is executed, PilotScope will replace the original cardinalities with these new scaled cardinalities.
+PilotScope will also apply this pipeline into each incoming SQL query.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">LeroCardPushHandler</span><span class="p">(</span><span class="n">CardPushHandler</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">PilotModel</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">PilotConfig</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">config</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db_controller</span> <span class="o">=</span> <span class="n">DBControllerFactory</span><span class="o">.</span><span class="n">get_db_controller</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pilot_data_interactor</span> <span class="o">=</span> <span class="n">PilotDataInteractor</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plans</span><span class="p">):</span>
+        <span class="n">leroModel</span><span class="p">:</span> <span class="n">LeroModelPairWise</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">model</span>
+        <span class="n">feature_generator</span> <span class="o">=</span> <span class="n">leroModel</span><span class="o">.</span><span class="n">_feature_generator</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">feature_generator</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">plans</span><span class="p">)</span>
+        <span class="n">scores</span> <span class="o">=</span> <span class="n">leroModel</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">best_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">scores</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">best_idx</span>
+
+    <span class="k">def</span> <span class="nf">acquire_injected_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sql</span><span class="p">):</span>
+
+        <span class="c1"># Pull subquery and its cardinality</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pilot_data_interactor</span><span class="o">.</span><span class="n">pull_subquery_card</span><span class="p">()</span>
+        <span class="n">data</span><span class="p">:</span> <span class="n">PilotTransData</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pilot_data_interactor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="n">subquery_2_card</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">subquery_2_card</span>
+
+        <span class="c1"># Initialize CardsPickerModel and other variables</span>
+        <span class="n">cards_picker</span> <span class="o">=</span> <span class="n">CardsPickerModel</span><span class="p">(</span><span class="n">subquery_2_card</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">subquery_2_card</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+        <span class="n">scale_subquery_2_card</span> <span class="o">=</span> <span class="n">subquery_2_card</span>
+        <span class="n">new_cardss</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">plans</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">finish</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="c1"># Core</span>
+        <span class="k">while</span> <span class="p">(</span><span class="ow">not</span> <span class="n">finish</span><span class="p">):</span>
+            <span class="n">new_cardss</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scale_subquery_2_card</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pilot_data_interactor</span><span class="o">.</span><span class="n">push_card</span><span class="p">(</span><span class="n">scale_subquery_2_card</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pilot_data_interactor</span><span class="o">.</span><span class="n">pull_physical_plan</span><span class="p">()</span>
+            <span class="n">data</span><span class="p">:</span> <span class="n">PilotTransData</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pilot_data_interactor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">plan</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">physical_plan</span>
+            <span class="n">cards_picker</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">plan</span><span class="p">)</span>
+            <span class="n">plans</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">plan</span><span class="p">)</span>
+            <span class="n">finish</span><span class="p">,</span> <span class="n">new_cards</span> <span class="o">=</span> <span class="n">cards_picker</span><span class="o">.</span><span class="n">get_cards</span><span class="p">()</span>
+            <span class="n">scale_subquery_2_card</span> <span class="o">=</span> <span class="p">{</span><span class="n">sq</span><span class="p">:</span> <span class="n">new_card</span> <span class="k">for</span> <span class="n">sq</span><span class="p">,</span> <span class="n">new_card</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">subquery_2_card</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">new_cards</span><span class="p">)}</span>
+        <span class="n">best_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">plans</span><span class="p">)</span>
+        <span class="n">selected_card</span> <span class="o">=</span> <span class="n">new_cardss</span><span class="p">[</span><span class="n">best_idx</span><span class="p">]</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The best plan is </span><span class="si">{</span><span class="n">best_idx</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">new_cardss</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Return the selected cardinality</span>
+        <span class="k">return</span> <span class="n">selected_card</span>
+</pre></div>
+</div>
+<p>To pretrain Lero model before executing SQL queries, we create <code class="docutils literal notranslate"><span class="pre">LeroPretrainingModelEvent</span></code> by
+inheriting <code class="docutils literal notranslate"><span class="pre">PretrainingModelEvent</span></code> and implement <code class="docutils literal notranslate"><span class="pre">iterative_data_collection</span></code> and <code class="docutils literal notranslate"><span class="pre">custom_model_training</span></code> to complete the
+custom data collection and model training process.</p>
+<p>In the <code class="docutils literal notranslate"><span class="pre">iterative_data_collection</span></code> function, for each SQL query in training queries, we should collect the execution
+times of different plans generated by different scaled queries for model training. Therefore, in the following code, for
+each SQL query in training queries, we first use the <code class="docutils literal notranslate"><span class="pre">self.pilot_data_interactor.pull_subquery_card()</span></code> function to
+collect the subqueries and their original cardinalities. Then we instantiate an object of <code class="docutils literal notranslate"><span class="pre">CardPickerModel</span></code> class, which
+can scale the cardinalities according to the level of subqueries following by the Lero algorithm. Following
+initialization, the code enters a core loop, where it repeatedly updates the cardinalities, pushes these scaled
+cardinalities to the database by the <code class="docutils literal notranslate"><span class="pre">self.pilot_data_interactor.push_card()</span></code> function, pulls the plan and its execution
+time by the <code class="docutils literal notranslate"><span class="pre">self.pilot_data_interactor.pull_physical_plan()</span></code> function and
+the <code class="docutils literal notranslate"><span class="pre">self.pilot_data_interactor.pull_execution_time()</span></code> function, and collects the information of the SQL query, the
+physical plan and its execution time into a dictionanry. Once the loop finishes, we have collected a list of
+dictionanry, which contains the collected training data, called <code class="docutils literal notranslate"><span class="pre">column_2_value_list</span></code>. The function
+returns <code class="docutils literal notranslate"><span class="pre">column_2_value_list</span></code> and PilotScope will store these data into the table named “data_saving_table”.</p>
+<p>After collecting all data, the <code class="docutils literal notranslate"><span class="pre">iterative_data_collection</span></code> function will be called to train the Lero model.
+In this function, we first read all collected data from database using <code class="docutils literal notranslate"><span class="pre">data_manager.read_all(self.data_saving_table)</span></code>.
+Then, we extract plan pairs to trian the pair-wise Lero model by the funciton <code class="docutils literal notranslate"><span class="pre">extract_plan_pairs()</span></code>.
+And lastly, we train the Lero model using the <code class="docutils literal notranslate"><span class="pre">training_pairwise_pilot_score()</span></code> function with these collected data.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">LeroPretrainingModelEvent</span><span class="p">(</span><span class="n">PretrainingModelEvent</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">PilotConfig</span><span class="p">,</span> <span class="n">bind_model</span><span class="p">:</span> <span class="n">PilotModel</span><span class="p">,</span> <span class="n">data_saving_table</span><span class="p">,</span> <span class="n">enable_collection</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">enable_training</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">bind_model</span><span class="p">,</span> <span class="n">data_saving_table</span><span class="p">,</span> <span class="n">enable_collection</span><span class="p">,</span> <span class="n">enable_training</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sqls</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pilot_data_interactor</span> <span class="o">=</span> <span class="n">PilotDataInteractor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">load_sql</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sqls</span> <span class="o">=</span> <span class="n">load_training_sql</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">db</span><span class="p">)[</span><span class="mi">0</span><span class="p">:</span><span class="mi">100</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">iterative_data_collection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db_controller</span><span class="p">:</span> <span class="n">BaseDBController</span><span class="p">,</span> <span class="n">train_data_manager</span><span class="p">:</span> <span class="n">DataManager</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;start to collect data fro pretraining&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">load_sql</span><span class="p">()</span>
+
+        <span class="n">column_2_value_list</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">sql</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sqls</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;current  is </span><span class="si">{}</span><span class="s2">-th sql, and total sqls is </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sqls</span><span class="p">)))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pilot_data_interactor</span><span class="o">.</span><span class="n">pull_subquery_card</span><span class="p">()</span>
+            <span class="n">data</span><span class="p">:</span> <span class="n">PilotTransData</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pilot_data_interactor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">subquery_2_card</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">subquery_2_card</span>
+            <span class="n">cards_picker</span> <span class="o">=</span> <span class="n">CardsPickerModel</span><span class="p">(</span><span class="n">subquery_2_card</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">subquery_2_card</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+            <span class="n">scale_subquery_2_card</span> <span class="o">=</span> <span class="n">subquery_2_card</span>
+            <span class="n">finish</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">while</span> <span class="p">(</span><span class="ow">not</span> <span class="n">finish</span><span class="p">):</span>
+                <span class="n">column_2_value</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">pilot_data_interactor</span><span class="o">.</span><span class="n">push_card</span><span class="p">(</span><span class="n">scale_subquery_2_card</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">pilot_data_interactor</span><span class="o">.</span><span class="n">pull_physical_plan</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">pilot_data_interactor</span><span class="o">.</span><span class="n">pull_execution_time</span><span class="p">()</span>
+                <span class="n">data</span><span class="p">:</span> <span class="n">PilotTransData</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pilot_data_interactor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="n">plan</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">physical_plan</span>
+                <span class="n">cards_picker</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">plan</span><span class="p">)</span>
+                <span class="n">column_2_value</span><span class="p">[</span><span class="s2">&quot;sql&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sql</span>
+                <span class="n">column_2_value</span><span class="p">[</span><span class="s2">&quot;plan&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">plan</span>
+                <span class="n">column_2_value</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">execution_time</span>
+                <span class="n">finish</span><span class="p">,</span> <span class="n">new_cards</span> <span class="o">=</span> <span class="n">cards_picker</span><span class="o">.</span><span class="n">get_cards</span><span class="p">()</span>
+                <span class="n">scale_subquery_2_card</span> <span class="o">=</span> <span class="p">{</span><span class="n">sq</span><span class="p">:</span> <span class="n">new_card</span> <span class="k">for</span> <span class="n">sq</span><span class="p">,</span> <span class="n">new_card</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">subquery_2_card</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">new_cards</span><span class="p">)}</span>
+                <span class="n">column_2_value_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">column_2_value</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">column_2_value_list</span><span class="p">,</span> <span class="kc">True</span>
+
+    <span class="k">def</span> <span class="nf">custom_model_training</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bind_model</span><span class="p">,</span> <span class="n">db_controller</span><span class="p">:</span> <span class="n">BaseDBController</span><span class="p">,</span>
+                              <span class="n">data_manager</span><span class="p">:</span> <span class="n">DataManager</span><span class="p">):</span>
+        <span class="n">data</span><span class="p">:</span> <span class="n">DataFrame</span> <span class="o">=</span> <span class="n">data_manager</span><span class="o">.</span><span class="n">read_all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_saving_table</span><span class="p">)</span>
+        <span class="n">plans1</span><span class="p">,</span> <span class="n">plans2</span> <span class="o">=</span> <span class="n">extract_plan_pairs</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">lero_model</span> <span class="o">=</span> <span class="n">training_pairwise_pilot_score</span><span class="p">(</span><span class="n">bind_model</span><span class="p">,</span> <span class="n">plans1</span><span class="p">,</span> <span class="n">plans2</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">lero_model</span>
+</pre></div>
+</div>
+<p>In the following code, we provide a complete deployment example of Lero algorithm using PilotScope.
+Here’s a breakdown of the process:</p>
+<ol class="simple">
+<li><p>First, we instantiate a <code class="docutils literal notranslate"><span class="pre">lero_pilot_model</span></code> instance of <code class="docutils literal notranslate"><span class="pre">LeroPilotModel</span></code> class. This class is a subclass
+of <code class="docutils literal notranslate"><span class="pre">PilotModel</span></code> and implements methods to save and load the model.</p></li>
+<li><p>Then, an instance of the <code class="docutils literal notranslate"><span class="pre">PilotScheduler</span></code> class is created using the <code class="docutils literal notranslate"><span class="pre">SchedulerFactory.create_scheduler()</span></code> method
+with the necessary configuration <code class="docutils literal notranslate"><span class="pre">config</span></code>.</p></li>
+<li><p>Then, we create a <code class="docutils literal notranslate"><span class="pre">LeroCardPushHandler</span></code> object, which inherits from <code class="docutils literal notranslate"><span class="pre">CardPushHandler</span></code> class and helps us to replace
+the original cardinalities with new cardinalities generated by Lero algorithm for each SQL query. And we register it
+in the scheduler by <code class="docutils literal notranslate"><span class="pre">scheduler.register_custom_handlers()</span></code> function.</p></li>
+<li><p>Then, the <code class="docutils literal notranslate"><span class="pre">LeroPretrainingModelEvent</span></code> event is to pretrain the Lero model when
+initializing the PilotScope. The <code class="docutils literal notranslate"><span class="pre">enable_collection</span></code> and <code class="docutils literal notranslate"><span class="pre">enable_training</span></code> parameters are set to True to enable data
+collection and model training. All collected data in the event will be stored in the <code class="docutils literal notranslate"><span class="pre">lero_pretraining_collect_data</span></code>
+table. And it is registered in the scheduler with <code class="docutils literal notranslate"><span class="pre">scheduler.register_events()</span></code> function.</p></li>
+<li><p>The scheduler is configured to collect the execution time and the physical plan of each query by calling
+the      <code class="docutils literal notranslate"><span class="pre">register_required_data()</span></code> method. These data will be stored in the <code class="docutils literal notranslate"><span class="pre">lero_pair_test_data_table</span></code> table.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">scheduler.init()</span></code> method is called to initialize PilotScope.</p></li>
+<li><p>And Lastly, we evaluate the Lero algorithm by executing the SQL queries in the test set.</p></li>
+</ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">LeroTest</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">:</span> <span class="n">PilotConfig</span> <span class="o">=</span> <span class="n">PostgreSQLConfig</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">db</span> <span class="o">=</span> <span class="s2">&quot;stats_tiny&quot;</span>
+
+    <span class="k">def</span> <span class="nf">test_lero</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span>
+
+            <span class="n">model_name</span> <span class="o">=</span> <span class="s2">&quot;lero_pair&quot;</span>
+            <span class="n">test_data_table</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">_test_data_table&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">model_name</span><span class="p">)</span>
+            <span class="n">pretraining_data_table</span> <span class="o">=</span> <span class="s2">&quot;lero_pretraining_collect_data&quot;</span>
+
+            <span class="n">lero_pilot_model</span><span class="p">:</span> <span class="n">PilotModel</span> <span class="o">=</span> <span class="n">LeroPilotModel</span><span class="p">(</span><span class="n">model_name</span><span class="p">)</span>
+            <span class="n">lero_pilot_model</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
+            <span class="n">lero_handler</span> <span class="o">=</span> <span class="n">LeroCardPushHandler</span><span class="p">(</span><span class="n">lero_pilot_model</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span>
+
+            <span class="c1"># core</span>
+            <span class="n">scheduler</span><span class="p">:</span> <span class="n">PilotScheduler</span> <span class="o">=</span> <span class="n">SchedulerFactory</span><span class="o">.</span><span class="n">create_scheduler</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+            <span class="n">scheduler</span><span class="o">.</span><span class="n">register_custom_handlers</span><span class="p">([</span><span class="n">lero_handler</span><span class="p">])</span>
+            <span class="n">scheduler</span><span class="o">.</span><span class="n">register_required_data</span><span class="p">(</span><span class="n">test_data_table</span><span class="p">,</span> <span class="n">pull_execution_time</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">pull_physical_plan</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+            <span class="c1"># allow to pretrain model</span>
+            <span class="n">pretraining_event</span> <span class="o">=</span> <span class="n">LeroPretrainingModelEvent</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">lero_pilot_model</span><span class="p">,</span> <span class="n">pretraining_data_table</span><span class="p">,</span>
+                                                          <span class="n">enable_collection</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                                          <span class="n">enable_training</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">scheduler</span><span class="o">.</span><span class="n">register_events</span><span class="p">([</span><span class="n">pretraining_event</span><span class="p">])</span>
+
+            <span class="c1"># start</span>
+            <span class="n">scheduler</span><span class="o">.</span><span class="n">init</span><span class="p">()</span>
+
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;start to test sql&quot;</span><span class="p">)</span>
+            <span class="n">sqls</span> <span class="o">=</span> <span class="n">load_test_sql</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">db</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">sql</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">sqls</span><span class="p">):</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;current is the </span><span class="si">{}</span><span class="s2">-th sql, and it is </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">sql</span><span class="p">))</span>
+                <span class="n">scheduler</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">pilotscope_exit</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Although we used the <a class="reference external" href="https://github.com/AlibabaIncubator/Lero-on-PostgreSQL">Lero</a> algorithm as an example, other
+learned query optimization algorithm can be deployed with minimal modification.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="core_modules.html" class="btn btn-neutral float-left" title="4. Core Components (ML Side)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="api.html" class="btn btn-neutral float-right" title="6. API (ML Side)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Alibaba.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

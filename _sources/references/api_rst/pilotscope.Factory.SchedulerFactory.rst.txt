@@ -1,0 +1,7 @@
+pilotscope.Factory.SchedulerFactory
+==========================================
+
+.. automodule:: pilotscope.Factory.SchedulerFactory
+   :members:
+   :undoc-members:
+   :show-inheritance:

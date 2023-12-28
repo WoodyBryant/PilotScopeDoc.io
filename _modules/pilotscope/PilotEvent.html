@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pilotscope.PilotEvent &mdash; PilotScope 1.0 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            PilotScope
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../references/overview.html">1. Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../references/install.html">2. Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../references/system_pipeline.html">3. System Pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../references/core_modules.html">4. Core Components (ML Side)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../references/example.html">5. Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../references/api.html">6. API (ML Side)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../references/database_develop.html">7. Database Side Develop</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../references/annotations.html">8. Annotations</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">PilotScope</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pilotscope.PilotEvent</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pilotscope.PilotEvent</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+
+<span class="kn">from</span> <span class="nn">pilotscope.DBController.BaseDBController</span> <span class="kn">import</span> <span class="n">BaseDBController</span>
+<span class="kn">from</span> <span class="nn">pilotscope.DataManager.DataManager</span> <span class="kn">import</span> <span class="n">DataManager</span>
+<span class="kn">from</span> <span class="nn">pilotscope.Factory.DBControllerFectory</span> <span class="kn">import</span> <span class="n">DBControllerFactory</span>
+<span class="kn">from</span> <span class="nn">pilotscope.PilotConfig</span> <span class="kn">import</span> <span class="n">PilotConfig</span>
+<span class="kn">from</span> <span class="nn">pilotscope.PilotModel</span> <span class="kn">import</span> <span class="n">PilotModel</span>
+<span class="kn">from</span> <span class="nn">pilotscope.Common.Thread</span> <span class="kn">import</span> <span class="n">ValueThread</span>
+
+
+<div class="viewcode-block" id="Event"><a class="viewcode-back" href="../../references/api_rst/pilotscope.PilotEvent.html#pilotscope.PilotEvent.Event">[docs]</a><span class="k">class</span> <span class="nc">Event</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Abstract base class for an event.</span>
+
+<span class="sd">    This class provides the base structure for different event types in an application,</span>
+<span class="sd">    and is meant to be subclassed to create concrete event implementations.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Event.__init__"><a class="viewcode-back" href="../../references/api_rst/pilotscope.PilotEvent.html#pilotscope.PilotEvent.Event.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        :param config: The configuration of PilotScope.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">config</span></div></div>
+
+
+<div class="viewcode-block" id="QueryFinishEvent"><a class="viewcode-back" href="../../references/api_rst/pilotscope.PilotEvent.html#pilotscope.PilotEvent.QueryFinishEvent">[docs]</a><span class="k">class</span> <span class="nc">QueryFinishEvent</span><span class="p">(</span><span class="n">Event</span><span class="p">,</span> <span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">     The process function will be called when `interval_count` query is finished.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="QueryFinishEvent.__init__"><a class="viewcode-back" href="../../references/api_rst/pilotscope.PilotEvent.html#pilotscope.PilotEvent.QueryFinishEvent.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">interval_count</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        :param config: The configuration of PilotScope.</span>
+<span class="sd">        :param interval_count: This event will be triggered when per `interval_count` query is finished.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">interval_count</span> <span class="o">=</span> <span class="n">interval_count</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">query_execution_count</span> <span class="o">=</span> <span class="mi">0</span></div>
+
+    <span class="k">def</span> <span class="nf">_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db_controller</span><span class="p">:</span> <span class="n">BaseDBController</span><span class="p">,</span> <span class="n">data_manager</span><span class="p">:</span> <span class="n">DataManager</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This function will be called when a query is finished.</span>
+<span class="sd">        It will call process function when `interval_count` query is finished.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">query_execution_count</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">query_execution_count</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">interval_count</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">query_execution_count</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">db_controller</span><span class="p">,</span> <span class="n">data_manager</span><span class="p">)</span>
+
+<div class="viewcode-block" id="QueryFinishEvent.process"><a class="viewcode-back" href="../../references/api_rst/pilotscope.PilotEvent.html#pilotscope.PilotEvent.QueryFinishEvent.process">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db_controller</span><span class="p">:</span> <span class="n">BaseDBController</span><span class="p">,</span> <span class="n">data_manager</span><span class="p">:</span> <span class="n">DataManager</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This function will be called when `interval_count` query is finished.</span>
+<span class="sd">        The user can implement the function to define the process logic.</span>
+
+<span class="sd">        :param db_controller: A `db_controller` initialized by the user&#39;s `PilotConfig` registered in `PilotScheduler`.</span>
+<span class="sd">        :param data_manager: A `data_manager` initialized by the user&#39;s `PilotConfig` registered in `PilotScheduler`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div></div>
+
+
+<div class="viewcode-block" id="WorkloadBeforeEvent"><a class="viewcode-back" href="../../references/api_rst/pilotscope.PilotEvent.html#pilotscope.PilotEvent.WorkloadBeforeEvent">[docs]</a><span class="k">class</span> <span class="nc">WorkloadBeforeEvent</span><span class="p">(</span><span class="n">Event</span><span class="p">,</span> <span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The process function will be called before start to deal with first SQL query of a workload.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="WorkloadBeforeEvent.__init__"><a class="viewcode-back" href="../../references/api_rst/pilotscope.PilotEvent.html#pilotscope.PilotEvent.WorkloadBeforeEvent.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">enable</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        :param config: The configuration of PilotScope.</span>
+<span class="sd">        :param enable: The event will be triggered when the value is True.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">already_been_called</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">enable</span></div>
+
+    <span class="k">def</span> <span class="nf">_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db_controller</span><span class="p">:</span> <span class="n">BaseDBController</span><span class="p">,</span> <span class="n">data_manager</span><span class="p">:</span> <span class="n">DataManager</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Updates the event state and triggers the processing of the event.</span>
+<span class="sd">        This method sets the `already_been_called` flag to True to indicate the event has been</span>
+<span class="sd">        updated and then calls the `process` method to handle the event using the given</span>
+<span class="sd">        `db_controller` and `data_manager`.</span>
+
+<span class="sd">        :param db_controller: The database controller to be used for database operations during event processing.</span>
+<span class="sd">        :type db_controller: BaseDBController</span>
+<span class="sd">        :param data_manager: The data manager to be used for data handling during event processing.</span>
+<span class="sd">        :type data_manager: DataManager</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">already_been_called</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">db_controller</span><span class="p">,</span> <span class="n">data_manager</span><span class="p">)</span>
+
+<div class="viewcode-block" id="WorkloadBeforeEvent.process"><a class="viewcode-back" href="../../references/api_rst/pilotscope.PilotEvent.html#pilotscope.PilotEvent.WorkloadBeforeEvent.process">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db_controller</span><span class="p">:</span> <span class="n">BaseDBController</span><span class="p">,</span> <span class="n">data_manager</span><span class="p">:</span> <span class="n">DataManager</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This function will be called before start to deal with first SQL query of a workload, i.e., the first call to</span>
+<span class="sd">        `PilotScheduler.execute()`.</span>
+<span class="sd">        The user can implement the function to define the process logic.</span>
+
+<span class="sd">        :param db_controller: A `db_controller` initialized by the user&#39;s `PilotConfig` registered in `PilotScheduler`.</span>
+<span class="sd">        :param data_manager: A `data_manager` initialized by the user&#39;s `PilotConfig` registered in `PilotScheduler`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div></div>
+
+
+<div class="viewcode-block" id="PeriodicModelUpdateEvent"><a class="viewcode-back" href="../../references/api_rst/pilotscope.PilotEvent.html#pilotscope.PilotEvent.PeriodicModelUpdateEvent">[docs]</a><span class="k">class</span> <span class="nc">PeriodicModelUpdateEvent</span><span class="p">(</span><span class="n">QueryFinishEvent</span><span class="p">,</span> <span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The user can inherit this class to implement a periodic model update event.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PeriodicModelUpdateEvent.__init__"><a class="viewcode-back" href="../../references/api_rst/pilotscope.PilotEvent.html#pilotscope.PilotEvent.PeriodicModelUpdateEvent.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">interval_count</span><span class="p">,</span> <span class="n">pilot_model</span><span class="p">:</span> <span class="n">PilotModel</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">execute_on_init</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        :param config: The configuration of PilotScope.</span>
+<span class="sd">        :param interval_count: This event will be triggered when per `interval_count` query is finished.</span>
+<span class="sd">        :param pilot_model: The pilot model to be updated.</span>
+<span class="sd">        :param execute_on_init: Whether to execute the `custom_model_update` function when the `PilotScheduler` is initialized.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">interval_count</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pilot_model</span> <span class="o">=</span> <span class="n">pilot_model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">execute_before_first_query</span> <span class="o">=</span> <span class="n">execute_on_init</span></div>
+
+<div class="viewcode-block" id="PeriodicModelUpdateEvent.process"><a class="viewcode-back" href="../../references/api_rst/pilotscope.PilotEvent.html#pilotscope.PilotEvent.PeriodicModelUpdateEvent.process">[docs]</a>    <span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db_controller</span><span class="p">:</span> <span class="n">BaseDBController</span><span class="p">,</span> <span class="n">data_manager</span><span class="p">:</span> <span class="n">DataManager</span><span class="p">):</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">custom_model_update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pilot_model</span><span class="p">,</span> <span class="n">db_controller</span><span class="p">,</span> <span class="n">data_manager</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pilot_model</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pilot_model</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pilot_model</span><span class="o">.</span><span class="n">save_model</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="PeriodicModelUpdateEvent.custom_model_update"><a class="viewcode-back" href="../../references/api_rst/pilotscope.PilotEvent.html#pilotscope.PilotEvent.PeriodicModelUpdateEvent.custom_model_update">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">custom_model_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pilot_model</span><span class="p">:</span> <span class="n">PilotModel</span><span class="p">,</span> <span class="n">db_controller</span><span class="p">:</span> <span class="n">BaseDBController</span><span class="p">,</span>
+                            <span class="n">data_manager</span><span class="p">:</span> <span class="n">DataManager</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The user can implement the function to define the process logic of model update.</span>
+<span class="sd">        PilotScope will call this function periodically (i.e., per `interval_count` queries) for model update.</span>
+<span class="sd">        You should to return the updated user model, then PilotScope will save it automatically.</span>
+
+<span class="sd">        :param pilot_model: The pilot model to be updated.</span>
+<span class="sd">        :param db_controller: The database controller to be used for the update operations.</span>
+<span class="sd">        :param data_manager: The data manager that provides access to the application&#39;s data.</span>
+<span class="sd">        :return: The updated user model (i.e., pilot_model.model).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div></div>
+
+
+<div class="viewcode-block" id="PretrainingModelEvent"><a class="viewcode-back" href="../../references/api_rst/pilotscope.PilotEvent.html#pilotscope.PilotEvent.PretrainingModelEvent">[docs]</a><span class="k">class</span> <span class="nc">PretrainingModelEvent</span><span class="p">(</span><span class="n">Event</span><span class="p">,</span> <span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A pretraining model event is an event that is used to collect data nad pretrain a model before the application starts.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PretrainingModelEvent.__init__"><a class="viewcode-back" href="../../references/api_rst/pilotscope.PilotEvent.html#pilotscope.PilotEvent.PretrainingModelEvent.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">PilotConfig</span><span class="p">,</span> <span class="n">bind_pilot_model</span><span class="p">:</span> <span class="n">PilotModel</span><span class="p">,</span> <span class="n">data_saving_table</span><span class="p">,</span> <span class="n">enable_collection</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">enable_training</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        :param config: The configuration of PilotScope.</span>
+<span class="sd">        :param bind_pilot_model: The pilot model to be pre-trained.</span>
+<span class="sd">        :param data_saving_table: The table to save the collected data.</span>
+<span class="sd">        :param enable_collection: A flag indicating whether to enable data collection.</span>
+<span class="sd">        :param enable_training: A flag indicating whether to enable model training.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">config</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="p">:</span> <span class="n">PilotModel</span> <span class="o">=</span> <span class="n">bind_pilot_model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">enable_collection</span> <span class="o">=</span> <span class="n">enable_collection</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">enable_training</span> <span class="o">=</span> <span class="n">enable_training</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_saving_table</span> <span class="o">=</span> <span class="n">data_saving_table</span></div>
+
+    <span class="k">def</span> <span class="nf">_async_start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Starts the pretraining process asynchronously by launching a separate thread.</span>
+<span class="sd">        This method creates a new ValueThread, sets it as a daemon thread, and starts it.</span>
+<span class="sd">        This allows the pretraining process to run in the background, enabling the main</span>
+<span class="sd">        application to continue running independently.</span>
+
+<span class="sd">        :return: The ValueThread instance that has been started.</span>
+<span class="sd">        :rtype: ValueThread</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">ValueThread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_run</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;pretraining_async_start&quot;</span><span class="p">)</span>
+        <span class="n">t</span><span class="o">.</span><span class="n">daemon</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">t</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">t</span>
+
+    <span class="k">def</span> <span class="nf">_run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">db_controller</span> <span class="o">=</span> <span class="n">DBControllerFactory</span><span class="o">.</span><span class="n">get_db_controller</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
+        <span class="n">data_manager</span> <span class="o">=</span> <span class="n">DataManager</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_collect_and_store_data</span><span class="p">(</span><span class="n">db_controller</span><span class="p">,</span> <span class="n">data_manager</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_model_training</span><span class="p">(</span><span class="n">db_controller</span><span class="p">,</span> <span class="n">data_manager</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_collect_and_store_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db_controller</span><span class="p">:</span> <span class="n">BaseDBController</span><span class="p">,</span> <span class="n">data_manager</span><span class="p">:</span> <span class="n">DataManager</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This function iteratively collects data from the database and stores it in the specified table.</span>
+
+<span class="sd">        :param db_controller: The object that controls the database connection.</span>
+<span class="sd">        :type db_controller: BaseDBController</span>
+<span class="sd">        :param data_manager: The object that manages the collected data.</span>
+<span class="sd">        :type data_manager: DataManager</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">is_terminate</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">enable_collection</span><span class="p">:</span>
+            <span class="k">while</span> <span class="ow">not</span> <span class="n">is_terminate</span><span class="p">:</span>
+                <span class="n">column_2_value_list</span><span class="p">,</span> <span class="n">is_terminate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">iterative_data_collection</span><span class="p">(</span><span class="n">db_controller</span><span class="p">,</span> <span class="n">data_manager</span><span class="p">)</span>
+                <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_saving_table</span>
+                <span class="n">data_manager</span><span class="o">.</span><span class="n">save_data_batch</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">column_2_value_list</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_model_training</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db_controller</span><span class="p">:</span> <span class="n">BaseDBController</span><span class="p">,</span> <span class="n">train_data_manager</span><span class="p">:</span> <span class="n">DataManager</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        If training is enabled, this function trains the model with custom training logic and saves it.</span>
+
+<span class="sd">        :param db_controller: The object that controls the database connection.</span>
+<span class="sd">        :type db_controller: BaseDBController</span>
+<span class="sd">        :param train_data_manager: The object that manages the training data.</span>
+<span class="sd">        :type train_data_manager: DataManager</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">enable_training</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">custom_model_training</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">db_controller</span><span class="p">,</span> <span class="n">train_data_manager</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">save_model</span><span class="p">()</span>
+
+<div class="viewcode-block" id="PretrainingModelEvent.iterative_data_collection"><a class="viewcode-back" href="../../references/api_rst/pilotscope.PilotEvent.html#pilotscope.PilotEvent.PretrainingModelEvent.iterative_data_collection">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">iterative_data_collection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db_controller</span><span class="p">:</span> <span class="n">BaseDBController</span><span class="p">,</span> <span class="n">train_data_manager</span><span class="p">:</span> <span class="n">DataManager</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This user should implement this function to define the iterative process of custom data collection.</span>
+<span class="sd">        Each iteration should return a list where each item is a dict indicating each column&#39;s name and value.</span>
+<span class="sd">        All column names should be the same as the columns of `self.data_saving_table`.</span>
+<span class="sd">        PilotScope will save these data into the specified table `self.data_saving_table` automatically.</span>
+<span class="sd">        In addition, this function should return a bool value to indicate whether the iteration should be terminated.</span>
+
+<span class="sd">        :param db_controller: The object that controls the database connection.</span>
+<span class="sd">        :param train_data_manager: The object that manages the training data.</span>
+<span class="sd">        :return two values: A list where each item is a dict indicate each column&#39;s value and a bool value indicate whether the iteration should be terminated.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="PretrainingModelEvent.custom_model_training"><a class="viewcode-back" href="../../references/api_rst/pilotscope.PilotEvent.html#pilotscope.PilotEvent.PretrainingModelEvent.custom_model_training">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">custom_model_training</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bind_pilot_model</span><span class="p">:</span> <span class="n">PilotModel</span><span class="p">,</span> <span class="n">db_controller</span><span class="p">:</span> <span class="n">BaseDBController</span><span class="p">,</span>
+                              <span class="n">data_manager</span><span class="p">:</span> <span class="n">DataManager</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This user should implement this function to define the custom logic for training the model.</span>
+<span class="sd">        PilotScope will call this function after the data collection is finished.</span>
+<span class="sd">        You should return the updated user model, then PilotScope will save it automatically.</span>
+
+<span class="sd">        :param bind_pilot_model: The model to be trained.</span>
+<span class="sd">        :param db_controller: The object that controls the database connection.</span>
+<span class="sd">        :param data_manager: The object that manages the data used for training the model.</span>
+<span class="sd">        :return: The updated user model (i.e., bind_pilot_model.model).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Alibaba.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

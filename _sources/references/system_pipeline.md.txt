@@ -1,0 +1,37 @@
+(section-system-pipeline)=
+# System Pipeline
+
+Here, we illustrate a complete execution pipeline of PilotScope system when a SQL query is submitted into PilotScope. This can help users to understand the usage of our system.
+The whole  pipeline, including multiple components in ML side and DB side, is shown in Figure 1. We explain the roles of each component in detail as follows:
+
+- **Input**: Each database user can submit any SQL query into PilotScope through the PilotScope console or calling a provided function (see **[6. API (ML Side) pilotscope.PilotScheduler](../references/api_rst/pilotscope.PilotScheduler.html#pilotscope.PilotScheduler)**).
+
+- **Custom Inject Method**: To guide the action of a database, each user can register some custom inject methods into
+  PilotScope. These inject methods will generate some values, such as hints, cardinality for each subquery, by applying
+  user's strategies. PilotScope will fill these values into original SQL query, and produce an extended SQL query. 
+  Subsequently, PilotScope will send the extended SQL to the DB side to retrieve the records.
+  
+- **Execution with Injected Data**: The extended SQL query includes the data that a user expected to collect or set.
+  When executing the query, PilotScope will set and collect value in correct position automatically. After the collection process is finished, these collected data are then promptly sent back to the user for further
+  analysis or processing.
+  
+- **Collection**: Once the execution phase is complete, data collector promptly acquires the collected data
+  and records and then writes the collected data into the designated tables.
+  
+- **Events**: PilotScope also support diverse events. They will be trigger in different times. For example, after each
+  execution process is finished, PilotScope will attempt to trigger some events like `PeriodicModelUpdateEvent`.
+  
+- **Return Records**:
+  PilotScope will return the retrieved records to the user. The common users can operate the database as before and
+  are completely unaware of the PilotScope.
+
+<!-- ![System Pipeline](../_static/system_pipeline.png) -->
+
+<div style="text-align:center">
+  <img src="../_static/system_pipeline.png" alt="图片描述" />
+  <p style="font-size: smaller;">Figure 1: System Pipeline </p>
+</div>
+
+
+
+

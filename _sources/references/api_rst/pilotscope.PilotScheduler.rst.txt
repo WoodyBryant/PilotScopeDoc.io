@@ -1,0 +1,7 @@
+pilotscope.PilotScheduler
+================================
+
+.. automodule:: pilotscope.PilotScheduler
+   :members:
+   :undoc-members:
+   :show-inheritance:

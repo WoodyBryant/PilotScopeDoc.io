@@ -1,0 +1,9 @@
+pilotscope.DataManager
+==============================
+
+
+.. toctree::
+   :maxdepth: 4
+
+   pilotscope.DataManager.DataManager
+

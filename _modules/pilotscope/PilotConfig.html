@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pilotscope.PilotConfig &mdash; PilotScope 1.0 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            PilotScope
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../references/overview.html">1. Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../references/install.html">2. Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../references/system_pipeline.html">3. System Pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../references/core_modules.html">4. Core Components (ML Side)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../references/example.html">5. Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../references/api.html">6. API (ML Side)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../references/database_develop.html">7. Database Side Develop</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../references/annotations.html">8. Annotations</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">PilotScope</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pilotscope.PilotConfig</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pilotscope.PilotConfig</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">os</span>
+
+<span class="kn">from</span> <span class="nn">pilotscope.Common.SSHConnector</span> <span class="kn">import</span> <span class="n">SSHConnector</span>
+<span class="kn">from</span> <span class="nn">pilotscope.PilotEnum</span> <span class="kn">import</span> <span class="n">DataFetchMethodEnum</span><span class="p">,</span> <span class="n">DatabaseEnum</span><span class="p">,</span> <span class="n">TrainSwitchMode</span><span class="p">,</span> <span class="n">SparkSQLDataSourceEnum</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%(asctime)s</span><span class="s1"> - </span><span class="si">%(name)s</span><span class="s1"> - </span><span class="si">%(levelname)s</span><span class="s1"> - </span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="n">pilot_logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;PilotScope&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="PilotConfig"><a class="viewcode-back" href="../../references/api_rst/pilotscope.PilotConfig.html#pilotscope.PilotConfig.PilotConfig">[docs]</a><span class="k">class</span> <span class="nc">PilotConfig</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The PilotConfig class is used for storing and managing configuration information for PilotScope,</span>
+<span class="sd">    including the host address of PilotScope, the name of the database to connect to,</span>
+<span class="sd">    the username and password to log into the database, etc.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PilotConfig.__init__"><a class="viewcode-back" href="../../references/api_rst/pilotscope.PilotConfig.html#pilotscope.PilotConfig.PilotConfig.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db_type</span><span class="p">:</span> <span class="n">DatabaseEnum</span><span class="p">,</span> <span class="n">db</span><span class="o">=</span><span class="s2">&quot;stats_tiny&quot;</span><span class="p">,</span> <span class="n">pilotscope_core_host</span><span class="o">=</span><span class="s2">&quot;localhost&quot;</span><span class="p">,</span>
+                 <span class="n">user_data_db_name</span><span class="o">=</span><span class="s2">&quot;PilotScopeUserData&quot;</span><span class="p">,</span> <span class="n">sql_execution_timeout</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">once_request_timeout</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize the PilotConfig.</span>
+
+<span class="sd">        :param db_type: the type of database, i.e. PostgreSQL, SparkSQL, etc.</span>
+<span class="sd">        :param db: the name of connected database</span>
+<span class="sd">        :param pilotscope_core_host: the host address of PilotScope in ML side.</span>
+<span class="sd">        :param user_data_db_name: the created database name for saving the user data. If users want to visit these data, they can set db=user_data_db_name.</span>
+<span class="sd">        :param sql_execution_timeout: the timeout of sql execution, unit: second</span>
+<span class="sd">        :param once_request_timeout: the timeout of once request, unit: second</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">db_type</span><span class="p">:</span> <span class="n">DatabaseEnum</span> <span class="o">=</span> <span class="n">db_type</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">pilotscope_core_host</span> <span class="o">=</span> <span class="n">pilotscope_core_host</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_fetch_method</span> <span class="o">=</span> <span class="n">DataFetchMethodEnum</span><span class="o">.</span><span class="n">HTTP</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db</span> <span class="o">=</span> <span class="n">db</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">user_data_db_name</span> <span class="o">=</span> <span class="n">user_data_db_name</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_enable_deep_control</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_local</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sql_execution_timeout</span> <span class="o">=</span> <span class="n">sql_execution_timeout</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">once_request_timeout</span> <span class="o">=</span> <span class="n">once_request_timeout</span>
+
+        <span class="c1"># pretraining</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pretraining_model</span> <span class="o">=</span> <span class="n">TrainSwitchMode</span><span class="o">.</span><span class="n">WAIT</span></div>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span>
+
+<div class="viewcode-block" id="PilotConfig.print"><a class="viewcode-back" href="../../references/api_rst/pilotscope.PilotConfig.html#pilotscope.PilotConfig.PilotConfig.print">[docs]</a>    <span class="k">def</span> <span class="nf">print</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Print the configuration information of PilotScope.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> = </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">))</span></div></div>
+
+
+<div class="viewcode-block" id="PostgreSQLConfig"><a class="viewcode-back" href="../../references/api_rst/pilotscope.PilotConfig.html#pilotscope.PilotConfig.PostgreSQLConfig">[docs]</a><span class="k">class</span> <span class="nc">PostgreSQLConfig</span><span class="p">(</span><span class="n">PilotConfig</span><span class="p">):</span>
+<div class="viewcode-block" id="PostgreSQLConfig.__init__"><a class="viewcode-back" href="../../references/api_rst/pilotscope.PilotConfig.html#pilotscope.PilotConfig.PostgreSQLConfig.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pilotscope_core_host</span><span class="o">=</span><span class="s2">&quot;localhost&quot;</span><span class="p">,</span> <span class="n">db_host</span><span class="o">=</span><span class="s2">&quot;localhost&quot;</span><span class="p">,</span> <span class="n">db_port</span><span class="o">=</span><span class="s2">&quot;5432&quot;</span><span class="p">,</span> <span class="n">db_user</span><span class="o">=</span><span class="s2">&quot;pilotscope&quot;</span><span class="p">,</span>
+                 <span class="n">db_user_pwd</span><span class="o">=</span><span class="s2">&quot;pilotscope&quot;</span><span class="p">,</span> <span class="n">db</span><span class="o">=</span><span class="s2">&quot;stats_tiny&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param pilotscope_core_host: the host address of PilotScope in ML side.</span>
+<span class="sd">        :param db_host: the host address of database</span>
+<span class="sd">        :param db_port: the port of database</span>
+<span class="sd">        :param db_user: the username to log into the database</span>
+<span class="sd">        :param db_user_pwd: the password to log into the database</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">db_type</span><span class="o">=</span><span class="n">DatabaseEnum</span><span class="o">.</span><span class="n">POSTGRESQL</span><span class="p">,</span> <span class="n">db</span><span class="o">=</span><span class="n">db</span><span class="p">,</span> <span class="n">pilotscope_core_host</span><span class="o">=</span><span class="n">pilotscope_core_host</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db_host</span> <span class="o">=</span> <span class="n">db_host</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db_port</span> <span class="o">=</span> <span class="n">db_port</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db_user</span> <span class="o">=</span> <span class="n">db_user</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db_user_pwd</span> <span class="o">=</span> <span class="n">db_user_pwd</span>
+
+        <span class="c1"># for deep control</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pg_bin_path</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pgdata</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pg_ctl</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db_config_path</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">backup_db_config_path</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db_host_user</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db_host_pwd</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db_host_port</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="PostgreSQLConfig.enable_deep_control_local"><a class="viewcode-back" href="../../references/api_rst/pilotscope.PilotConfig.html#pilotscope.PilotConfig.PostgreSQLConfig.enable_deep_control_local">[docs]</a>    <span class="k">def</span> <span class="nf">enable_deep_control_local</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pg_bin_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">pg_data_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Enable deep control for PostgreSQL, such as  starting and stopping database, changing config file, etc.</span>
+<span class="sd">        If you do not need these functions, it is not necessary to set these values.</span>
+<span class="sd">        If the database and PilotScope Core are on the same machine, you can use this function, i.e., pilotscope_core_host != db_host.</span>
+<span class="sd">        Otherwise, use `enable_deep_control_remote`</span>
+<span class="sd">        </span>
+<span class="sd">        :param pg_bin_path: the directory of binary file of postgresql, e.g., /postgres_install_path/bin</span>
+<span class="sd">        :param pg_data_path: location of the database data storage</span>
+<span class="sd">        :param db_host_user: the username to log into the database host</span>
+<span class="sd">        :param db_host_pwd: the password to log into the database host</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_enable_deep_control</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pg_bin_path</span> <span class="o">=</span> <span class="n">pg_bin_path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pgdata</span> <span class="o">=</span> <span class="n">pg_data_path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">backup_db_config_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">pg_data_path</span><span class="p">,</span> <span class="s2">&quot;pilotscope_postgresql_backup.conf&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db_config_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">pg_data_path</span><span class="p">,</span> <span class="s2">&quot;postgresql.conf&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pg_ctl</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">pg_bin_path</span><span class="p">,</span> <span class="s2">&quot;pg_ctl&quot;</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db_config_path</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">backup_db_config_path</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">w</span><span class="p">:</span>
+                <span class="n">w</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pg_ctl</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">pg_bin_path</span><span class="p">,</span> <span class="s2">&quot;pg_ctl&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PostgreSQLConfig.enable_deep_control_remote"><a class="viewcode-back" href="../../references/api_rst/pilotscope.PilotConfig.html#pilotscope.PilotConfig.PostgreSQLConfig.enable_deep_control_remote">[docs]</a>    <span class="k">def</span> <span class="nf">enable_deep_control_remote</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pg_bin_path</span><span class="p">,</span> <span class="n">pg_data_path</span><span class="p">,</span> <span class="n">db_host_user</span><span class="p">,</span> <span class="n">db_host_pwd</span><span class="p">,</span> <span class="n">db_host_ssh_port</span><span class="o">=</span><span class="mi">22</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Enable deep control for PostgreSQL, such as starting and stopping database, changing config file, etc.</span>
+<span class="sd">        If you do not need these functions, it is not necessary to set these values.</span>
+<span class="sd">        If the database and PilotScope Core are not on the same machine, you can use this function, i.e., pilotscope_core_host != db_host.</span>
+<span class="sd">        Otherwise, use `enable_deep_control_local`</span>
+
+<span class="sd">        :param pg_bin_path:  the directory of binary file of postgresql, e.g., /postgres_install_path/bin</span>
+<span class="sd">        :param pg_data_path: location of the database data storage</span>
+<span class="sd">        :param db_host_user: the username to log into the database host</span>
+<span class="sd">        :param db_host_pwd: the password to log into the database host</span>
+<span class="sd">        :param db_host_ssh_port: the port of ssh service on the database host</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_local</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_enable_deep_control</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">db_host_user</span> <span class="o">=</span> <span class="n">db_host_user</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db_host_pwd</span> <span class="o">=</span> <span class="n">db_host_pwd</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db_host_port</span> <span class="o">=</span> <span class="n">db_host_ssh_port</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">pg_bin_path</span> <span class="o">=</span> <span class="n">pg_bin_path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pgdata</span> <span class="o">=</span> <span class="n">pg_data_path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">backup_db_config_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">pg_data_path</span><span class="p">,</span> <span class="s2">&quot;pilotscope_postgresql_backup.conf&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db_config_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">pg_data_path</span><span class="p">,</span> <span class="s2">&quot;postgresql.conf&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pg_ctl</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">pg_bin_path</span><span class="p">,</span> <span class="s2">&quot;pg_ctl&quot;</span><span class="p">)</span>
+
+        <span class="n">ssh_conn</span> <span class="o">=</span> <span class="n">SSHConnector</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db_host</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">db_host_user</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">db_host_pwd</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">db_host_port</span><span class="p">)</span>
+        <span class="n">ssh_conn</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
+        <span class="k">with</span> <span class="n">ssh_conn</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db_config_path</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">ssh_conn</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">backup_db_config_path</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">w</span><span class="p">:</span>
+                <span class="n">w</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+        <span class="n">ssh_conn</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pg_ctl</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">pg_bin_path</span><span class="p">,</span> <span class="s2">&quot;pg_ctl&quot;</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="SparkConfig"><a class="viewcode-back" href="../../references/api_rst/pilotscope.PilotConfig.html#pilotscope.PilotConfig.SparkConfig">[docs]</a><span class="k">class</span> <span class="nc">SparkConfig</span><span class="p">(</span><span class="n">PilotConfig</span><span class="p">):</span>
+<div class="viewcode-block" id="SparkConfig.__init__"><a class="viewcode-back" href="../../references/api_rst/pilotscope.PilotConfig.html#pilotscope.PilotConfig.SparkConfig.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app_name</span><span class="o">=</span><span class="s2">&quot;testApp&quot;</span><span class="p">,</span> <span class="n">master_url</span><span class="o">=</span><span class="s2">&quot;local[*]&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param app_name: the name of the application of Spark</span>
+<span class="sd">        :param master_url: the master URL of Spark cluster</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">db_type</span><span class="o">=</span><span class="n">DatabaseEnum</span><span class="o">.</span><span class="n">SPARK</span><span class="p">,</span> <span class="n">db</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="c1"># spark</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">app_name</span> <span class="o">=</span> <span class="n">app_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">master_url</span> <span class="o">=</span> <span class="n">master_url</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">master_url</span> <span class="o">!=</span> <span class="s2">&quot;local[*]&quot;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+                <span class="s2">&quot;PilotScope only support master_url=local[*]. The more functionalities is developing&quot;</span><span class="p">)</span>
+
+        <span class="c1"># postgresql datasource</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">datasource_type</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db_host</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db_port</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db_user</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db_user_pwd</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">jdbc</span> <span class="o">=</span> <span class="s2">&quot;org.postgresql:postgresql:42.6.0&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">spark_configs</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_spark_session_config</span><span class="p">({</span>
+            <span class="s2">&quot;spark.sql.pilotscope.enabled&quot;</span><span class="p">:</span> <span class="kc">True</span>
+        <span class="p">})</span></div>
+
+<div class="viewcode-block" id="SparkConfig.set_spark_session_config"><a class="viewcode-back" href="../../references/api_rst/pilotscope.PilotConfig.html#pilotscope.PilotConfig.SparkConfig.set_spark_session_config">[docs]</a>    <span class="k">def</span> <span class="nf">set_spark_session_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">spark_configs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="SparkConfig.enable_cardinality_estimation"><a class="viewcode-back" href="../../references/api_rst/pilotscope.PilotConfig.html#pilotscope.PilotConfig.SparkConfig.enable_cardinality_estimation">[docs]</a>    <span class="k">def</span> <span class="nf">enable_cardinality_estimation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Spark SQL support cost-based optimization but it is disabled by default.</span>
+<span class="sd">        If you need to enable `pull_subquery_card` and `push_card`, please call this function, and PilotScope will set the corresponding parameters.</span>
+<span class="sd">        This will consume more time, but the performance of the SQL will be better.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_spark_session_config</span><span class="p">({</span>
+            <span class="s2">&quot;spark.sql.cbo.enabled&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="s2">&quot;spark.sql.cbo.joinReorder.enabled&quot;</span><span class="p">:</span> <span class="kc">True</span>
+        <span class="p">})</span></div>
+
+<div class="viewcode-block" id="SparkConfig.use_postgresql_datasource"><a class="viewcode-back" href="../../references/api_rst/pilotscope.PilotConfig.html#pilotscope.PilotConfig.SparkConfig.use_postgresql_datasource">[docs]</a>    <span class="k">def</span> <span class="nf">use_postgresql_datasource</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db_host</span><span class="o">=</span><span class="s2">&quot;localhost&quot;</span><span class="p">,</span> <span class="n">db_port</span><span class="o">=</span><span class="s2">&quot;5432&quot;</span><span class="p">,</span> <span class="n">db_user</span><span class="o">=</span><span class="s2">&quot;postgres&quot;</span><span class="p">,</span>
+                                  <span class="n">db_user_pwd</span><span class="o">=</span><span class="s2">&quot;postgres&quot;</span><span class="p">,</span> <span class="n">db</span><span class="o">=</span><span class="s2">&quot;stats_tiny&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set up a PostgreSQL data source.</span>
+
+<span class="sd">        :param db_host: the host of postgresql, defaults to &quot;localhost&quot;</span>
+<span class="sd">        :param db_port: the network port of postgresql, defaults to &quot;5432&quot;</span>
+<span class="sd">        :param db_user: the username to log into postgresql, defaults to &quot;postgres&quot;</span>
+<span class="sd">        :param db_user_pwd: the password of the user, defaults to &quot;postgres&quot;</span>
+<span class="sd">        :param db: database name, defaults to &quot;stats_tiny&quot;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">datasource_type</span> <span class="o">=</span> <span class="n">SparkSQLDataSourceEnum</span><span class="o">.</span><span class="n">POSTGRESQL</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db_host</span> <span class="o">=</span> <span class="n">db_host</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db_port</span> <span class="o">=</span> <span class="n">db_port</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db</span> <span class="o">=</span> <span class="n">db</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db_user</span> <span class="o">=</span> <span class="n">db_user</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db_user_pwd</span> <span class="o">=</span> <span class="n">db_user_pwd</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Alibaba.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

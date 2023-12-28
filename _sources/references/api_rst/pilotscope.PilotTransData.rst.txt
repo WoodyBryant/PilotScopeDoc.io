@@ -1,0 +1,7 @@
+pilotscope.PilotTransData
+================================
+
+.. automodule:: pilotscope.PilotTransData
+   :members:
+   :undoc-members:
+   :show-inheritance:

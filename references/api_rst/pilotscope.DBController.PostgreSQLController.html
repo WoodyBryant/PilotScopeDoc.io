@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>6.10.2. pilotscope.DBController.PostgreSQLController &mdash; PilotScope 1.0 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="6.10.3. pilotscope.DBController.SparkSQLController" href="pilotscope.DBController.SparkSQLController.html" />
+    <link rel="prev" title="6.10.1. pilotscope.DBController.BaseDBController" href="pilotscope.DBController.BaseDBController.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            PilotScope
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../overview.html">1. Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">2. Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../system_pipeline.html">3. System Pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../core_modules.html">4. Core Components (ML Side)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../example.html">5. Example</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">6. API (ML Side)</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="pilotscope.Anchor.html">6.1. pilotscope.Anchor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pilotscope.PilotConfig.html">6.2. pilotscope.PilotConfig</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pilotscope.DBInteractor.html">6.3. pilotscope.DBInteractor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pilotscope.PilotModel.html">6.4. pilotscope.PilotModel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pilotscope.PilotScheduler.html">6.5. pilotscope.PilotScheduler</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pilotscope.PilotEvent.html">6.6. pilotscope.PilotEvent</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pilotscope.DataManager.html">6.7. pilotscope.DataManager</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pilotscope.PilotTransData.html">6.8. pilotscope.PilotTransData</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pilotscope.Factory.html">6.9. pilotscope.Factory</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="pilotscope.DBController.html">6.10. pilotscope.DBController</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="pilotscope.DBController.BaseDBController.html">6.10.1. pilotscope.DBController.BaseDBController</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">6.10.2. pilotscope.DBController.PostgreSQLController</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pilotscope.DBController.SparkSQLController.html">6.10.3. pilotscope.DBController.SparkSQLController</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pilotscope.PilotEnum.html">6.11. pilotscope.PilotEnum</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../database_develop.html">7. Database Side Develop</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../annotations.html">8. Annotations</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">PilotScope</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../api.html"><span class="section-number">6. </span>API (ML Side)</a></li>
+          <li class="breadcrumb-item"><a href="pilotscope.DBController.html"><span class="section-number">6.10. </span>pilotscope.DBController</a></li>
+      <li class="breadcrumb-item active"><span class="section-number">6.10.2. </span>pilotscope.DBController.PostgreSQLController</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/references/api_rst/pilotscope.DBController.PostgreSQLController.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-pilotscope.DBController.PostgreSQLController">
+<span id="pilotscope-dbcontroller-postgresqlcontroller"></span><h1><span class="section-number">6.10.2. </span>pilotscope.DBController.PostgreSQLController<a class="headerlink" href="#module-pilotscope.DBController.PostgreSQLController" title="Permalink to this headline"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="pilotscope.DBController.PostgreSQLController.PostgreSQLController">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">PostgreSQLController</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/DBController/PostgreSQLController.html#PostgreSQLController"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.DBController.PostgreSQLController.PostgreSQLController" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="pilotscope.DBController.BaseDBController.html#pilotscope.DBController.BaseDBController.BaseDBController" title="pilotscope.DBController.BaseDBController.BaseDBController"><code class="xref py py-class docutils literal notranslate"><span class="pre">pilotscope.DBController.BaseDBController.BaseDBController</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.DBController.PostgreSQLController.PostgreSQLController.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="pilotscope.PilotConfig.html#pilotscope.PilotConfig.PostgreSQLConfig" title="pilotscope.PilotConfig.PostgreSQLConfig"><span class="pre">pilotscope.PilotConfig.PostgreSQLConfig</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">echo</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable_simulate_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/DBController/PostgreSQLController.html#PostgreSQLController.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.DBController.PostgreSQLController.PostgreSQLController.__init__" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config</strong> – The config of PilotScope including the config of database.</p></li>
+<li><p><strong>echo</strong> – if true, the more detailed information will be printed when executing the sql statement.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.DBController.PostgreSQLController.PostgreSQLController.get_available_extensions">
+<span class="sig-name descname"><span class="pre">get_available_extensions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/DBController/PostgreSQLController.html#PostgreSQLController.get_available_extensions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.DBController.PostgreSQLController.PostgreSQLController.get_available_extensions" title="Permalink to this definition"></a></dt>
+<dd><p>Get all extensions that have installed in the connected database
+:return: the list of extension names</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.DBController.PostgreSQLController.PostgreSQLController.execute">
+<span class="sig-name descname"><span class="pre">execute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sql</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fetch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fetch_column_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/DBController/PostgreSQLController.html#PostgreSQLController.execute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.DBController.PostgreSQLController.PostgreSQLController.execute" title="Permalink to this definition"></a></dt>
+<dd><p>Execute a SQL query.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sql</strong> – the SQL query to execute</p></li>
+<li><p><strong>fetch</strong> – it indicates whether to fetch the result of the query</p></li>
+<li><p><strong>fetch_column_name</strong> – it indicates whether to fetch the column names of the result.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the result of the query if fetch is True, otherwise None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.DBController.PostgreSQLController.PostgreSQLController.set_hint">
+<span class="sig-name descname"><span class="pre">set_hint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/DBController/PostgreSQLController.html#PostgreSQLController.set_hint"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.DBController.PostgreSQLController.PostgreSQLController.set_hint" title="Permalink to this definition"></a></dt>
+<dd><p>Set the value of each hint (i.e., the run-time config) when execute SQL queries.
+The hints can be used to control the behavior of the database system in a session.
+For PostgreSQL, you can find all valid hints in <a class="reference external" href="https://www.postgresql.org/docs/13/runtime-config.html">https://www.postgresql.org/docs/13/runtime-config.html</a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>key</strong> – the name of the hint</p></li>
+<li><p><strong>value</strong> – the value of the hint</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.DBController.PostgreSQLController.PostgreSQLController.create_index">
+<span class="sig-name descname"><span class="pre">create_index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pilotscope.Common.Index.Index</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/DBController/PostgreSQLController.html#PostgreSQLController.create_index"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.DBController.PostgreSQLController.PostgreSQLController.create_index" title="Permalink to this definition"></a></dt>
+<dd><p>Create an index on columns <cite>index.columns</cite> of table <cite>index.table</cite> with name <cite>index.index_name</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>index</strong> – a Index object including the information of the index</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.DBController.PostgreSQLController.PostgreSQLController.drop_index">
+<span class="sig-name descname"><span class="pre">drop_index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pilotscope.Common.Index.Index</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/DBController/PostgreSQLController.html#PostgreSQLController.drop_index"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.DBController.PostgreSQLController.PostgreSQLController.drop_index" title="Permalink to this definition"></a></dt>
+<dd><p>Drop an index by its index name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>index</strong> – an index that will be dropped</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.DBController.PostgreSQLController.PostgreSQLController.drop_all_indexes">
+<span class="sig-name descname"><span class="pre">drop_all_indexes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/DBController/PostgreSQLController.html#PostgreSQLController.drop_all_indexes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.DBController.PostgreSQLController.PostgreSQLController.drop_all_indexes" title="Permalink to this definition"></a></dt>
+<dd><p>Drop all indexes across all tables in the database. This will not delete the system indexes and unique indexes.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.DBController.PostgreSQLController.PostgreSQLController.get_all_indexes_byte">
+<span class="sig-name descname"><span class="pre">get_all_indexes_byte</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/DBController/PostgreSQLController.html#PostgreSQLController.get_all_indexes_byte"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.DBController.PostgreSQLController.PostgreSQLController.get_all_indexes_byte" title="Permalink to this definition"></a></dt>
+<dd><p>Get the size of all indexes across all tables in the database in bytes.
+This will include the system indexes and unique indexes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>the size of all indexes in bytes</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.DBController.PostgreSQLController.PostgreSQLController.get_table_indexes_byte">
+<span class="sig-name descname"><span class="pre">get_table_indexes_byte</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/DBController/PostgreSQLController.html#PostgreSQLController.get_table_indexes_byte"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.DBController.PostgreSQLController.PostgreSQLController.get_table_indexes_byte" title="Permalink to this definition"></a></dt>
+<dd><p>Get the size of all indexes on a table in bytes.
+This will include the system indexes and unique indexes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>table_name</strong> – a table name that the indexes belong to</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the size of all indexes on the table in bytes</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.DBController.PostgreSQLController.PostgreSQLController.get_index_byte">
+<span class="sig-name descname"><span class="pre">get_index_byte</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pilotscope.Common.Index.Index</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/DBController/PostgreSQLController.html#PostgreSQLController.get_index_byte"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.DBController.PostgreSQLController.PostgreSQLController.get_index_byte" title="Permalink to this definition"></a></dt>
+<dd><p>Get the size of an index in bytes by its index name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>index</strong> – the index to get size</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the size of the index in bytes</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.DBController.PostgreSQLController.PostgreSQLController.get_existed_indexes">
+<span class="sig-name descname"><span class="pre">get_existed_indexes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/DBController/PostgreSQLController.html#PostgreSQLController.get_existed_indexes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.DBController.PostgreSQLController.PostgreSQLController.get_existed_indexes" title="Permalink to this definition"></a></dt>
+<dd><p>Retrieves the existing index on the specified table.
+This will not include the system indexes and unique indexes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>table</strong> – the name of the table</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a list of pilotscope.common.Index</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.DBController.PostgreSQLController.PostgreSQLController.get_all_indexes">
+<span class="sig-name descname"><span class="pre">get_all_indexes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/DBController/PostgreSQLController.html#PostgreSQLController.get_all_indexes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.DBController.PostgreSQLController.PostgreSQLController.get_all_indexes" title="Permalink to this definition"></a></dt>
+<dd><p>Get all indexes across all tables in the database.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A collection containing the details of all indexes.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.DBController.PostgreSQLController.PostgreSQLController.get_index_number">
+<span class="sig-name descname"><span class="pre">get_index_number</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/DBController/PostgreSQLController.html#PostgreSQLController.get_index_number"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.DBController.PostgreSQLController.PostgreSQLController.get_index_number" title="Permalink to this definition"></a></dt>
+<dd><p>Get the number of indexes built on the specified table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>table</strong> – The name of the table for which to count indexes.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The number of indexes on the specified table.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.DBController.PostgreSQLController.PostgreSQLController.explain_physical_plan">
+<span class="sig-name descname"><span class="pre">explain_physical_plan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sql</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comment</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/DBController/PostgreSQLController.html#PostgreSQLController.explain_physical_plan"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.DBController.PostgreSQLController.PostgreSQLController.explain_physical_plan" title="Permalink to this definition"></a></dt>
+<dd><p>Get the physical plan from database’s optimizer of a SQL query.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sql</strong> – The SQL query to be explained.</p></li>
+<li><p><strong>comment</strong> – A SQL comment will be added to the beginning of the SQL query.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The physical plan of the SQL query.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.DBController.PostgreSQLController.PostgreSQLController.explain_execution_plan">
+<span class="sig-name descname"><span class="pre">explain_execution_plan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sql</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comment</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/DBController/PostgreSQLController.html#PostgreSQLController.explain_execution_plan"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.DBController.PostgreSQLController.PostgreSQLController.explain_execution_plan" title="Permalink to this definition"></a></dt>
+<dd><p>Get the execution plan from database’s optimizer of a SQL query.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sql</strong> – The SQL query to be explained.</p></li>
+<li><p><strong>comment</strong> – A SQL comment will be added to the beginning of the SQL query.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The execution plan of the SQL query.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.DBController.PostgreSQLController.PostgreSQLController.get_estimated_cost">
+<span class="sig-name descname"><span class="pre">get_estimated_cost</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sql</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comment</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/DBController/PostgreSQLController.html#PostgreSQLController.get_estimated_cost"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.DBController.PostgreSQLController.PostgreSQLController.get_estimated_cost" title="Permalink to this definition"></a></dt>
+<dd><p>Get an estimated cost of a SQL query.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sql</strong> – The SQL query for which to estimate the cost.</p></li>
+<li><p><strong>comment</strong> – A SQL comment will be added to the beginning of the SQL query.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The estimated total cost of executing the SQL query.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.DBController.PostgreSQLController.PostgreSQLController.get_explain_sql">
+<span class="sig-name descname"><span class="pre">get_explain_sql</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sql</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">execute</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comment</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/DBController/PostgreSQLController.html#PostgreSQLController.get_explain_sql"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.DBController.PostgreSQLController.PostgreSQLController.get_explain_sql" title="Permalink to this definition"></a></dt>
+<dd><p>Constructs an EXPLAIN SQL statement for a given SQL query.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sql</strong> – The SQL query to explain.</p></li>
+<li><p><strong>execute</strong> – A boolean flag indicating whether to execute the query plan.</p></li>
+<li><p><strong>comment</strong> – A SQL comment will be added to the beginning of the SQL query.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The result of executing the <cite>EXPLAIN</cite> SQL statement.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.DBController.PostgreSQLController.PostgreSQLController.get_buffercache">
+<span class="sig-name descname"><span class="pre">get_buffercache</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/DBController/PostgreSQLController.html#PostgreSQLController.get_buffercache"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.DBController.PostgreSQLController.PostgreSQLController.get_buffercache" title="Permalink to this definition"></a></dt>
+<dd><p>Get the numbers of buffer per table in the shared buffer cache in real time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>a dict, where keys are the names of table and values are the numbers of buffer per table</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.DBController.PostgreSQLController.PostgreSQLController.shutdown">
+<span class="sig-name descname"><span class="pre">shutdown</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/DBController/PostgreSQLController.html#PostgreSQLController.shutdown"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.DBController.PostgreSQLController.PostgreSQLController.shutdown" title="Permalink to this definition"></a></dt>
+<dd><p>Shutdown the database</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.DBController.PostgreSQLController.PostgreSQLController.start">
+<span class="sig-name descname"><span class="pre">start</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/DBController/PostgreSQLController.html#PostgreSQLController.start"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.DBController.PostgreSQLController.PostgreSQLController.start" title="Permalink to this definition"></a></dt>
+<dd><p>Try to start DBMS. If fails the first time, recover config to self.config.backup_db_config_path and raise DatabaseStartException.
+If fails again after recovering config, raise DatabaseCrashException.</p>
+<p>:raises DatabaseStartException</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.DBController.PostgreSQLController.PostgreSQLController.is_running">
+<span class="sig-name descname"><span class="pre">is_running</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/DBController/PostgreSQLController.html#PostgreSQLController.is_running"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.DBController.PostgreSQLController.PostgreSQLController.is_running" title="Permalink to this definition"></a></dt>
+<dd><p>Check whether the database is running.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>True if the database is running, False otherwise.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.DBController.PostgreSQLController.PostgreSQLController.write_knob_to_file">
+<span class="sig-name descname"><span class="pre">write_knob_to_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key_2_value_knob</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/DBController/PostgreSQLController.html#PostgreSQLController.write_knob_to_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.DBController.PostgreSQLController.PostgreSQLController.write_knob_to_file" title="Permalink to this definition"></a></dt>
+<dd><p>Write knobs to config file, you should restart database to make it work.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>key_2_value_knob</strong> – a dict with keys as the names of the knobs and values as the values to be set.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.DBController.PostgreSQLController.PostgreSQLController.recover_config">
+<span class="sig-name descname"><span class="pre">recover_config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/DBController/PostgreSQLController.html#PostgreSQLController.recover_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.DBController.PostgreSQLController.PostgreSQLController.recover_config" title="Permalink to this definition"></a></dt>
+<dd><p>Recover config file of database to the lasted saved config file by <cite>backup_config()</cite></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.DBController.PostgreSQLController.PostgreSQLController.backup_config">
+<span class="sig-name descname"><span class="pre">backup_config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/DBController/PostgreSQLController.html#PostgreSQLController.backup_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.DBController.PostgreSQLController.PostgreSQLController.backup_config" title="Permalink to this definition"></a></dt>
+<dd><p>Creates a backup of the database configuration file.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.DBController.PostgreSQLController.PostgreSQLController.get_table_columns">
+<span class="sig-name descname"><span class="pre">get_table_columns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable_all_schema</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/DBController/PostgreSQLController.html#PostgreSQLController.get_table_columns"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.DBController.PostgreSQLController.PostgreSQLController.get_table_columns" title="Permalink to this definition"></a></dt>
+<dd><p>Retrieves all column names for a given table. If enable_all_schema is true,
+Pilotscope will search it across all schemas in the database.
+Otherwise, Pilotscope will only search it in the public schema.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>table_name</strong> – The name of the table for which to retrieve column names.</p></li>
+<li><p><strong>enable_all_schema</strong> – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A list of column names for the specified table.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.DBController.PostgreSQLController.PostgreSQLController.get_number_of_distinct_value">
+<span class="sig-name descname"><span class="pre">get_number_of_distinct_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/DBController/PostgreSQLController.html#PostgreSQLController.get_number_of_distinct_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.DBController.PostgreSQLController.PostgreSQLController.get_number_of_distinct_value" title="Permalink to this definition"></a></dt>
+<dd><p>Get the number of distinct value of a column</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>table_name</strong> – the name of the table that the column belongs to</p></li>
+<li><p><strong>column_name</strong> – the name of the column</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the number of distinct value, type of which is same as the data of the column</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pilotscope.DBController.PostgreSQLController.SimulateIndexVisitor">
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">SimulateIndexVisitor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db_controller</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#pilotscope.DBController.PostgreSQLController.PostgreSQLController" title="pilotscope.DBController.PostgreSQLController.PostgreSQLController"><span class="pre">pilotscope.DBController.PostgreSQLController.PostgreSQLController</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/DBController/PostgreSQLController.html#SimulateIndexVisitor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.DBController.PostgreSQLController.SimulateIndexVisitor" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.DBController.PostgreSQLController.SimulateIndexVisitor.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db_controller</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#pilotscope.DBController.PostgreSQLController.PostgreSQLController" title="pilotscope.DBController.PostgreSQLController.PostgreSQLController"><span class="pre">pilotscope.DBController.PostgreSQLController.PostgreSQLController</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/DBController/PostgreSQLController.html#SimulateIndexVisitor.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.DBController.PostgreSQLController.SimulateIndexVisitor.__init__" title="Permalink to this definition"></a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.DBController.PostgreSQLController.SimulateIndexVisitor.create_index">
+<span class="sig-name descname"><span class="pre">create_index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pilotscope.Common.Index.Index</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/DBController/PostgreSQLController.html#SimulateIndexVisitor.create_index"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.DBController.PostgreSQLController.SimulateIndexVisitor.create_index" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.DBController.PostgreSQLController.SimulateIndexVisitor.drop_index">
+<span class="sig-name descname"><span class="pre">drop_index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pilotscope.Common.Index.Index</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/DBController/PostgreSQLController.html#SimulateIndexVisitor.drop_index"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.DBController.PostgreSQLController.SimulateIndexVisitor.drop_index" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.DBController.PostgreSQLController.SimulateIndexVisitor.drop_all_indexes">
+<span class="sig-name descname"><span class="pre">drop_all_indexes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/DBController/PostgreSQLController.html#SimulateIndexVisitor.drop_all_indexes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.DBController.PostgreSQLController.SimulateIndexVisitor.drop_all_indexes" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.DBController.PostgreSQLController.SimulateIndexVisitor.get_all_indexes_byte">
+<span class="sig-name descname"><span class="pre">get_all_indexes_byte</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/DBController/PostgreSQLController.html#SimulateIndexVisitor.get_all_indexes_byte"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.DBController.PostgreSQLController.SimulateIndexVisitor.get_all_indexes_byte" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.DBController.PostgreSQLController.SimulateIndexVisitor.get_table_indexes_byte">
+<span class="sig-name descname"><span class="pre">get_table_indexes_byte</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/DBController/PostgreSQLController.html#SimulateIndexVisitor.get_table_indexes_byte"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.DBController.PostgreSQLController.SimulateIndexVisitor.get_table_indexes_byte" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.DBController.PostgreSQLController.SimulateIndexVisitor.get_index_byte">
+<span class="sig-name descname"><span class="pre">get_index_byte</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">pilotscope.Common.Index.Index</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/DBController/PostgreSQLController.html#SimulateIndexVisitor.get_index_byte"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.DBController.PostgreSQLController.SimulateIndexVisitor.get_index_byte" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.DBController.PostgreSQLController.SimulateIndexVisitor.get_index_number">
+<span class="sig-name descname"><span class="pre">get_index_number</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/DBController/PostgreSQLController.html#SimulateIndexVisitor.get_index_number"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.DBController.PostgreSQLController.SimulateIndexVisitor.get_index_number" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.DBController.PostgreSQLController.SimulateIndexVisitor.get_all_indexes">
+<span class="sig-name descname"><span class="pre">get_all_indexes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/DBController/PostgreSQLController.html#SimulateIndexVisitor.get_all_indexes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.DBController.PostgreSQLController.SimulateIndexVisitor.get_all_indexes" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pilotscope.DBController.PostgreSQLController.SimulateIndexVisitor.get_existed_index">
+<span class="sig-name descname"><span class="pre">get_existed_index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/pilotscope/DBController/PostgreSQLController.html#SimulateIndexVisitor.get_existed_index"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pilotscope.DBController.PostgreSQLController.SimulateIndexVisitor.get_existed_index" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="pilotscope.DBController.BaseDBController.html" class="btn btn-neutral float-left" title="6.10.1. pilotscope.DBController.BaseDBController" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pilotscope.DBController.SparkSQLController.html" class="btn btn-neutral float-right" title="6.10.3. pilotscope.DBController.SparkSQLController" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Alibaba.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

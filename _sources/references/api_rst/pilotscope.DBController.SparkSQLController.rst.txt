@@ -1,0 +1,7 @@
+pilotscope.DBController.SparkSQLController
+=================================================
+
+.. automodule:: pilotscope.DBController.SparkSQLController
+   :members:
+   :undoc-members:
+   :show-inheritance:

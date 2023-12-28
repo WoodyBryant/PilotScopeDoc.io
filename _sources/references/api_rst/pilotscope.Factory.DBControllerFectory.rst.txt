@@ -1,0 +1,7 @@
+pilotscope.Factory.DBControllerFectory
+=============================================
+
+.. automodule:: pilotscope.Factory.DBControllerFectory
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pilotscope.DBController.BaseDBController &mdash; PilotScope 1.0 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            PilotScope
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../references/overview.html">1. Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references/install.html">2. Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references/system_pipeline.html">3. System Pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references/core_modules.html">4. Core Components (ML Side)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references/example.html">5. Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references/api.html">6. API (ML Side)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references/database_develop.html">7. Database Side Develop</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references/annotations.html">8. Annotations</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">PilotScope</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pilotscope.DBController.BaseDBController</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pilotscope.DBController.BaseDBController</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">threading</span>
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+
+<span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">create_engine</span><span class="p">,</span> <span class="n">String</span><span class="p">,</span> <span class="n">Integer</span><span class="p">,</span> <span class="n">Float</span><span class="p">,</span> <span class="n">MetaData</span><span class="p">,</span> <span class="n">Table</span><span class="p">,</span> <span class="n">inspect</span><span class="p">,</span> <span class="n">select</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">Column</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy_utils</span> <span class="kn">import</span> <span class="n">database_exists</span><span class="p">,</span> <span class="n">create_database</span>
+
+<span class="kn">from</span> <span class="nn">pilotscope.Common.Index</span> <span class="kn">import</span> <span class="n">Index</span>
+<span class="kn">from</span> <span class="nn">pilotscope.Exception.Exception</span> <span class="kn">import</span> <span class="n">DatabaseDeepControlException</span>
+<span class="kn">from</span> <span class="nn">pilotscope.PilotConfig</span> <span class="kn">import</span> <span class="n">PilotConfig</span>
+<span class="kn">from</span> <span class="nn">pilotscope.PilotEnum</span> <span class="kn">import</span> <span class="n">DatabaseEnum</span>
+
+
+<div class="viewcode-block" id="BaseDBController"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.BaseDBController.html#pilotscope.DBController.BaseDBController.BaseDBController">[docs]</a><span class="k">class</span> <span class="nc">BaseDBController</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<div class="viewcode-block" id="BaseDBController.__init__"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.BaseDBController.html#pilotscope.DBController.BaseDBController.BaseDBController.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">PilotConfig</span><span class="p">,</span> <span class="n">echo</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; </span>
+<span class="sd">        :param config: The config of PilotScope including the config of database.</span>
+<span class="sd">        :param echo: if true, the more detailed information will be printed when executing the sql statement.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">config</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">echo</span> <span class="o">=</span> <span class="n">echo</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connection_thread</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">local</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_db_init</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">_db_init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize the database connection and engine.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">engine</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_engine</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span> <span class="o">=</span> <span class="n">MetaData</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_connect_if_loss</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_create_engine</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create the database engine.</span>
+
+<span class="sd">        :return: The created database engine.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">conn_str</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_conn_str</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">database_exists</span><span class="p">(</span><span class="n">conn_str</span><span class="p">):</span>
+            <span class="n">create_database</span><span class="p">(</span><span class="n">conn_str</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf8&quot;</span><span class="p">,</span> <span class="n">template</span><span class="o">=</span><span class="s2">&quot;template0&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">create_engine</span><span class="p">(</span><span class="n">conn_str</span><span class="p">,</span> <span class="n">echo</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">echo</span><span class="p">,</span> <span class="n">pool_size</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">pool_recycle</span><span class="o">=</span><span class="mi">3600</span><span class="p">,</span>
+                             <span class="n">connect_args</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;options&quot;</span><span class="p">:</span> <span class="s2">&quot;-c statement_timeout=</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                                 <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">sql_execution_timeout</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">)},</span> <span class="n">client_encoding</span><span class="o">=</span><span class="s1">&#39;utf8&#39;</span><span class="p">,</span>
+                             <span class="n">isolation_level</span><span class="o">=</span><span class="s2">&quot;AUTOCOMMIT&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_connection</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the connection of DBController.</span>
+
+<span class="sd">        :return: the connection object of sqlalchemy in thread-local data</span>
+<span class="sd">        :rtype: Connection of sqlalchemy</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection_thread</span><span class="o">.</span><span class="n">conn</span>
+
+    <span class="k">def</span> <span class="nf">_connect_if_loss</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        If the connection is lost, establish a new connection to the database.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_connect</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">connection_thread</span><span class="o">.</span><span class="n">conn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reset the database connection.</span>
+<span class="sd">        This function closes the current connection, recreates the pool, and establishes a new connection</span>
+<span class="sd">        to the database.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection_thread</span><span class="o">.</span><span class="n">conn</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">connection_thread</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">invalidate</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connection_thread</span><span class="o">.</span><span class="n">conn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_disconnect</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Disconnect from the database.</span>
+<span class="sd">        This function closes the connection if it is already established.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_connect</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">connection_thread</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">connection_thread</span><span class="o">.</span><span class="n">conn</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">_is_connect</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        </span>
+<span class="sd">        If self have connected, return True. Otherwise, return False. Note that if the DBMS is stopped from outside, the return value of this function will not change.</span>
+
+<span class="sd">        :return: if self connected or not</span>
+<span class="sd">        :rtype: bool</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">connection_thread</span><span class="p">,</span> <span class="s2">&quot;conn&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection_thread</span><span class="o">.</span><span class="n">conn</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="BaseDBController.explain_physical_plan"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.BaseDBController.html#pilotscope.DBController.BaseDBController.BaseDBController.explain_physical_plan">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">explain_physical_plan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sql</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get a physical plan from database&#39;s optimizer for a given SQL query.</span>
+
+<span class="sd">        :param sql: The SQL query to be explained.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="BaseDBController.explain_execution_plan"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.BaseDBController.html#pilotscope.DBController.BaseDBController.BaseDBController.explain_execution_plan">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">explain_execution_plan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sql</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get an execution plan from database&#39;s optimizer for a given SQL query.</span>
+
+<span class="sd">        :param sql: The SQL query to be explained.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">_create_conn_str</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+<div class="viewcode-block" id="BaseDBController.execute"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.BaseDBController.html#pilotscope.DBController.BaseDBController.BaseDBController.execute">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sql</span><span class="p">,</span> <span class="n">fetch</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Execute a sql statement.</span>
+
+<span class="sd">        :param sql: A SQL statement to be executed.</span>
+<span class="sd">        :param fetch: fetch result or not. If True, the function will return a list of tuple representing the result of the sql.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="BaseDBController.set_hint"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.BaseDBController.html#pilotscope.DBController.BaseDBController.BaseDBController.set_hint">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">set_hint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set the value of each hint (i.e., the run-time config) when execute SQL queries.</span>
+<span class="sd">        The hints can be used to control the behavior of the database system in a session.</span>
+
+<span class="sd">        For PostgreSQL, you can find all valid hints in https://www.postgresql.org/docs/13/runtime-config.html.</span>
+
+<span class="sd">        For Spark, you can find all valid hints (called conf in Spark) in https://spark.apache.org/docs/latest/configuration.html#runtime-sql-configuration</span>
+
+<span class="sd">        :param key: The key associated with the hint.</span>
+<span class="sd">        :param value: The value of the hint to be set.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+<div class="viewcode-block" id="BaseDBController.create_index"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.BaseDBController.html#pilotscope.DBController.BaseDBController.BaseDBController.create_index">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">create_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="n">Index</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create an index on columns `index.columns` of table `index.table` with name `index.index_name`.</span>
+
+<span class="sd">        :param index: a Index object including the information of the index</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="BaseDBController.drop_index"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.BaseDBController.html#pilotscope.DBController.BaseDBController.BaseDBController.drop_index">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">drop_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="n">Index</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Drop an index by its index name.</span>
+
+<span class="sd">        :param index: an index that will be dropped</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+
+    <span class="k">pass</span>
+
+<div class="viewcode-block" id="BaseDBController.drop_all_indexes"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.BaseDBController.html#pilotscope.DBController.BaseDBController.BaseDBController.drop_all_indexes">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">drop_all_indexes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Drop all indexes across all tables in the database.</span>
+<span class="sd">        This will not delete the system indexes and unique indexes.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="BaseDBController.get_all_indexes_byte"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.BaseDBController.html#pilotscope.DBController.BaseDBController.BaseDBController.get_all_indexes_byte">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">get_all_indexes_byte</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the size of all indexes across all tables in the database in bytes.</span>
+<span class="sd">        This will include the system indexes and unique indexes.</span>
+
+<span class="sd">        :return: the size of all indexes in bytes</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="BaseDBController.get_table_indexes_byte"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.BaseDBController.html#pilotscope.DBController.BaseDBController.BaseDBController.get_table_indexes_byte">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">get_table_indexes_byte</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the size of all indexes on a table in bytes.</span>
+<span class="sd">        This will include the system indexes and unique indexes.</span>
+
+
+<span class="sd">        :param table_name: a table name that the indexes belong to</span>
+<span class="sd">        :return: the size of all indexes on the table in bytes</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="BaseDBController.get_index_byte"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.BaseDBController.html#pilotscope.DBController.BaseDBController.BaseDBController.get_index_byte">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">get_index_byte</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="n">Index</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the size of an index in bytes by its index name.</span>
+
+<span class="sd">        :param index: the index to get size</span>
+<span class="sd">        :return: the size of the index in bytes</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="BaseDBController.get_index_number"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.BaseDBController.html#pilotscope.DBController.BaseDBController.BaseDBController.get_index_number">[docs]</a>    <span class="k">def</span> <span class="nf">get_index_number</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the number of indexes built on the specified table.</span>
+
+<span class="sd">        :param table: name of the table</span>
+<span class="sd">        :return: the number of index</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">inspector</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_inspect</span><span class="p">()</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">inspector</span><span class="o">.</span><span class="n">get_indexes</span><span class="p">(</span><span class="n">table</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">n</span></div>
+
+<div class="viewcode-block" id="BaseDBController.get_existed_indexes"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.BaseDBController.html#pilotscope.DBController.BaseDBController.BaseDBController.get_existed_indexes">[docs]</a>    <span class="k">def</span> <span class="nf">get_existed_indexes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Retrieves the existing index on the specified table.</span>
+<span class="sd">        This will not include the system indexes and unique indexes.</span>
+
+<span class="sd">        :param table: the name of the table</span>
+<span class="sd">        :return: a list of pilotscope.common.Index</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">inspector</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_inspect</span><span class="p">()</span>
+        <span class="n">db_indexes</span> <span class="o">=</span> <span class="n">inspector</span><span class="o">.</span><span class="n">get_indexes</span><span class="p">(</span><span class="n">table</span><span class="p">)</span>
+
+        <span class="n">indexes</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">db_index</span> <span class="ow">in</span> <span class="n">db_indexes</span><span class="p">:</span>
+            <span class="n">indexes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Index</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">db_index</span><span class="p">[</span><span class="s2">&quot;column_names&quot;</span><span class="p">],</span> <span class="n">table</span><span class="o">=</span><span class="n">table</span><span class="p">,</span> <span class="n">index_name</span><span class="o">=</span><span class="n">db_index</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]))</span>
+        <span class="k">return</span> <span class="n">indexes</span></div>
+
+<div class="viewcode-block" id="BaseDBController.get_all_indexes"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.BaseDBController.html#pilotscope.DBController.BaseDBController.BaseDBController.get_all_indexes">[docs]</a>    <span class="k">def</span> <span class="nf">get_all_indexes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get all indexes across all tables in the database.</span>
+
+<span class="sd">        :return: a list of pilotscope.common.Index</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">inspector</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_inspect</span><span class="p">()</span>
+        <span class="n">indexes</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">table</span> <span class="ow">in</span> <span class="n">inspector</span><span class="o">.</span><span class="n">get_table_names</span><span class="p">():</span>
+            <span class="n">db_indexes</span> <span class="o">=</span> <span class="n">inspector</span><span class="o">.</span><span class="n">get_indexes</span><span class="p">(</span><span class="n">table</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">db_index</span> <span class="ow">in</span> <span class="n">db_indexes</span><span class="p">:</span>
+                <span class="n">indexes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Index</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">db_index</span><span class="p">[</span><span class="s2">&quot;column_names&quot;</span><span class="p">],</span> <span class="n">table</span><span class="o">=</span><span class="n">table</span><span class="p">,</span> <span class="n">index_name</span><span class="o">=</span><span class="n">db_index</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]))</span>
+        <span class="k">return</span> <span class="n">indexes</span></div>
+
+<div class="viewcode-block" id="BaseDBController.get_estimated_cost"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.BaseDBController.html#pilotscope.DBController.BaseDBController.BaseDBController.get_estimated_cost">[docs]</a>    <span class="k">def</span> <span class="nf">get_estimated_cost</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sql</span><span class="p">,</span> <span class="n">comment</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get an estimated cost of a SQL query.</span>
+
+<span class="sd">        :param sql: The SQL query for which to estimate the cost.</span>
+<span class="sd">        :param comment: An optional comment to include with the query plan. Useful for debugging.</span>
+<span class="sd">        :return: The estimated total cost of executing the SQL query.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+    <span class="k">def</span> <span class="nf">_create_inspect</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">inspect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="p">)</span>
+
+<div class="viewcode-block" id="BaseDBController.create_table_if_absences"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.BaseDBController.html#pilotscope.DBController.BaseDBController.BaseDBController.create_table_if_absences">[docs]</a>    <span class="k">def</span> <span class="nf">create_table_if_absences</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="p">,</span> <span class="n">column_2_value</span><span class="p">,</span> <span class="n">primary_key_column</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                 <span class="n">enable_autoincrement_id_key</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create a table according to parameters if absences. This function will not insert any data into the table.</span>
+<span class="sd">        The column names and types of the table will be inferred from `column_2_value`.</span>
+
+<span class="sd">        :param table_name: the name of the table you want to create</span>
+<span class="sd">        :param column_2_value: a dict, whose keys are the names of columns and values. This data will be used to infer the column names and types of the table.</span>
+<span class="sd">        :param primary_key_column: A column name in `column_2_value`. The corresponding column will be set as primary key. Otherwise, there will be no primary key.</span>
+<span class="sd">        :param enable_autoincrement_id_key: If it is True, the `primary_key_column` will be autoincrement. It is only meaningful when `primary_key_column` is not None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_connect_if_loss</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">primary_key_column</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">primary_key_column</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">column_2_value</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;the primary key column </span><span class="si">{}</span><span class="s2"> is not in column_2_value&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">primary_key_column</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">exist_table</span><span class="p">(</span><span class="n">table_name</span><span class="p">):</span>
+            <span class="n">column_2_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_db_data_type</span><span class="p">(</span><span class="n">column_2_value</span><span class="p">)</span>
+            <span class="n">columns</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">column</span><span class="p">,</span> <span class="n">column_type</span> <span class="ow">in</span> <span class="n">column_2_type</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">column</span> <span class="o">==</span> <span class="n">primary_key_column</span><span class="p">:</span>
+                    <span class="n">columns</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="n">Column</span><span class="p">(</span><span class="n">column</span><span class="p">,</span> <span class="n">column_type</span><span class="p">,</span> <span class="n">primary_key</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">autoincrement</span><span class="o">=</span><span class="n">enable_autoincrement_id_key</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">columns</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Column</span><span class="p">(</span><span class="n">column</span><span class="p">,</span> <span class="n">column_type</span><span class="p">))</span>
+            <span class="n">table</span> <span class="o">=</span> <span class="n">Table</span><span class="p">(</span><span class="n">table_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">,</span> <span class="o">*</span><span class="n">columns</span><span class="p">,</span> <span class="n">extend_existing</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">table</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="BaseDBController.drop_table_if_exist"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.BaseDBController.html#pilotscope.DBController.BaseDBController.BaseDBController.drop_table_if_exist">[docs]</a>    <span class="k">def</span> <span class="nf">drop_table_if_exist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Try to drop table named `table_name`</span>
+
+<span class="sd">        :param table_name: the name of the table</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exist_table</span><span class="p">(</span><span class="n">table_name</span><span class="p">):</span>
+            <span class="n">table</span> <span class="o">=</span> <span class="n">Table</span><span class="p">(</span><span class="n">table_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">,</span> <span class="n">autoload_with</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="p">)</span>
+            <span class="n">table</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">table</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="BaseDBController.exist_table"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.BaseDBController.html#pilotscope.DBController.BaseDBController.BaseDBController.exist_table">[docs]</a>    <span class="k">def</span> <span class="nf">exist_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        If the table named `table_name` exist or not</span>
+
+<span class="sd">        :return: the table named `table_name` exist, it returns True; otherwise, it returns False</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dialect</span><span class="o">.</span><span class="n">has_table</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_connection</span><span class="p">(),</span> <span class="n">table_name</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="BaseDBController.get_all_table_names"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.BaseDBController.html#pilotscope.DBController.BaseDBController.BaseDBController.get_all_table_names">[docs]</a>    <span class="k">def</span> <span class="nf">get_all_table_names</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Retrieves a list of all table names in the database.</span>
+
+<span class="sd">        :return: A list of table names present in the database.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_sqla_tables</span><span class="p">()</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">tables</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="BaseDBController.insert"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.BaseDBController.html#pilotscope.DBController.BaseDBController.BaseDBController.insert">[docs]</a>    <span class="k">def</span> <span class="nf">insert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="p">,</span> <span class="n">column_2_value</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Insert a new row into the table with each column&#39;s value set as column_2_value.</span>
+
+<span class="sd">        :param table_name: the name of the table</span>
+<span class="sd">        :param column_2_value: a dict where the keys are column names and the values are the values to be inserted</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_connect_if_loss</span><span class="p">()</span>
+        <span class="n">table</span> <span class="o">=</span> <span class="n">Table</span><span class="p">(</span><span class="n">table_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">,</span> <span class="n">autoload_with</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">table</span><span class="o">.</span><span class="n">insert</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">(</span><span class="n">column_2_value</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="BaseDBController.get_table_columns"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.BaseDBController.html#pilotscope.DBController.BaseDBController.BaseDBController.get_table_columns">[docs]</a>    <span class="k">def</span> <span class="nf">get_table_columns</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get all column names of a table</span>
+
+<span class="sd">        :param table_name: the names of the table </span>
+<span class="sd">        :return: the list of the names of column</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">key</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_sqla_table</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span><span class="o">.</span><span class="n">c</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="BaseDBController.get_table_row_count"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.BaseDBController.html#pilotscope.DBController.BaseDBController.BaseDBController.get_table_row_count">[docs]</a>    <span class="k">def</span> <span class="nf">get_table_row_count</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; </span>
+<span class="sd">        Get the row count of the table</span>
+
+<span class="sd">        :param table_name: the name of the table </span>
+<span class="sd">        :return: the row count</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_sqla_table</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span>
+        <span class="n">stmt</span> <span class="o">=</span> <span class="n">select</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">count</span><span class="p">())</span><span class="o">.</span><span class="n">select_from</span><span class="p">(</span><span class="n">table</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">stmt</span><span class="p">,</span> <span class="n">fetch</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="BaseDBController.get_column_max"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.BaseDBController.html#pilotscope.DBController.BaseDBController.BaseDBController.get_column_max">[docs]</a>    <span class="k">def</span> <span class="nf">get_column_max</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="p">,</span> <span class="n">column_name</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; </span>
+<span class="sd">        Get the maximum of a column</span>
+
+<span class="sd">        :param table_name: the name of the table that the column belongs to</span>
+<span class="sd">        :param column_name: the name of the column</span>
+<span class="sd">        :return: the maximum, type of which is same as the data of the column</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_sqla_table</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span>
+        <span class="n">stmt</span> <span class="o">=</span> <span class="n">select</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">table</span><span class="o">.</span><span class="n">c</span><span class="p">[</span><span class="n">column_name</span><span class="p">]))</span><span class="o">.</span><span class="n">select_from</span><span class="p">(</span><span class="n">table</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">stmt</span><span class="p">,</span> <span class="n">fetch</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="BaseDBController.get_column_min"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.BaseDBController.html#pilotscope.DBController.BaseDBController.BaseDBController.get_column_min">[docs]</a>    <span class="k">def</span> <span class="nf">get_column_min</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="p">,</span> <span class="n">column_name</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;   </span>
+<span class="sd">        Get the minimum of a column</span>
+
+<span class="sd">        :param table_name: the name of the table that the column belongs to</span>
+<span class="sd">        :param column_name: the name of the column</span>
+<span class="sd">        :return: the minimum, type of which is same as the data of the column</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_sqla_table</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span>
+        <span class="n">stmt</span> <span class="o">=</span> <span class="n">select</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">table</span><span class="o">.</span><span class="n">c</span><span class="p">[</span><span class="n">column_name</span><span class="p">]))</span><span class="o">.</span><span class="n">select_from</span><span class="p">(</span><span class="n">table</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">stmt</span><span class="p">,</span> <span class="n">fetch</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="BaseDBController.shutdown"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.BaseDBController.html#pilotscope.DBController.BaseDBController.BaseDBController.shutdown">[docs]</a>    <span class="k">def</span> <span class="nf">shutdown</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        shutdown the database</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="BaseDBController.start"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.BaseDBController.html#pilotscope.DBController.BaseDBController.BaseDBController.start">[docs]</a>    <span class="k">def</span> <span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        start the database</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="BaseDBController.restart"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.BaseDBController.html#pilotscope.DBController.BaseDBController.BaseDBController.restart">[docs]</a>    <span class="k">def</span> <span class="nf">restart</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        restart the database</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">db_type</span> <span class="o">!=</span> <span class="n">DatabaseEnum</span><span class="o">.</span><span class="n">SPARK</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_check_enable_deep_control</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">shutdown</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="BaseDBController.write_knob_to_file"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.BaseDBController.html#pilotscope.DBController.BaseDBController.BaseDBController.write_knob_to_file">[docs]</a>    <span class="k">def</span> <span class="nf">write_knob_to_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key_2_value_knob</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Write knobs to config file, you should restart database to make it work.</span>
+
+<span class="sd">        :param key_2_value_knob: a dict with keys as the names of the knobs and values as the values to be set.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="BaseDBController.recover_config"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.BaseDBController.html#pilotscope.DBController.BaseDBController.BaseDBController.recover_config">[docs]</a>    <span class="k">def</span> <span class="nf">recover_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Recover config file of database to the lasted saved config file by `backup_config()`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+    <span class="k">def</span> <span class="nf">_to_db_data_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">column_2_value</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Converts Python data types to database data types.</span>
+
+<span class="sd">        :param column_2_value: A dictionary mapping column names to their respective values, e.g. {&#39;col1&#39;: &#39;value1&#39;, &#39;col2&#39;: &#39;value2&#39;}</span>
+<span class="sd">        :return: A dictionary mapping column names to SQLAlchemy data types.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">column_2_type</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">col</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">column_2_value</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">data_type</span> <span class="o">=</span> <span class="n">String</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">==</span> <span class="nb">int</span><span class="p">:</span>
+                <span class="n">data_type</span> <span class="o">=</span> <span class="n">Integer</span>
+            <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">==</span> <span class="nb">float</span><span class="p">:</span>
+                <span class="n">data_type</span> <span class="o">=</span> <span class="n">Float</span>
+            <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">==</span> <span class="nb">str</span><span class="p">:</span>
+                <span class="n">data_type</span> <span class="o">=</span> <span class="n">String</span>
+            <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">==</span> <span class="nb">dict</span><span class="p">:</span>
+                <span class="n">data_type</span> <span class="o">=</span> <span class="n">String</span>
+            <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">==</span> <span class="nb">list</span><span class="p">:</span>
+                <span class="n">data_type</span> <span class="o">=</span> <span class="n">String</span>
+            <span class="n">column_2_type</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">data_type</span>
+        <span class="k">return</span> <span class="n">column_2_type</span>
+
+    <span class="k">def</span> <span class="nf">_update_sqla_tables</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Retrieves a dictionary of all SQLAlchemy table objects reflected from the database.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">reflect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_sqla_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get SQLAlchemy `Table` object of a table</span>
+
+<span class="sd">        :param table_name: the name of the table</span>
+<span class="sd">        :return: the SQLAlchemy `Table` object of the table</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># update info of existed tables</span>
+        <span class="k">return</span> <span class="n">Table</span><span class="p">(</span><span class="n">table_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">,</span> <span class="n">autoload_with</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_check_enable_deep_control</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">_enable_deep_control</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">DatabaseDeepControlException</span><span class="p">()</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Alibaba.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

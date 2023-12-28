@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pilotscope.DBInteractor.PilotDataInteractor &mdash; PilotScope 1.0 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            PilotScope
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../references/overview.html">1. Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references/install.html">2. Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references/system_pipeline.html">3. System Pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references/core_modules.html">4. Core Components (ML Side)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references/example.html">5. Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references/api.html">6. API (ML Side)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references/database_develop.html">7. Database Side Develop</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references/annotations.html">8. Annotations</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">PilotScope</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pilotscope.DBInteractor.PilotDataInteractor</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pilotscope.DBInteractor.PilotDataInteractor</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">concurrent.futures</span> <span class="kn">import</span> <span class="n">Future</span>
+<span class="kn">from</span> <span class="nn">concurrent.futures.thread</span> <span class="kn">import</span> <span class="n">ThreadPoolExecutor</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">cast</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span>
+
+<span class="kn">from</span> <span class="nn">pilotscope.Anchor.BaseAnchor.BasePullHandler</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">pilotscope.Anchor.BaseAnchor.BasePushHandler</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">pilotscope.Common.Util</span> <span class="kn">import</span> <span class="n">extract_anchor_handlers</span><span class="p">,</span> <span class="n">extract_handlers</span><span class="p">,</span> <span class="n">wait_futures_results</span>
+<span class="kn">from</span> <span class="nn">pilotscope.DBInteractor.InteractorReceiver</span> <span class="kn">import</span> <span class="n">InteractorReceiver</span>
+<span class="kn">from</span> <span class="nn">pilotscope.DBInteractor.PilotCommentCreator</span> <span class="kn">import</span> <span class="n">PilotCommentCreator</span>
+<span class="kn">from</span> <span class="nn">pilotscope.Exception.Exception</span> <span class="kn">import</span> <span class="n">DBStatementTimeoutException</span><span class="p">,</span> <span class="n">InteractorReceiveTimeoutException</span><span class="p">,</span> \
+    <span class="n">PilotScopeMutualExclusionException</span>
+<span class="kn">from</span> <span class="nn">pilotscope.Factory.AnchorHandlerFactory</span> <span class="kn">import</span> <span class="n">AnchorHandlerFactory</span>
+<span class="kn">from</span> <span class="nn">pilotscope.Factory.DBControllerFectory</span> <span class="kn">import</span> <span class="n">DBControllerFactory</span>
+<span class="kn">from</span> <span class="nn">pilotscope.Factory.InteractorReceiverFactory</span> <span class="kn">import</span> <span class="n">InteractorReceiverFactory</span>
+<span class="kn">from</span> <span class="nn">pilotscope.PilotConfig</span> <span class="kn">import</span> <span class="n">PilotConfig</span>
+<span class="kn">from</span> <span class="nn">pilotscope.PilotEnum</span> <span class="kn">import</span> <span class="n">FetchMethod</span><span class="p">,</span> <span class="n">DatabaseEnum</span>
+<span class="kn">from</span> <span class="nn">pilotscope.PilotTransData</span> <span class="kn">import</span> <span class="n">PilotTransData</span>
+
+
+<span class="c1"># noinspection PyProtectedMember</span>
+<div class="viewcode-block" id="PilotDataInteractor"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBInteractor.PilotDataInteractor.html#pilotscope.DBInteractor.PilotDataInteractor.PilotDataInteractor">[docs]</a><span class="k">class</span> <span class="nc">PilotDataInteractor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The core module for interacting with DBMS and handling push-and-pull operators</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PilotDataInteractor.__init__"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBInteractor.PilotDataInteractor.html#pilotscope.DBInteractor.PilotDataInteractor.PilotDataInteractor.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">PilotConfig</span><span class="p">,</span> <span class="n">enable_simulate_index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        :param config: The configuration of PilotScope.</span>
+<span class="sd">        :param enable_simulate_index: A flag indicating whether to enable the simulated index. This flag is only valid for PostgreSQL.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># if all items of any one comb occur in registered anchors, they will raise an exception</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mutual_exclusion_combs</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">[</span><span class="n">AnchorEnum</span><span class="o">.</span><span class="n">CARD_PUSH_ANCHOR</span><span class="p">,</span> <span class="n">AnchorEnum</span><span class="o">.</span><span class="n">SUBQUERY_CARD_PULL_ANCHOR</span><span class="p">]</span>
+        <span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">db_controller</span> <span class="o">=</span> <span class="n">DBControllerFactory</span><span class="o">.</span><span class="n">get_db_controller</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">enable_simulate_index</span><span class="o">=</span><span class="n">enable_simulate_index</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_anchor_to_handlers</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">config</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">spark_analyzed</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data_fetcher</span><span class="p">:</span> <span class="n">InteractorReceiver</span> <span class="o">=</span> <span class="n">InteractorReceiverFactory</span><span class="o">.</span><span class="n">get_data_fetcher</span><span class="p">(</span><span class="n">config</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PilotDataInteractor.push_hint"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBInteractor.PilotDataInteractor.html#pilotscope.DBInteractor.PilotDataInteractor.PilotDataInteractor.push_hint">[docs]</a>    <span class="k">def</span> <span class="nf">push_hint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key_2_value_for_hint</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set the value of each hint (i.e., the run-time config) when execute SQL queries.</span>
+<span class="sd">        The hints can be used to control the behavior of the database system in a session.</span>
+
+<span class="sd">        For PostgreSQL, you can find all valid hints in https://www.postgresql.org/docs/13/runtime-config.html.</span>
+
+<span class="sd">        For Spark, you can find all valid hints (called conf in Spark) in https://spark.apache.org/docs/latest/configuration.html#runtime-sql-configuration</span>
+
+<span class="sd">        Note that you need to distinguish which parameter is static (push_knob) and which is run-time (push_hint).</span>
+
+<span class="sd">        :param key_2_value_for_hint: A dictionary containing key-value pairs representing hint information, e.g.</span>
+<span class="sd">            {&quot;hint_key&quot;: &quot;hint_value&quot;}.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">anchor</span><span class="p">:</span> <span class="n">HintPushHandler</span> <span class="o">=</span> <span class="n">AnchorHandlerFactory</span><span class="o">.</span><span class="n">get_anchor_handler</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="n">AnchorEnum</span><span class="o">.</span><span class="n">HINT_PUSH_ANCHOR</span><span class="p">)</span>
+        <span class="n">anchor</span><span class="o">.</span><span class="n">key_2_value_for_hint</span> <span class="o">=</span> <span class="n">key_2_value_for_hint</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_anchor_to_handlers</span><span class="p">[</span><span class="n">AnchorEnum</span><span class="o">.</span><span class="n">HINT_PUSH_ANCHOR</span><span class="p">]</span> <span class="o">=</span> <span class="n">anchor</span></div>
+
+<div class="viewcode-block" id="PilotDataInteractor.push_knob"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBInteractor.PilotDataInteractor.html#pilotscope.DBInteractor.PilotDataInteractor.PilotDataInteractor.push_knob">[docs]</a>    <span class="k">def</span> <span class="nf">push_knob</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key_2_value_for_knob</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set the value of each knob parameter (i.e., the static config) of database.</span>
+<span class="sd">        These parameters are valid after the database is restarted.</span>
+<span class="sd">        Thus, pilotscope will restart the database if this function is called.</span>
+
+<span class="sd">        For PostgreSQL, you can find all valid knob in https://www.postgresql.org/docs/13/runtime-config.html.</span>
+<span class="sd">        Pilotscope will modify the configuration file (i.e., postgresql.conf) of PostgreSQL to set the knob.</span>
+
+<span class="sd">        For Spark, you can find all valid hints (called conf in Spark) in https://spark.apache.org/docs/latest/configuration.html</span>
+
+<span class="sd">        Note that you need to distinguish which parameter is static (push_knob) and which is run-time (push_hint).</span>
+
+<span class="sd">        :param key_2_value_for_knob: A dictionary containing key-value pairs for knob settings, e.g.</span>
+<span class="sd">            {&quot;knob_key&quot;: &quot;knob_value&quot;}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">anchor</span><span class="p">:</span> <span class="n">KnobPushHandler</span> <span class="o">=</span> <span class="n">AnchorHandlerFactory</span><span class="o">.</span><span class="n">get_anchor_handler</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="n">AnchorEnum</span><span class="o">.</span><span class="n">KNOB_PUSH_ANCHOR</span><span class="p">)</span>
+        <span class="n">anchor</span><span class="o">.</span><span class="n">key_2_value_for_knob</span> <span class="o">=</span> <span class="n">key_2_value_for_knob</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_anchor_to_handlers</span><span class="p">[</span><span class="n">AnchorEnum</span><span class="o">.</span><span class="n">KNOB_PUSH_ANCHOR</span><span class="p">]</span> <span class="o">=</span> <span class="n">anchor</span></div>
+
+<div class="viewcode-block" id="PilotDataInteractor.push_card"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBInteractor.PilotDataInteractor.html#pilotscope.DBInteractor.PilotDataInteractor.PilotDataInteractor.push_card">[docs]</a>    <span class="k">def</span> <span class="nf">push_card</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subquery_2_value</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">enable_parameterized_subquery</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set the cardinality of each sub-plan query when execute a SQL query.</span>
+<span class="sd">        The cardinality of each sub-plan query will set to the default estimated value if you don&#39;t provide the value.</span>
+
+<span class="sd">        :param subquery_2_value: A dictionary containing subquery to card value mappings, e.g.</span>
+<span class="sd">            {&quot;subquery_1&quot;: &quot;card_1&quot;, &quot;subquery_2&quot;: &quot;card_2&quot;}</span>
+<span class="sd">        :param enable_parameterized_subquery: A flag indicating whether to enable parameterized subquery.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">anchor</span><span class="p">:</span> <span class="n">CardPushHandler</span> <span class="o">=</span> <span class="n">AnchorHandlerFactory</span><span class="o">.</span><span class="n">get_anchor_handler</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="n">AnchorEnum</span><span class="o">.</span><span class="n">CARD_PUSH_ANCHOR</span><span class="p">)</span>
+        <span class="n">anchor</span><span class="o">.</span><span class="n">subquery_2_card</span> <span class="o">=</span> <span class="n">subquery_2_value</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">db_type</span> <span class="o">==</span> <span class="n">DatabaseEnum</span><span class="o">.</span><span class="n">POSTGRESQL</span><span class="p">:</span>
+            <span class="n">anchor</span><span class="o">.</span><span class="n">enable_parameterized_subquery</span> <span class="o">=</span> <span class="n">enable_parameterized_subquery</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_anchor_to_handlers</span><span class="p">[</span><span class="n">AnchorEnum</span><span class="o">.</span><span class="n">CARD_PUSH_ANCHOR</span><span class="p">]</span> <span class="o">=</span> <span class="n">anchor</span></div>
+
+<div class="viewcode-block" id="PilotDataInteractor.push_pg_hint_comment"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBInteractor.PilotDataInteractor.html#pilotscope.DBInteractor.PilotDataInteractor.PilotDataInteractor.push_pg_hint_comment">[docs]</a>    <span class="k">def</span> <span class="nf">push_pg_hint_comment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pg_hint_comment</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set the comment of `pg_hint_plan` into input SQL query. The function is only valid for PostgreSQL.</span>
+<span class="sd">        The `pg_hint_plan` is an extension for the PostgreSQL database that allows users to influence the query planner&#39;s choice of execution plans.</span>
+<span class="sd">        You can find more information in https://github.com/ossc-db/pg_hint_plan.</span>
+
+<span class="sd">        :param pg_hint_comment: a pg_hint_comment like ``/*+ HashJoin(a b) SeqScan(a) */``, which indicate the join method of `a` and `b` is HashJoin and the scan method of `a` is SeqScan.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">db_type</span> <span class="o">!=</span> <span class="n">DatabaseEnum</span><span class="o">.</span><span class="n">POSTGRESQL</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;PG Hint only is implemented for PostgresSQL database&quot;</span><span class="p">)</span>
+        <span class="n">anchor</span><span class="p">:</span> <span class="n">CommentPushHandler</span> <span class="o">=</span> <span class="n">AnchorHandlerFactory</span><span class="o">.</span><span class="n">get_anchor_handler</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span>
+                                                                             <span class="n">AnchorEnum</span><span class="o">.</span><span class="n">COMMENT_PUSH_ANCHOR</span><span class="p">)</span>
+        <span class="n">anchor</span><span class="o">.</span><span class="n">comment_str</span> <span class="o">=</span> <span class="n">pg_hint_comment</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_anchor_to_handlers</span><span class="p">[</span><span class="n">AnchorEnum</span><span class="o">.</span><span class="n">COMMENT_PUSH_ANCHOR</span><span class="p">]</span> <span class="o">=</span> <span class="n">anchor</span></div>
+
+    <span class="k">def</span> <span class="nf">_push_subplan_cost</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subplan_2_cost</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Assigns cost information to subplans and registers the cost push handler.</span>
+
+<span class="sd">        :param subplan_2_cost: A dictionary mapping subplans to their associated costs, e.g.</span>
+<span class="sd">            {&quot;subplan_1&quot;: 100, &quot;subplan_2&quot;: 200}</span>
+<span class="sd">        :raises NotImplementedError: Indicates that the method has not been implemented yet.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="k">def</span> <span class="nf">_push_rule</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Placeholder method for pushing rule information.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+<div class="viewcode-block" id="PilotDataInteractor.push_index"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBInteractor.PilotDataInteractor.html#pilotscope.DBInteractor.PilotDataInteractor.PilotDataInteractor.push_index">[docs]</a>    <span class="k">def</span> <span class="nf">push_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indexes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Index</span><span class="p">],</span> <span class="n">drop_other</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set the index information of each table when execute SQL queries.</span>
+<span class="sd">        The index will be built before executing all SQL queries in a session of PilotDataInteractor.</span>
+
+<span class="sd">        :param indexes: A list of `Index` instances to be handled.</span>
+<span class="sd">        :param drop_other: A flag indicating whether to drop other indexes not in the `indexes` list.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">anchor</span><span class="p">:</span> <span class="n">IndexPushHandler</span> <span class="o">=</span> <span class="n">AnchorHandlerFactory</span><span class="o">.</span><span class="n">get_anchor_handler</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span>
+                                                                           <span class="n">AnchorEnum</span><span class="o">.</span><span class="n">INDEX_PUSH_ANCHOR</span><span class="p">)</span>
+        <span class="n">anchor</span><span class="o">.</span><span class="n">indexes</span> <span class="o">=</span> <span class="n">indexes</span>
+        <span class="n">anchor</span><span class="o">.</span><span class="n">drop_other</span> <span class="o">=</span> <span class="n">drop_other</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_anchor_to_handlers</span><span class="p">[</span><span class="n">AnchorEnum</span><span class="o">.</span><span class="n">INDEX_PUSH_ANCHOR</span><span class="p">]</span> <span class="o">=</span> <span class="n">anchor</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="PilotDataInteractor.pull_subquery_card"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBInteractor.PilotDataInteractor.html#pilotscope.DBInteractor.PilotDataInteractor.PilotDataInteractor.pull_subquery_card">[docs]</a>    <span class="k">def</span> <span class="nf">pull_subquery_card</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">enable_parameterized_subquery</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Require PilotScope to collect all cardinality information of each sub-plan queries when execute a SQL query.</span>
+
+<span class="sd">        :param enable_parameterized_subquery: A flag indicating whether to enable parameterized subquery.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">anchor</span><span class="p">:</span> <span class="n">SubQueryCardPullHandler</span> <span class="o">=</span> <span class="n">AnchorHandlerFactory</span><span class="o">.</span><span class="n">get_anchor_handler</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span>
+                                                                                  <span class="n">AnchorEnum</span><span class="o">.</span><span class="n">SUBQUERY_CARD_PULL_ANCHOR</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_anchor_to_handlers</span><span class="p">[</span><span class="n">AnchorEnum</span><span class="o">.</span><span class="n">SUBQUERY_CARD_PULL_ANCHOR</span><span class="p">]</span> <span class="o">=</span> <span class="n">anchor</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">db_type</span> <span class="o">==</span> <span class="n">DatabaseEnum</span><span class="o">.</span><span class="n">POSTGRESQL</span><span class="p">:</span>
+            <span class="n">anchor</span><span class="o">.</span><span class="n">enable_parameterized_subquery</span> <span class="o">=</span> <span class="n">enable_parameterized_subquery</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">db_type</span> <span class="o">==</span> <span class="n">DatabaseEnum</span><span class="o">.</span><span class="n">SPARK</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">spark_analyzed</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db_controller</span><span class="o">.</span><span class="n">analyze_all_table_stats</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">spark_analyzed</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+    <span class="k">def</span> <span class="nf">_pull_rewrite_sql</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Placeholder method for pulling SQL rewrite information.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+<div class="viewcode-block" id="PilotDataInteractor.pull_physical_plan"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBInteractor.PilotDataInteractor.html#pilotscope.DBInteractor.PilotDataInteractor.PilotDataInteractor.pull_physical_plan">[docs]</a>    <span class="k">def</span> <span class="nf">pull_physical_plan</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Require PilotScope to collect physical plan when execute a SQL query.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">anchor</span> <span class="o">=</span> <span class="n">AnchorHandlerFactory</span><span class="o">.</span><span class="n">get_anchor_handler</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="n">AnchorEnum</span><span class="o">.</span><span class="n">PHYSICAL_PLAN_PULL_ANCHOR</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_anchor_to_handlers</span><span class="p">[</span><span class="n">AnchorEnum</span><span class="o">.</span><span class="n">PHYSICAL_PLAN_PULL_ANCHOR</span><span class="p">]</span> <span class="o">=</span> <span class="n">anchor</span></div>
+
+<div class="viewcode-block" id="PilotDataInteractor.pull_execution_time"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBInteractor.PilotDataInteractor.html#pilotscope.DBInteractor.PilotDataInteractor.PilotDataInteractor.pull_execution_time">[docs]</a>    <span class="k">def</span> <span class="nf">pull_execution_time</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Require PilotScope to collect execution time when execute a SQL query.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">anchor</span> <span class="o">=</span> <span class="n">AnchorHandlerFactory</span><span class="o">.</span><span class="n">get_anchor_handler</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="n">AnchorEnum</span><span class="o">.</span><span class="n">EXECUTION_TIME_PULL_ANCHOR</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_anchor_to_handlers</span><span class="p">[</span><span class="n">AnchorEnum</span><span class="o">.</span><span class="n">EXECUTION_TIME_PULL_ANCHOR</span><span class="p">]</span> <span class="o">=</span> <span class="n">anchor</span></div>
+
+<div class="viewcode-block" id="PilotDataInteractor.pull_estimated_cost"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBInteractor.PilotDataInteractor.html#pilotscope.DBInteractor.PilotDataInteractor.PilotDataInteractor.pull_estimated_cost">[docs]</a>    <span class="k">def</span> <span class="nf">pull_estimated_cost</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Require PilotScope to collect estimated cost from database&#39;s optimizer when execute a SQL query.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">anchor</span> <span class="o">=</span> <span class="n">AnchorHandlerFactory</span><span class="o">.</span><span class="n">get_anchor_handler</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="n">AnchorEnum</span><span class="o">.</span><span class="n">ESTIMATED_COST_PULL_ANCHOR</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_anchor_to_handlers</span><span class="p">[</span><span class="n">AnchorEnum</span><span class="o">.</span><span class="n">ESTIMATED_COST_PULL_ANCHOR</span><span class="p">]</span> <span class="o">=</span> <span class="n">anchor</span></div>
+
+<div class="viewcode-block" id="PilotDataInteractor.pull_record"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBInteractor.PilotDataInteractor.html#pilotscope.DBInteractor.PilotDataInteractor.PilotDataInteractor.pull_record">[docs]</a>    <span class="k">def</span> <span class="nf">pull_record</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Require PilotScope to collect execution records when execute a SQL query.</span>
+<span class="sd">        PilotScope will not to execute a complete process of recode retrieval, unless you require it to collect records.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">anchor</span><span class="p">:</span> <span class="n">RecordPullHandler</span> <span class="o">=</span> <span class="n">AnchorHandlerFactory</span><span class="o">.</span><span class="n">get_anchor_handler</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span>
+                                                                            <span class="n">AnchorEnum</span><span class="o">.</span><span class="n">RECORD_PULL_ANCHOR</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_anchor_to_handlers</span><span class="p">[</span><span class="n">AnchorEnum</span><span class="o">.</span><span class="n">RECORD_PULL_ANCHOR</span><span class="p">]</span> <span class="o">=</span> <span class="n">anchor</span></div>
+
+<div class="viewcode-block" id="PilotDataInteractor.pull_buffercache"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBInteractor.PilotDataInteractor.html#pilotscope.DBInteractor.PilotDataInteractor.PilotDataInteractor.pull_buffercache">[docs]</a>    <span class="k">def</span> <span class="nf">pull_buffercache</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Retrieves the buffer cache, where each item include a table name and the numbers of its buffer.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">anchor</span><span class="p">:</span> <span class="n">BuffercachePullHandler</span> <span class="o">=</span> <span class="n">AnchorHandlerFactory</span><span class="o">.</span><span class="n">get_anchor_handler</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span>
+                                                                                 <span class="n">AnchorEnum</span><span class="o">.</span><span class="n">BUFFERCACHE_PULL_ANCHOR</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_anchor_to_handlers</span><span class="p">[</span><span class="n">AnchorEnum</span><span class="o">.</span><span class="n">BUFFERCACHE_PULL_ANCHOR</span><span class="p">]</span> <span class="o">=</span> <span class="n">anchor</span></div>
+
+    <span class="k">def</span> <span class="nf">_pull_real_node_cost</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Placeholder method for pulling real node cost information.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">_pull_real_node_card</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Placeholder method for pulling real node cardinality information.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+
+<div class="viewcode-block" id="PilotDataInteractor.execute_batch"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBInteractor.PilotDataInteractor.html#pilotscope.DBInteractor.PilotDataInteractor.PilotDataInteractor.execute_batch">[docs]</a>    <span class="k">def</span> <span class="nf">execute_batch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sqls</span><span class="p">,</span> <span class="n">is_reset</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="n">PilotTransData</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Execute all sqls sequentially in a session. All SQL queries is executed using the identical push/pull configuration.</span>
+
+<span class="sd">        :param sqls: a list of sqls to be executed</span>
+<span class="sd">        :param is_reset: If it is true, all `push`/`pull` will be removed after execution</span>
+<span class="sd">        :return: list of the results for each sql</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">datas</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">flag</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">sql</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">sqls</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">sqls</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">flag</span> <span class="o">=</span> <span class="n">is_reset</span>
+            <span class="n">datas</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="p">,</span> <span class="n">is_reset</span><span class="o">=</span><span class="n">flag</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">datas</span></div>
+
+<div class="viewcode-block" id="PilotDataInteractor.execute_parallel"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBInteractor.PilotDataInteractor.html#pilotscope.DBInteractor.PilotDataInteractor.PilotDataInteractor.execute_parallel">[docs]</a>    <span class="k">def</span> <span class="nf">execute_parallel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sqls</span><span class="p">,</span> <span class="n">parallel_num</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">is_reset</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Execute all SQL statements in parallel within a session.</span>
+<span class="sd">        All SQL queries is executed using the identical push/pull configuration.</span>
+
+<span class="sd">        :param sqls: a list of sqls to be executed</span>
+<span class="sd">        :param parallel_num: the number of threads, defaults to 10</span>
+<span class="sd">        :param is_reset: If it is true, all `push`/`pull` will be removed after execution</span>
+<span class="sd">        :raises RuntimeError: simulate index does not support execute_parallel</span>
+<span class="sd">        :return: list of the results for each sql</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">db_controller</span><span class="o">.</span><span class="n">enable_simulate_index</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;simulate index does not support execute_parallel&quot;</span><span class="p">)</span>
+
+        <span class="n">parallel_num</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">sqls</span><span class="p">),</span> <span class="n">parallel_num</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">ThreadPoolExecutor</span><span class="p">(</span><span class="n">max_workers</span><span class="o">=</span><span class="n">parallel_num</span><span class="p">)</span> <span class="k">as</span> <span class="n">pool</span><span class="p">:</span>
+            <span class="n">futures</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">sql</span> <span class="ow">in</span> <span class="n">sqls</span><span class="p">:</span>
+                <span class="n">future</span><span class="p">:</span> <span class="n">Future</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">execute</span><span class="p">,</span> <span class="n">sql</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+                <span class="n">future</span><span class="o">.</span><span class="n">add_done_callback</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_reset_connection</span><span class="p">)</span>
+                <span class="n">futures</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">future</span><span class="p">)</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="n">wait_futures_results</span><span class="p">(</span><span class="n">futures</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">is_reset</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">results</span></div>
+
+<div class="viewcode-block" id="PilotDataInteractor.execute"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBInteractor.PilotDataInteractor.html#pilotscope.DBInteractor.PilotDataInteractor.PilotDataInteractor.execute">[docs]</a>    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sql</span><span class="p">,</span> <span class="n">is_reset</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">PilotTransData</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Execute this SQL and finish all registered push-and-pull operators before.</span>
+
+<span class="sd">        :param sql: a sql statement to be executed</span>
+<span class="sd">        :param is_reset: If it is true, all `push`/`pull` will be removed after execution</span>
+<span class="sd">        :return: If no exceptions, it returns a `PilotTransData` representing extended result; otherwise, it returns None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_check_anchor_mutual_exclusion</span><span class="p">()</span>
+            <span class="n">origin_sql</span> <span class="o">=</span> <span class="n">sql</span>
+            <span class="n">enable_receive_pilot_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_need_to_receive_data</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_anchor_to_handlers</span><span class="p">)</span>
+
+            <span class="c1"># create pilot comment</span>
+            <span class="n">comment_creator</span> <span class="o">=</span> <span class="n">PilotCommentCreator</span><span class="p">(</span><span class="n">enable_receive_pilot_data</span><span class="o">=</span><span class="n">enable_receive_pilot_data</span><span class="p">,</span>
+                                                  <span class="n">extra_comment</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_anchor_to_handlers</span><span class="p">[</span>
+                                                      <span class="n">AnchorEnum</span><span class="o">.</span><span class="n">COMMENT_PUSH_ANCHOR</span><span class="p">]</span><span class="o">.</span><span class="n">comment_str</span> <span class="k">if</span> <span class="n">AnchorEnum</span><span class="o">.</span><span class="n">COMMENT_PUSH_ANCHOR</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_anchor_to_handlers</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">comment_creator</span><span class="o">.</span><span class="n">add_params</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data_fetcher</span><span class="o">.</span><span class="n">get_extra_infos_for_trans</span><span class="p">())</span>
+            <span class="n">comment_creator</span><span class="o">.</span><span class="n">enable_terminate</span><span class="p">(</span>
+                <span class="kc">False</span> <span class="k">if</span> <span class="n">AnchorEnum</span><span class="o">.</span><span class="n">RECORD_PULL_ANCHOR</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_anchor_to_handlers</span> <span class="k">else</span> <span class="kc">True</span><span class="p">)</span>
+            <span class="n">comment_creator</span><span class="o">.</span><span class="n">add_anchor_params</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_anchor_params_as_comment</span><span class="p">())</span>
+            <span class="n">comment_sql</span> <span class="o">=</span> <span class="n">comment_creator</span><span class="o">.</span><span class="n">create_comment_sql</span><span class="p">(</span><span class="n">sql</span><span class="p">)</span>
+
+            <span class="c1"># execution sqls. Sometimes, data do not need to be got from inner</span>
+            <span class="n">is_execute_comment_sql</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_execute_comment_sql</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_anchor_to_handlers</span><span class="p">)</span>
+
+            <span class="n">records</span><span class="p">,</span> <span class="n">execution_time_from_outer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execute_sqls</span><span class="p">(</span><span class="n">comment_sql</span><span class="p">,</span> <span class="n">is_execute_comment_sql</span><span class="p">)</span>
+
+            <span class="c1"># wait to fetch data</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_need_to_receive_data</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_anchor_to_handlers</span><span class="p">):</span>
+                <span class="n">receive_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_fetcher</span><span class="o">.</span><span class="n">block_for_data_from_db</span><span class="p">()</span>
+                <span class="n">data</span><span class="p">:</span> <span class="n">PilotTransData</span> <span class="o">=</span> <span class="n">PilotTransData</span><span class="o">.</span><span class="n">_parse_2_instance</span><span class="p">(</span><span class="n">receive_data</span><span class="p">,</span> <span class="n">origin_sql</span><span class="p">)</span>
+                <span class="c1"># fetch data from outer</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">PilotTransData</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">records</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">db_type</span> <span class="o">==</span> <span class="n">DatabaseEnum</span><span class="o">.</span><span class="n">POSTGRESQL</span><span class="p">:</span>
+                    <span class="n">data</span><span class="o">.</span><span class="n">records</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="o">.</span><span class="n">from_records</span><span class="p">(</span><span class="n">records</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">columns</span><span class="o">=</span><span class="n">records</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">data</span><span class="o">.</span><span class="n">records</span> <span class="o">=</span> <span class="n">records</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">sql</span> <span class="o">=</span> <span class="n">origin_sql</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_fetch_data_from_outer</span><span class="p">(</span><span class="n">origin_sql</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">db_type</span> <span class="o">==</span> <span class="n">DatabaseEnum</span><span class="o">.</span><span class="n">SPARK</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_add_execution_time</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">execution_time_from_outer</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">data</span>
+
+        <span class="k">except</span> <span class="p">(</span><span class="n">DBStatementTimeoutException</span><span class="p">,</span> <span class="n">InteractorReceiveTimeoutException</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">is_reset</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="PilotDataInteractor.reset"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBInteractor.PilotDataInteractor.html#pilotscope.DBInteractor.PilotDataInteractor.PilotDataInteractor.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Resets the internal state of the object.</span>
+<span class="sd">        This method clears all registered push and pull operators, and database connection.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_anchor_to_handlers</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reset_connection</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">_get_all_handlers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Retrieves all handler objects.</span>
+
+<span class="sd">        :return: A list of handler objects.</span>
+<span class="sd">        :rtype: list</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_anchor_to_handlers</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_add_execution_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">PilotTransData</span><span class="p">,</span> <span class="n">execution_time</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">AnchorEnum</span><span class="o">.</span><span class="n">EXECUTION_TIME_PULL_ANCHOR</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_anchor_to_handlers</span><span class="p">:</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">execution_time</span> <span class="o">=</span> <span class="n">execution_time</span>
+
+    <span class="k">def</span> <span class="nf">_is_need_to_receive_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">anchor_2_handlers</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Determines if data needs to be received based on the presence of anchors.</span>
+
+<span class="sd">        :param anchor_2_handlers: A dictionary mapping anchors to their handlers, e.g. {RECORD_PULL_ANCHOR: handler}</span>
+<span class="sd">        :type anchor_2_handlers: dict</span>
+
+<span class="sd">        :return: True if there are remaining anchors that require data to be received, otherwise False.</span>
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">filter_anchor_2_handlers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_remove_outer_fetch_anchor</span><span class="p">(</span>
+            <span class="n">extract_anchor_handlers</span><span class="p">(</span><span class="n">anchor_2_handlers</span><span class="p">,</span> <span class="n">is_fetch_anchor</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">AnchorEnum</span><span class="o">.</span><span class="n">RECORD_PULL_ANCHOR</span> <span class="ow">in</span> <span class="n">filter_anchor_2_handlers</span><span class="p">:</span>
+            <span class="n">filter_anchor_2_handlers</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">AnchorEnum</span><span class="o">.</span><span class="n">RECORD_PULL_ANCHOR</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">db_type</span> <span class="o">==</span> <span class="n">DatabaseEnum</span><span class="o">.</span><span class="n">SPARK</span> <span class="ow">and</span> <span class="n">AnchorEnum</span><span class="o">.</span><span class="n">EXECUTION_TIME_PULL_ANCHOR</span> <span class="ow">in</span> <span class="n">filter_anchor_2_handlers</span><span class="p">:</span>
+            <span class="n">filter_anchor_2_handlers</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">AnchorEnum</span><span class="o">.</span><span class="n">EXECUTION_TIME_PULL_ANCHOR</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">filter_anchor_2_handlers</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
+
+    <span class="k">def</span> <span class="nf">_is_execute_comment_sql</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">anchor_2_handlers</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Checks if there is a need to execute comment SQL based on filtered anchors.</span>
+
+<span class="sd">        :param anchor_2_handlers: A dictionary containing the mapping of anchors to their handlers, e.g. {RECORD_PULL_ANCHOR: handler}</span>
+<span class="sd">        :type anchor_2_handlers: dict</span>
+
+<span class="sd">        :return: Returns True if there are any anchors left after filtering, indicating a need to </span>
+<span class="sd">                execute comment SQL, otherwise False.</span>
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">filter_anchor_2_handlers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_remove_outer_fetch_anchor</span><span class="p">(</span>
+            <span class="n">extract_anchor_handlers</span><span class="p">(</span><span class="n">anchor_2_handlers</span><span class="p">,</span> <span class="n">is_fetch_anchor</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">filter_anchor_2_handlers</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
+
+    <span class="k">def</span> <span class="nf">_reset_connection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c1"># todo</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">db_type</span> <span class="o">!=</span> <span class="n">DatabaseEnum</span><span class="o">.</span><span class="n">SPARK</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db_controller</span><span class="o">.</span><span class="n">_reset</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_execute_sqls</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">comment_sql</span><span class="p">,</span> <span class="n">is_execute_comment_sql</span><span class="p">):</span>
+        <span class="n">handlers</span> <span class="o">=</span> <span class="n">extract_handlers</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_anchor_to_handlers</span><span class="o">.</span><span class="n">values</span><span class="p">(),</span> <span class="n">extract_pull_anchor</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">handlers</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">handlers</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">cast</span><span class="p">(</span><span class="n">BaseAnchorHandler</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">get_call_priority</span><span class="p">())</span>
+        <span class="k">for</span> <span class="n">handler</span> <span class="ow">in</span> <span class="n">handlers</span><span class="p">:</span>
+            <span class="n">handler</span><span class="o">.</span><span class="n">_exec_commands_before_sql</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db_controller</span><span class="p">)</span>
+
+        <span class="n">records</span> <span class="o">=</span> <span class="n">execution_time_from_outer</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">is_execute_comment_sql</span><span class="p">:</span>
+            <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+            <span class="n">records</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db_controller</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">comment_sql</span><span class="p">,</span> <span class="n">fetch</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fetch_column_name</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">execution_time_from_outer</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span>
+        <span class="k">return</span> <span class="n">records</span><span class="p">,</span> <span class="n">execution_time_from_outer</span>
+
+    <span class="k">def</span> <span class="nf">_get_anchor_params_as_comment</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">anchor_params</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">anchor</span><span class="p">,</span> <span class="n">handle</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_anchor_to_handlers</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">params</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">handle</span><span class="p">,</span> <span class="n">BasePushHandler</span><span class="p">):</span>
+                <span class="n">handle</span><span class="o">.</span><span class="n">_add_trans_params</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">handle</span><span class="p">,</span> <span class="n">BasePullHandler</span><span class="p">)</span> <span class="ow">and</span> <span class="n">handle</span><span class="o">.</span><span class="n">fetch_method</span> <span class="o">==</span> <span class="n">FetchMethod</span><span class="o">.</span><span class="n">INNER</span><span class="p">:</span>
+                <span class="n">handle</span><span class="o">.</span><span class="n">_add_trans_params</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">params</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">anchor_params</span><span class="p">[</span><span class="n">anchor</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">params</span>
+        <span class="k">return</span> <span class="n">anchor_params</span>
+
+    <span class="k">def</span> <span class="nf">_remove_outer_fetch_anchor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">anchor_to_handlers</span><span class="p">):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">anchor</span><span class="p">,</span> <span class="n">handle</span> <span class="ow">in</span> <span class="n">anchor_to_handlers</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">handle</span><span class="p">,</span> <span class="n">BasePullHandler</span><span class="p">)</span> <span class="ow">and</span> <span class="n">handle</span><span class="o">.</span><span class="n">fetch_method</span> <span class="o">==</span> <span class="n">FetchMethod</span><span class="o">.</span><span class="n">OUTER</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">result</span><span class="p">[</span><span class="n">anchor</span><span class="p">]</span> <span class="o">=</span> <span class="n">handle</span>
+        <span class="k">return</span> <span class="n">result</span>
+
+    <span class="k">def</span> <span class="nf">_fetch_data_from_outer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sql</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">PilotTransData</span><span class="p">):</span>
+        <span class="n">replace_anchor_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_replace_anchor_params</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_anchor_to_handlers</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+        <span class="n">anchor_data</span> <span class="o">=</span> <span class="n">AnchorTransData</span><span class="p">()</span>
+        <span class="n">handles</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_anchor_to_handlers</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+        <span class="n">handles</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">handles</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">cast</span><span class="p">(</span><span class="n">BaseAnchorHandler</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">get_call_priority</span><span class="p">())</span>
+        <span class="k">for</span> <span class="n">handle</span> <span class="ow">in</span> <span class="n">handles</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">handle</span><span class="p">,</span> <span class="n">BasePullHandler</span><span class="p">)</span> <span class="ow">and</span> <span class="n">handle</span><span class="o">.</span><span class="n">fetch_method</span> <span class="o">==</span> <span class="n">FetchMethod</span><span class="o">.</span><span class="n">OUTER</span><span class="p">:</span>
+                <span class="n">comment_creator</span> <span class="o">=</span> <span class="n">PilotCommentCreator</span><span class="p">(</span><span class="n">anchor_params</span><span class="o">=</span><span class="n">replace_anchor_params</span><span class="p">,</span> <span class="n">enable_terminate_flag</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                                      <span class="n">extra_comment</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_anchor_to_handlers</span><span class="p">[</span>
+                                                          <span class="n">AnchorEnum</span><span class="o">.</span><span class="n">COMMENT_PUSH_ANCHOR</span><span class="p">]</span><span class="o">.</span><span class="n">comment_str</span> <span class="k">if</span> <span class="n">AnchorEnum</span><span class="o">.</span><span class="n">COMMENT_PUSH_ANCHOR</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_anchor_to_handlers</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="n">comment</span> <span class="o">=</span> <span class="n">comment_creator</span><span class="o">.</span><span class="n">create_comment</span><span class="p">()</span>
+                <span class="n">handle</span><span class="o">.</span><span class="n">fetch_from_outer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db_controller</span><span class="p">,</span> <span class="n">sql</span><span class="p">,</span> <span class="n">comment</span><span class="p">,</span> <span class="n">anchor_data</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_replace_anchor_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">handles</span><span class="p">):</span>
+        <span class="n">anchor_params</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">handle</span> <span class="ow">in</span> <span class="n">handles</span><span class="p">:</span>
+            <span class="n">params</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">handle</span><span class="p">,</span> <span class="n">BasePushHandler</span><span class="p">):</span>
+                <span class="n">handle</span><span class="o">.</span><span class="n">_add_trans_params</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">params</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">anchor_params</span><span class="p">[</span><span class="n">handle</span><span class="o">.</span><span class="n">anchor_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">params</span>
+        <span class="k">return</span> <span class="n">anchor_params</span>
+
+    <span class="k">def</span> <span class="nf">_add_anchors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">handlers</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Adds multiple anchor-handler associations.</span>
+<span class="sd">        Iterates over a list of handler objects and registers each of them to </span>
+<span class="sd">        its corresponding anchor name within the anchor_to_handlers dictionary.</span>
+
+<span class="sd">        :param handlers: A list of handler objects, each with an `anchor_name` attribute.</span>
+<span class="sd">        :type handlers: list</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">handler</span> <span class="ow">in</span> <span class="n">handlers</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_add_anchor</span><span class="p">(</span><span class="n">handler</span><span class="o">.</span><span class="n">anchor_name</span><span class="p">,</span> <span class="n">handler</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_add_anchor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">anchor</span><span class="p">,</span> <span class="n">handler</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Registers a handler to a specific anchor.</span>
+<span class="sd">        If the provided anchor is a string, it converts the string to the corresponding</span>
+<span class="sd">        `AnchorEnum` member before registering. The method then associates the handler</span>
+<span class="sd">        with the anchor in the anchor_to_handlers dictionary.</span>
+
+<span class="sd">        :param anchor: The anchor identifier, which can be a string or an AnchorEnum member.</span>
+<span class="sd">        :type anchor: str or AnchorEnum</span>
+<span class="sd">        :param handler: The handler object to be associated with the anchor.</span>
+<span class="sd">        :type handler: RecordPullHandler</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">anchor</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">anchor</span> <span class="o">=</span> <span class="n">AnchorEnum</span><span class="o">.</span><span class="n">to_anchor_enum</span><span class="p">(</span><span class="n">anchor</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_anchor_to_handlers</span><span class="p">[</span><span class="n">anchor</span><span class="p">]</span> <span class="o">=</span> <span class="n">handler</span>
+
+    <span class="k">def</span> <span class="nf">_check_anchor_mutual_exclusion</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Checks if there are any mutual exclusion anchors in the current session.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">exclusion_anchors</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mutual_exclusion_combs</span><span class="p">:</span>
+            <span class="n">anchors</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">exclusion_anchor</span> <span class="ow">in</span> <span class="n">exclusion_anchors</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">exclusion_anchor</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_anchor_to_handlers</span><span class="p">:</span>
+                    <span class="n">anchors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">exclusion_anchor</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">anchors</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">exclusion_anchors</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="n">PilotScopeMutualExclusionException</span><span class="p">(</span><span class="n">exclusion_anchors</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Alibaba.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

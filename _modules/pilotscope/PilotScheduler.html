@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pilotscope.PilotScheduler &mdash; PilotScope 1.0 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            PilotScope
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../references/overview.html">1. Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../references/install.html">2. Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../references/system_pipeline.html">3. System Pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../references/core_modules.html">4. Core Components (ML Side)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../references/example.html">5. Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../references/api.html">6. API (ML Side)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../references/database_develop.html">7. Database Side Develop</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../references/annotations.html">8. Annotations</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">PilotScope</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pilotscope.PilotScheduler</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pilotscope.PilotScheduler</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
+
+<span class="kn">from</span> <span class="nn">pilotscope.Anchor.BaseAnchor.BaseAnchorHandler</span> <span class="kn">import</span> <span class="n">BaseAnchorHandler</span>
+<span class="kn">from</span> <span class="nn">pilotscope.Anchor.BaseAnchor.BasePullHandler</span> <span class="kn">import</span> <span class="n">RecordPullHandler</span><span class="p">,</span> <span class="n">BasePullHandler</span>
+<span class="kn">from</span> <span class="nn">pilotscope.Anchor.BaseAnchor.BasePushHandler</span> <span class="kn">import</span> <span class="n">BasePushHandler</span>
+<span class="kn">from</span> <span class="nn">pilotscope.Common.Util</span> <span class="kn">import</span> <span class="n">extract_handlers</span>
+<span class="kn">from</span> <span class="nn">pilotscope.DBInteractor.PilotDataInteractor</span> <span class="kn">import</span> <span class="n">PilotDataInteractor</span>
+<span class="kn">from</span> <span class="nn">pilotscope.PilotEnum</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">pilotscope.PilotEvent</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">pilotscope.PilotTransData</span> <span class="kn">import</span> <span class="n">PilotTransData</span>
+
+
+<span class="c1"># noinspection PyProtectedMember</span>
+<div class="viewcode-block" id="PilotScheduler"><a class="viewcode-back" href="../../references/api_rst/pilotscope.PilotScheduler.html#pilotscope.PilotScheduler.PilotScheduler">[docs]</a><span class="k">class</span> <span class="nc">PilotScheduler</span><span class="p">:</span>
+
+<div class="viewcode-block" id="PilotScheduler.__init__"><a class="viewcode-back" href="../../references/api_rst/pilotscope.PilotScheduler.html#pilotscope.PilotScheduler.PilotScheduler.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">PilotConfig</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        :param config: The configuration of PilotScope.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">config</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">table_name_for_store_data</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_manager</span><span class="p">:</span> <span class="n">DataManager</span> <span class="o">=</span> <span class="n">DataManager</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db_controller</span> <span class="o">=</span> <span class="n">DBControllerFactory</span><span class="o">.</span><span class="n">get_db_controller</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">events</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">user_tasks</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">BasePushHandler</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_interactor</span> <span class="o">=</span> <span class="n">PilotDataInteractor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PilotScheduler.init"><a class="viewcode-back" href="../../references/api_rst/pilotscope.PilotScheduler.html#pilotscope.PilotScheduler.PilotScheduler.init">[docs]</a>    <span class="k">def</span> <span class="nf">init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize the scheduler for enabling the AI4DB algorithms, triggering the registered events and others.</span>
+<span class="sd">        This function should be called before executing any sql and after registering all the required data and events.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_deal_initial_events</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="PilotScheduler.execute"><a class="viewcode-back" href="../../references/api_rst/pilotscope.PilotScheduler.html#pilotscope.PilotScheduler.PilotScheduler.execute">[docs]</a>    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sql</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The function will finish the following tasks:</span>
+
+<span class="sd">        1. execute a sql using the registered AI4DB algorithms.</span>
+
+<span class="sd">        2. save the collected data into the specific table</span>
+
+<span class="sd">        3. try to trigger the registered events</span>
+
+<span class="sd">        :param sql: a sql to be executed</span>
+<span class="sd">        :return: the related records of the sql</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">data_interactor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_interactor</span>
+
+        <span class="c1"># add recordPullAnchor</span>
+        <span class="n">record_handler</span> <span class="o">=</span> <span class="n">RecordPullHandler</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
+        <span class="n">data_interactor</span><span class="o">.</span><span class="n">_add_anchor</span><span class="p">(</span><span class="n">record_handler</span><span class="o">.</span><span class="n">anchor_name</span><span class="p">,</span> <span class="n">record_handler</span><span class="p">)</span>
+
+        <span class="c1"># add all replace anchors from user</span>
+        <span class="n">data_interactor</span><span class="o">.</span><span class="n">_add_anchors</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">user_tasks</span><span class="p">)</span>
+
+        <span class="c1"># replace value based on user&#39;s method</span>
+
+        <span class="k">for</span> <span class="n">replace_handle</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_tasks</span><span class="p">:</span>
+            <span class="n">replace_handle</span><span class="o">.</span><span class="n">_update_injected_data</span><span class="p">(</span><span class="n">sql</span><span class="p">)</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="n">data_interactor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="p">,</span> <span class="n">is_reset</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_post_process</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="n">records</span>
+
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="PilotScheduler.register_custom_handlers"><a class="viewcode-back" href="../../references/api_rst/pilotscope.PilotScheduler.html#pilotscope.PilotScheduler.PilotScheduler.register_custom_handlers">[docs]</a>    <span class="k">def</span> <span class="nf">register_custom_handlers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">handlers</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">BaseAnchorHandler</span><span class="p">]):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Register custom AI4DB handlers</span>
+
+<span class="sd">        :param handlers: a list of custom handlers</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_valid_custom_handlers</span><span class="p">(</span><span class="n">handlers</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;pilotscope is not allowed to register identical class type for custom handler&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">handlers</span><span class="p">,</span> <span class="n">List</span><span class="p">):</span>
+            <span class="n">handlers</span> <span class="o">=</span> <span class="p">[</span><span class="n">handlers</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">user_tasks</span> <span class="o">+=</span> <span class="n">handlers</span></div>
+
+<div class="viewcode-block" id="PilotScheduler.register_required_data"><a class="viewcode-back" href="../../references/api_rst/pilotscope.PilotScheduler.html#pilotscope.PilotScheduler.PilotScheduler.register_required_data">[docs]</a>    <span class="k">def</span> <span class="nf">register_required_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name_for_store_data</span><span class="p">,</span> <span class="n">pull_execution_time</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">pull_physical_plan</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                               <span class="n">pull_subquery_2_cards</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">pull_buffer_cache</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">pull_estimated_cost</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Register data need to collect when executing a sql</span>
+
+<span class="sd">        :param table_name_for_store_data: the table name for storing the collected data</span>
+<span class="sd">        :param pull_execution_time: whether to get the execution time of a sql</span>
+<span class="sd">        :param pull_physical_plan: whether to get the physical plan of a sql</span>
+<span class="sd">        :param pull_subquery_2_cards: whether to get the sub-plan queries and their cardinality of a sql</span>
+<span class="sd">        :param pull_buffer_cache: whether to get the buffer cache of table after executing a sql</span>
+<span class="sd">        :param pull_estimated_cost: whether to get the estimated cost of a sql</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">pull_execution_time</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data_interactor</span><span class="o">.</span><span class="n">pull_execution_time</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">pull_physical_plan</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data_interactor</span><span class="o">.</span><span class="n">pull_physical_plan</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">pull_subquery_2_cards</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data_interactor</span><span class="o">.</span><span class="n">pull_subquery_card</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">pull_buffer_cache</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data_interactor</span><span class="o">.</span><span class="n">pull_buffercache</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">pull_estimated_cost</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data_interactor</span><span class="o">.</span><span class="n">pull_estimated_cost</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">table_name_for_store_data</span> <span class="o">=</span> <span class="n">table_name_for_store_data</span></div>
+
+<div class="viewcode-block" id="PilotScheduler.register_events"><a class="viewcode-back" href="../../references/api_rst/pilotscope.PilotScheduler.html#pilotscope.PilotScheduler.PilotScheduler.register_events">[docs]</a>    <span class="k">def</span> <span class="nf">register_events</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">events</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Event</span><span class="p">]):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Register events into scheduler.</span>
+
+<span class="sd">        :param events: the events to be registered</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">events</span><span class="p">,</span> <span class="n">List</span><span class="p">):</span>
+            <span class="n">events</span> <span class="o">=</span> <span class="p">[</span><span class="n">events</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">events</span> <span class="o">+=</span> <span class="n">events</span></div>
+
+    <span class="k">def</span> <span class="nf">_post_process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">PilotTransData</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_store_collected_data_into_table</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_deal_execution_end_events</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_store_collected_data_into_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">PilotTransData</span><span class="p">):</span>
+        <span class="n">pull_anchors</span> <span class="o">=</span> <span class="n">extract_handlers</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_interactor</span><span class="o">.</span><span class="n">_get_all_handlers</span><span class="p">(),</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="n">column_2_value</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">anchor</span> <span class="ow">in</span> <span class="n">pull_anchors</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">anchor</span><span class="p">,</span> <span class="n">BasePullHandler</span><span class="p">):</span>
+                <span class="n">anchor</span><span class="o">.</span><span class="n">prepare_data_for_writing</span><span class="p">(</span><span class="n">column_2_value</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_manager</span><span class="o">.</span><span class="n">save_data</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">table_name_for_store_data</span><span class="p">,</span> <span class="n">column_2_value</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_deal_initial_events</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">pretraining_thread</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">events</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">PretrainingModelEvent</span><span class="p">):</span>
+                <span class="n">event</span><span class="p">:</span> <span class="n">PretrainingModelEvent</span> <span class="o">=</span> <span class="n">event</span>
+                <span class="n">pretraining_thread</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">_async_start</span><span class="p">()</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">PeriodicModelUpdateEvent</span><span class="p">):</span>
+                <span class="n">event</span><span class="p">:</span> <span class="n">PeriodicModelUpdateEvent</span> <span class="o">=</span> <span class="n">event</span>
+                <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">execute_before_first_query</span><span class="p">:</span>
+                    <span class="n">event</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db_controller</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_manager</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">WorkloadBeforeEvent</span><span class="p">):</span>
+                <span class="n">event</span><span class="p">:</span> <span class="n">WorkloadBeforeEvent</span> <span class="o">=</span> <span class="n">event</span>
+                <span class="n">event</span><span class="o">.</span><span class="n">_update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db_controller</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_manager</span><span class="p">)</span>
+
+        <span class="c1"># wait until finishing pretraining</span>
+        <span class="k">if</span> <span class="n">pretraining_thread</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">pretraining_model</span> <span class="o">==</span> <span class="n">TrainSwitchMode</span><span class="o">.</span><span class="n">WAIT</span><span class="p">:</span>
+            <span class="n">pretraining_thread</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">_deal_execution_end_events</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">events</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">QueryFinishEvent</span><span class="p">):</span>
+                <span class="n">event</span><span class="p">:</span> <span class="n">QueryFinishEvent</span> <span class="o">=</span> <span class="n">event</span>
+                <span class="n">event</span><span class="o">.</span><span class="n">_update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db_controller</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_manager</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_is_valid_custom_handlers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">handlers</span><span class="p">):</span>
+        <span class="c1"># return false, if there is identical class typy for the elements in handlers</span>
+        <span class="n">deduplicated_size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">([</span><span class="nb">type</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span> <span class="k">for</span> <span class="n">handler</span> <span class="ow">in</span> <span class="n">handlers</span><span class="p">]))</span>
+        <span class="k">return</span> <span class="n">deduplicated_size</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">handlers</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Alibaba.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

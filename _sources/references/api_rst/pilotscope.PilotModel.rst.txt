@@ -1,0 +1,7 @@
+pilotscope.PilotModel
+============================
+
+.. automodule:: pilotscope.PilotModel
+   :members:
+   :undoc-members:
+   :show-inheritance:

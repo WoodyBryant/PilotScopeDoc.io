@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>3. System Pipeline &mdash; PilotScope 1.0 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="4. Core Components (ML Side)" href="core_modules.html" />
+    <link rel="prev" title="2. Installation" href="install.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            PilotScope
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="overview.html">1. Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">2. Installation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">3. System Pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="core_modules.html">4. Core Components (ML Side)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example.html">5. Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">6. API (ML Side)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="database_develop.html">7. Database Side Develop</a></li>
+<li class="toctree-l1"><a class="reference internal" href="annotations.html">8. Annotations</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">PilotScope</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active"><span class="section-number">3. </span>System Pipeline</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/references/system_pipeline.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="system-pipeline">
+<span id="section-system-pipeline"></span><h1><span class="section-number">3. </span>System Pipeline<a class="headerlink" href="#system-pipeline" title="Permalink to this headline"></a></h1>
+<p>Here, we illustrate a complete execution pipeline of PilotScope system when a SQL query is submitted into PilotScope. This can help users to understand the usage of our system.
+The whole  pipeline, including multiple components in ML side and DB side, is shown in Figure 1. We explain the roles of each component in detail as follows:</p>
+<ul class="simple">
+<li><p><strong>Input</strong>: Each database user can submit any SQL query into PilotScope through the PilotScope console or calling a provided function (see <strong><a class="reference external" href="../references/api_rst/pilotscope.PilotScheduler.html#pilotscope.PilotScheduler">6. API (ML Side) pilotscope.PilotScheduler</a></strong>).</p></li>
+<li><p><strong>Custom Inject Method</strong>: To guide the action of a database, each user can register some custom inject methods into
+PilotScope. These inject methods will generate some values, such as hints, cardinality for each subquery, by applying
+user’s strategies. PilotScope will fill these values into original SQL query, and produce an extended SQL query.
+Subsequently, PilotScope will send the extended SQL to the DB side to retrieve the records.</p></li>
+<li><p><strong>Execution with Injected Data</strong>: The extended SQL query includes the data that a user expected to collect or set.
+When executing the query, PilotScope will set and collect value in correct position automatically. After the collection process is finished, these collected data are then promptly sent back to the user for further
+analysis or processing.</p></li>
+<li><p><strong>Collection</strong>: Once the execution phase is complete, data collector promptly acquires the collected data
+and records and then writes the collected data into the designated tables.</p></li>
+<li><p><strong>Events</strong>: PilotScope also support diverse events. They will be trigger in different times. For example, after each
+execution process is finished, PilotScope will attempt to trigger some events like <code class="docutils literal notranslate"><span class="pre">PeriodicModelUpdateEvent</span></code>.</p></li>
+<li><p><strong>Return Records</strong>:
+PilotScope will return the retrieved records to the user. The common users can operate the database as before and
+are completely unaware of the PilotScope.</p></li>
+</ul>
+<!-- ![System Pipeline](../_static/system_pipeline.png) -->
+<div style="text-align:center">
+  <img src="../_static/system_pipeline.png" alt="图片描述" />
+  <p style="font-size: smaller;">Figure 1: System Pipeline </p>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="install.html" class="btn btn-neutral float-left" title="2. Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="core_modules.html" class="btn btn-neutral float-right" title="4. Core Components (ML Side)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Alibaba.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>2. Installation &mdash; PilotScope 1.0 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="3. System Pipeline" href="system_pipeline.html" />
+    <link rel="prev" title="1. Overview" href="overview.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            PilotScope
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="overview.html">1. Overview</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">2. Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#install-from-pre-built-docker-image">2.1. Install from Pre-built Docker Image</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#start-a-container-from-the-image">2.1.1. Start a Container from the Image</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#step-1-build-an-image">2.1.1.1. Step 1: Build an Image</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#step-2-start-a-container-from-the-image">2.1.1.2. Step 2: Start a Container from the Image</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#step-3-log-into-the-container">2.1.1.3. Step 3: Log into the Container</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#start-postgresql-in-the-container">2.1.2. Start PostgreSQL in the Container</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#start-spark-in-the-container">2.1.3. Start Spark in the Container</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#get-started-in-the-container">2.1.4. Get Started in the Container</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#install-all-components-from-scratch">2.2. Install All Components from Scratch</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#prepare-the-environment-and-configure-the-pilotscope-user">2.2.1. Prepare the Environment and Configure the PilotScope User</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#prepare-the-environment">2.2.1.1. Prepare the Environment</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#configure-the-pilotscope-user">2.2.1.2. Configure the PilotScope User</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#install-pilotscope-package">2.2.2. Install PilotScope Package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#install-postgresql">2.2.3. Install PostgreSQL</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#step-1-prepare-the-environment">2.2.3.1. Step 1: Prepare the Environment</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#step-2-install-postgresql">2.2.3.2. Step 2: Install PostgreSQL</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#step-3-install-the-extension">2.2.3.3. Step 3: Install the Extension</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#step-4-configure-database-connection-settings">2.2.3.4. Step 4: Configure Database Connection Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#verify-the-connection-to-postgresql-via-psql">2.2.3.5. Verify the connection to PostgreSQL via psql</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#update-the-latest-pilotscope-patch-for-postgresql">2.2.3.6. Update the Latest PilotScope Patch for PostgreSQL</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#a-guideline-for-installing-pilotscope-patch-into-your-postgresql-database">2.2.3.7. A Guideline for Installing PilotScope Patch into Your PostgreSQL Database.</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#install-spark">2.2.4. Install Spark</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#step-1-download-pilotscope-patch-for-spark">2.2.4.1. Step 1: Download PilotScope Patch for Spark</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#step-2-download-spark-and-apply-patch-for-spark">2.2.4.2. Step 2: Download Spark and Apply Patch for Spark</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#step-3-configuring-java-environment-variables">2.2.4.3. Step 3: Configuring Java Environment Variables</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#step-4-compile-and-build-pilotscope-and-spark">2.2.4.4. Step 4: Compile and Build PilotScope and Spark</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#step-5-install-pyspark">2.2.4.5. Step 5: Install PySpark</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#update-the-latest-pilotscope-patch-for-spark">2.2.4.6. Update the Latest PilotScope Patch for Spark</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#get-started">2.2.5. Get Started</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#load-test-databases">2.3. Load Test Databases</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="system_pipeline.html">3. System Pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="core_modules.html">4. Core Components (ML Side)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example.html">5. Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">6. API (ML Side)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="database_develop.html">7. Database Side Develop</a></li>
+<li class="toctree-l1"><a class="reference internal" href="annotations.html">8. Annotations</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">PilotScope</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active"><span class="section-number">2. </span>Installation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/references/install.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="installation">
+<h1><span class="section-number">2. </span>Installation<a class="headerlink" href="#installation" title="Permalink to this headline"></a></h1>
+<p>This section provides a comprehensive guidelines on how to install the PilotScope Python package in the ML side, along
+with the necessary
+patches for PostgreSQL and Spark in the DB side.</p>
+<p>The PilotScope package is a crucial tool that offers a range of frequently used functions, including database
+connection, data exchange, and the integration of AI algorithms into the database. Additionally, we have developed
+patches for both PostgreSQL and Spark to enhance their capabilities and support a wider array of functionalities.</p>
+<p>Required Software Versions:</p>
+<ul class="simple">
+<li><p>Python: 3.8</p></li>
+<li><p>PostgreSQL: 13.1</p></li>
+<li><p>Apache Spark: 3.3.2</p></li>
+</ul>
+<p>Here, we provide two installation methods: installing from a docker image and installing from scratch. You can load test databases and check the installation referring to
+the section <a class="reference external" href="#load-test-databases">Load Test Databases</a>.</p>
+<section id="install-from-pre-built-docker-image">
+<h2><span class="section-number">2.1. </span>Install from Pre-built Docker Image<a class="headerlink" href="#install-from-pre-built-docker-image" title="Permalink to this headline"></a></h2>
+<p>We provide a pre-built docker image which contains the pre-installed PilotScope package and the modified PostgreSQL
+13.1 and Spark 3.3.2.
+Here are some key details about this Docker image:</p>
+<ul class="simple">
+<li><p>The provided image is based on Ubuntu 18.04.</p></li>
+<li><p>The PilotScope Core in ML side is located in the <code class="docutils literal notranslate"><span class="pre">/home/pilotscope/PilotScopeCore</span></code> directory.</p></li>
+<li><p>The source code of modified PostgreSQL is located in the <code class="docutils literal notranslate"><span class="pre">/home/pilotscope/PilotScopePostgreSQL</span></code> directory.</p>
+<ul>
+<li><p>PostgreSQL is installed in <code class="docutils literal notranslate"><span class="pre">/home/pilotscope/pgsql</span></code>, with data storage located at <code class="docutils literal notranslate"><span class="pre">/home/pilotscope/pg_data</span></code>.</p></li>
+</ul>
+</li>
+<li><p>The source code of modified Spark is located in the <code class="docutils literal notranslate"><span class="pre">/home/pilotscope/PilotScopeSpark/spark-3.3.2</span></code> directory.</p></li>
+<li><p>The pre-installed miniconda is located in the <code class="docutils literal notranslate"><span class="pre">/home/pilotscope/miniconda3</span></code> directory with a pre-built Python
+environment
+named <code class="docutils literal notranslate"><span class="pre">pilotscope</span></code>.</p></li>
+<li><p>Two system users are pre-created: <code class="docutils literal notranslate"><span class="pre">root</span></code> (password: root) and <code class="docutils literal notranslate"><span class="pre">pilotscope</span></code> (password: pilotscope). User <code class="docutils literal notranslate"><span class="pre">pilotscope</span></code>
+owns the postgresql database system, and the user must own the server process.</p></li>
+<li><p>Some necessary tools such as <code class="docutils literal notranslate"><span class="pre">vim</span></code>, <code class="docutils literal notranslate"><span class="pre">wget</span></code>, <code class="docutils literal notranslate"><span class="pre">git</span></code>, <code class="docutils literal notranslate"><span class="pre">ssh</span></code>, etc. are pre-installed.</p></li>
+</ul>
+<section id="start-a-container-from-the-image">
+<h3><span class="section-number">2.1.1. </span>Start a Container from the Image<a class="headerlink" href="#start-a-container-from-the-image" title="Permalink to this headline"></a></h3>
+<p>You can follow these steps to start a container from our docker image.</p>
+<section id="step-1-build-an-image">
+<h4><span class="section-number">2.1.1.1. </span>Step 1: Build an Image<a class="headerlink" href="#step-1-build-an-image" title="Permalink to this headline"></a></h4>
+<p>To acquire the Docker image, you can download the <code class="docutils literal notranslate"><span class="pre">Dockerfile</span></code> from the following link and build the image locally.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Navigate to the directory where you want to store the Dockerfile, such as ~/</span>
+<span class="nb">cd</span><span class="w"> </span>~/
+<span class="c1"># Download the Dockerfile</span>
+wget<span class="w"> </span>https://raw.githubusercontent.com/alibaba/pilotscope/master/Dockerfile
+</pre></div>
+</div>
+<p>You can execute the following command to build the image for PostgreSQL.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </span>pilotscope:latest<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--build-arg<span class="w"> </span><span class="nv">enable_postgresql</span><span class="o">=</span><span class="nb">true</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--build-arg<span class="w"> </span><span class="nv">enable_spark</span><span class="o">=</span><span class="nb">false</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>.
+</pre></div>
+</div>
+<p>You can execute the following command to build the image for Spark.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </span>pilotscope:latest<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--build-arg<span class="w"> </span><span class="nv">enable_postgresql</span><span class="o">=</span><span class="nb">true</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--build-arg<span class="w"> </span><span class="nv">enable_spark</span><span class="o">=</span><span class="nb">true</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>.
+</pre></div>
+</div>
+<p>PilotScope only support PostgreSQL as datasource of Spark. Thus, you should set <code class="docutils literal notranslate"><span class="pre">enable_postgresql=true</span></code>
+and <code class="docutils literal notranslate"><span class="pre">enable_spark=true</span></code> at the same time.</p>
+</section>
+<section id="step-2-start-a-container-from-the-image">
+<h4><span class="section-number">2.1.1.2. </span>Step 2: Start a Container from the Image<a class="headerlink" href="#step-2-start-a-container-from-the-image" title="Permalink to this headline"></a></h4>
+<p>You can use the following command to initiate a Docker container:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span>run<span class="w"> </span>-it<span class="w">  </span>--name<span class="w"> </span>pilotscope_test<span class="w">  </span>--shm-size<span class="w"> </span>5gb<span class="w">  </span>--cap-add<span class="w"> </span>sys_ptrace<span class="w">  </span>-p<span class="w"> </span><span class="m">54323</span>:5432<span class="w"> </span>-p<span class="w"> </span><span class="m">54023</span>:22<span class="w"> </span>-d<span class="w"> </span>pilotscope<span class="w"> </span>/bin/bash
+</pre></div>
+</div>
+<p>This command boots up a container named <code class="docutils literal notranslate"><span class="pre">pilotscope_test</span></code>. Port mappings are configured as follows:</p>
+<ul class="simple">
+<li><p>(Optional) The container’s port <code class="docutils literal notranslate"><span class="pre">5432</span></code> is mapped to host machine’s port <code class="docutils literal notranslate"><span class="pre">54323</span></code>, allowing access to the database
+inside the container via host port 54323.</p></li>
+<li><p>(Recommended) The container’s port <code class="docutils literal notranslate"><span class="pre">22</span></code> (SSH) is mapped to host machine’s port <code class="docutils literal notranslate"><span class="pre">54023</span></code>, enabling SSH access to the
+container from the host via port 54023.</p></li>
+</ul>
+<p>You can map more ports according to your requirements.</p>
+</section>
+<section id="step-3-log-into-the-container">
+<h4><span class="section-number">2.1.1.3. </span>Step 3: Log into the Container<a class="headerlink" href="#step-3-log-into-the-container" title="Permalink to this headline"></a></h4>
+<p>Access the container using the following command:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Enter the Docker container</span>
+docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-it<span class="w"> </span><span class="s2">&quot;container_id&quot;</span><span class="w"> </span>/bin/bash
+</pre></div>
+</div>
+<p>Replace <code class="docutils literal notranslate"><span class="pre">container_id</span></code> with the actual container ID from the previous step.</p>
+<p>Once inside the container, enable the SSH service for remote connections:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Start the SSH service</span>
+sudo<span class="w"> </span>service<span class="w"> </span>ssh<span class="w"> </span>start
+</pre></div>
+</div>
+</section>
+</section>
+<section id="start-postgresql-in-the-container">
+<h3><span class="section-number">2.1.2. </span>Start PostgreSQL in the Container<a class="headerlink" href="#start-postgresql-in-the-container" title="Permalink to this headline"></a></h3>
+<p>To begin using PostgreSQL, switch to the pilotscope user and initiate the PostgreSQL service:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Switch to the pilotscope user</span>
+su<span class="w"> </span>pilotscope
+
+<span class="c1"># Navigate to PostgreSQL binary path and start the service</span>
+<span class="nb">cd</span><span class="w"> </span><span class="nv">$PG_PATH</span>/bin
+./pg_ctl<span class="w"> </span>start<span class="w"> </span>-D<span class="w"> </span><span class="nv">$PG_DATA</span>
+</pre></div>
+</div>
+</section>
+<section id="start-spark-in-the-container">
+<h3><span class="section-number">2.1.3. </span>Start Spark in the Container<a class="headerlink" href="#start-spark-in-the-container" title="Permalink to this headline"></a></h3>
+<p>Pilotscope only support PostgreSQL as datasource of Spark. In order to enable all Spark functionalities, you
+should
+start the PostgreSQL referring to the section <a class="reference external" href="#start-postgresql-in-the-container">Start PostgreSQL in the Container</a>.</p>
+<p>After completing above steps, the PostgreSQL/Spark will be ready inside the container.
+You can use a suitable IDE to open the PilotScopeCore project in the <code class="docutils literal notranslate"><span class="pre">/home/pilotscope/PilotScopeCore</span></code>
+directory and start developing your algorithms or try different functionalities by executing the test files
+in <code class="docutils literal notranslate"><span class="pre">test_pilotscope</span></code>.</p>
+</section>
+<section id="get-started-in-the-container">
+<h3><span class="section-number">2.1.4. </span>Get Started in the Container<a class="headerlink" href="#get-started-in-the-container" title="Permalink to this headline"></a></h3>
+<p>To switch to the PilotScope development environment, run the following command in the container:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Switch to PilotScope development environment</span>
+conda<span class="w"> </span>activate<span class="w"> </span>pilotscope
+</pre></div>
+</div>
+<p>After completing above steps, the PilotScope/PostgreSQL/Spark will be ready inside the container.</p>
+<p>You could leverage the PilotScope Python package to establish a connection to the started database.
+This enables you to access and utilize the extensive range of functionalities, especially the AI4DB algorithms, offered by PilotScope.</p>
+<p>We recommend you to open the PilotScopeCore project in the <code class="docutils literal notranslate"><span class="pre">/home/pilotscope/PilotScopeCore</span></code> directory with a suitable IDE.</p>
+<p>From now on, you can get started by following these steps:</p>
+<ul class="simple">
+<li><p>Load test databases by referring to the section <a class="reference external" href="#load-test-databases">Load Test Databases</a> or running the following command:</p></li>
+</ul>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="w">  </span><span class="c1"># load stats_tiny</span>
+<span class="w">  </span>python<span class="w"> </span>-m<span class="w"> </span>unittest<span class="w"> </span>test_pilotscope.test_pg.skip_test_dataset.TestDataset.test_load_stats_tiny
+
+<span class="w">  </span><span class="c1"># load imdb_tiny </span>
+<span class="w">  </span>python<span class="w"> </span>-m<span class="w"> </span>unittest<span class="w"> </span>test_pilotscope.test_pg.skip_test_dataset.TestDataset.test_load_imdb_tiny
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Learn how the PilotScope system works when a SQL query is submitted into PilotScope referring to the chapter <a class="reference internal" href="system_pipeline.html#section-system-pipeline"><span class="std std-ref">3. System Pipeline</span></a>.</p></li>
+<li><p>Learn the components of PilotScope Core in ML side by running <code class="docutils literal notranslate"><span class="pre">test_pilotscope</span></code> files in the <code class="docutils literal notranslate"><span class="pre">/home/pilotscope/PilotScopeCore</span></code> directory and referring to the chapter <a class="reference internal" href="core_modules.html#section-core-components"><span class="std std-ref">4. Core Components (ML Side)</span></a>.</p></li>
+<li><p>Run the algorithm examples referring to <code class="docutils literal notranslate"><span class="pre">test_example_algorithms</span></code> files in the <code class="docutils literal notranslate"><span class="pre">/home/pilotscope/PilotScopeCore</span></code> directory and the chapter <a class="reference internal" href="example.html#section-example"><span class="std std-ref">5. Example</span></a>.</p></li>
+</ul>
+</section>
+</section>
+<section id="install-all-components-from-scratch">
+<h2><span class="section-number">2.2. </span>Install All Components from Scratch<a class="headerlink" href="#install-all-components-from-scratch" title="Permalink to this headline"></a></h2>
+<p>If you do not prefer to use Docker, you can also install all components independently. Please refer to the following
+sections.</p>
+<section id="prepare-the-environment-and-configure-the-pilotscope-user">
+<h3><span class="section-number">2.2.1. </span>Prepare the Environment and Configure the PilotScope User<a class="headerlink" href="#prepare-the-environment-and-configure-the-pilotscope-user" title="Permalink to this headline"></a></h3>
+<p>Before installing PilotScope, you should ensure that you have prepared the environment and configured the PilotScope user.</p>
+<section id="prepare-the-environment">
+<h4><span class="section-number">2.2.1.1. </span>Prepare the Environment<a class="headerlink" href="#prepare-the-environment" title="Permalink to this headline"></a></h4>
+<p>Ensure that your system has the required libraries for Database and PilotScope. You can install these libraries on a new Ubuntu Linux system with the following command:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>apt-get<span class="w"> </span>update<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>wget<span class="w"> </span>git<span class="w"> </span>bzip2<span class="w"> </span>vim<span class="w"> </span>gcc<span class="w"> </span>openssh-server<span class="w"> </span>sudo
+</pre></div>
+</div>
+</section>
+<section id="configure-the-pilotscope-user">
+<h4><span class="section-number">2.2.1.2. </span>Configure the PilotScope User<a class="headerlink" href="#configure-the-pilotscope-user" title="Permalink to this headline"></a></h4>
+<p>Some databases are not allowed to be controlled by <code class="docutils literal notranslate"><span class="pre">root</span></code> user. Thus, if you are <code class="docutils literal notranslate"><span class="pre">root</span></code> user, you should create a new user for PilotScope following these commands:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Add a new user (execute as root)</span>
+sudo<span class="w"> </span>adduser<span class="w"> </span>pilotscope
+
+usermod<span class="w"> </span>-aG<span class="w"> </span>sudo<span class="w"> </span>pilotscope
+
+<span class="c1"># Change to the pilotscope user</span>
+su<span class="w"> </span>pilotscope
+</pre></div>
+</div>
+</section>
+</section>
+<section id="install-pilotscope-package">
+<h3><span class="section-number">2.2.2. </span>Install PilotScope Package<a class="headerlink" href="#install-pilotscope-package" title="Permalink to this headline"></a></h3>
+<p>First, let us obtain the PilotScope repository by cloning it from GitHub:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Clone the repository</span>
+git<span class="w"> </span>clone<span class="w"> </span>--branch<span class="w"> </span>master<span class="w"> </span>https://github.com/alibaba/pilotscope.git<span class="w"> </span>PilotScopeCore
+
+<span class="c1"># Navigate to the PilotScope directory</span>
+<span class="nb">cd</span><span class="w"> </span>PilotScopeCore
+
+<span class="c1"># Install the minimal package using pip</span>
+pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
+</pre></div>
+</div>
+<p>We have included a variety of examples on deploying AI4DB algorithms into the databases using PilotScope.
+To utilize these examples, additional dependencies must be installed. You can do so with this command:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s1">&#39;.[dev]&#39;</span>
+</pre></div>
+</div>
+<p>To verify the installation of the PilotScope package, you can run the following sample Python code:</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pilotscope</span>
+</pre></div>
+</div>
+<p>If you did not receive any error messages, you have installed PilotScope package successfully.</p>
+<p>Next, you will need to configure PilotScope to interface with the PostgreSQL database. For those who prefer using
+SparkSQL, please refer to the <a class="reference external" href="#install-spark">Spark</a> section for detailed instructions.</p>
+</section>
+<section id="install-postgresql">
+<h3><span class="section-number">2.2.3. </span>Install PostgreSQL<a class="headerlink" href="#install-postgresql" title="Permalink to this headline"></a></h3>
+<p>We also outline a comprehensive procedures for installing the PilotScope patch onto PostgreSQL from the scratch.
+Users could experience more customized installation through this method.</p>
+<section id="step-1-prepare-the-environment">
+<h4><span class="section-number">2.2.3.1. </span>Step 1: Prepare the Environment<a class="headerlink" href="#step-1-prepare-the-environment" title="Permalink to this headline"></a></h4>
+<p>Ensure that your system has the required libraries for PostgreSQL. You can install these libraries on a new Ubuntu Linux system with the following command:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>su<span class="w"> </span>root
+
+apt-get<span class="w"> </span>update<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>build-essential<span class="w"> </span>libreadline-dev<span class="w"> </span>zlib1g-dev<span class="w"> </span>bison<span class="w"> </span>flex<span class="w"> </span>gdb<span class="w"> </span>libssl-dev<span class="w"> </span>libbz2-dev<span class="w"> </span>libsqlite3-dev<span class="w"> </span>llvm<span class="w"> </span>libncurses5-dev<span class="w"> </span>libncursesw5-dev<span class="w"> </span>xz-utils<span class="w"> </span>libffi-dev<span class="w"> </span>liblzma-dev
+
+su<span class="w"> </span>pilotscope
+</pre></div>
+</div>
+</section>
+<section id="step-2-install-postgresql">
+<h4><span class="section-number">2.2.3.2. </span>Step 2: Install PostgreSQL<a class="headerlink" href="#step-2-install-postgresql" title="Permalink to this headline"></a></h4>
+<p>Download and extract modified PostgreSQL-13.1 with PilotScope. This is the only version supported by PilotScope at
+now stage.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Navigate to the directory where you want to store the PostgreSQL source code, such as ~/</span>
+<span class="nb">cd</span><span class="w"> </span>~/
+
+<span class="c1"># Download PostgreSQL 13.1 with PilotScope</span>
+git<span class="w"> </span>clone<span class="w"> </span>--branch<span class="w"> </span>pilotscope-postgresql<span class="w"> </span>https://github.com/alibaba/pilotscope.git<span class="w"> </span>PilotScopePostgreSQL
+</pre></div>
+</div>
+<p>Set the <code class="docutils literal notranslate"><span class="pre">PG_PATH</span></code> environment variable to the desired installation path for PostgreSQL and <code class="docutils literal notranslate"><span class="pre">PG_DATA</span></code> to the path where
+the database data will be stored. Notice that the installation process will fail if this step is skipped.
+It is recommended to create a new directory specifically for this purpose.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Example of setting PG_PATH. A path example is: echo export PG_PATH=~/pgsql/ &gt;&gt; ~/.bashrc </span>
+<span class="nb">echo</span><span class="w"> </span><span class="s1">&#39;export PG_PATH=/path/to/install/PostgreSQL&#39;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>~/.bashrc
+
+<span class="c1"># Example of setting PG_DATA. A path example is &quot;~/pg_data/&quot;</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s1">&#39;export PG_DATA=/path/to/store/database/data&#39;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>~/.bashrc
+
+<span class="c1"># Updating system paths</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s1">&#39;export PATH=$PG_PATH/bin:$PATH&#39;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>~/.bashrc
+<span class="nb">echo</span><span class="w"> </span><span class="s1">&#39;export LD_LIBRARY_PATH=$PG_PATH/lib:$LD_LIBRARY_PATH&#39;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>~/.bashrc
+
+<span class="c1"># Apply the changes</span>
+<span class="nb">source</span><span class="w"> </span>~/.bashrc
+</pre></div>
+</div>
+<p>Compile and install PostgreSQL to the specified path using the following commands:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Navigate to the PostgreSQL source code directory</span>
+<span class="nb">cd</span><span class="w"> </span>~/PilotScopePostgreSQL/
+
+<span class="c1"># Run the configuration script with required options</span>
+./configure<span class="w"> </span>--prefix<span class="o">=</span><span class="nv">$PG_PATH</span><span class="w"> </span>--enable-depend<span class="w"> </span>--enable-cassert<span class="w"> </span>--enable-debug<span class="w"> </span><span class="nv">CFLAGS</span><span class="o">=</span><span class="s2">&quot;-ggdb -O0&quot;</span>
+
+<span class="c1"># Compile and install PostgreSQL</span>
+make<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>make<span class="w"> </span>install
+</pre></div>
+</div>
+</section>
+<section id="step-3-install-the-extension">
+<h4><span class="section-number">2.2.3.3. </span>Step 3: Install the Extension<a class="headerlink" href="#step-3-install-the-extension" title="Permalink to this headline"></a></h4>
+<p>After installing PostgreSQL, you need to install some important extensions for enabling all functionalities of
+PilotScope.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Install the PilotScope extension</span>
+sh<span class="w"> </span>install_extension.sh
+
+<span class="c1"># recompile and install PostgreSQL</span>
+make<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>make<span class="w"> </span>install
+</pre></div>
+</div>
+</section>
+<section id="step-4-configure-database-connection-settings">
+<h4><span class="section-number">2.2.3.4. </span>Step 4: Configure Database Connection Settings<a class="headerlink" href="#step-4-configure-database-connection-settings" title="Permalink to this headline"></a></h4>
+<p>Initialize the database.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Initialize the database</span>
+<span class="nb">cd</span><span class="w"> </span><span class="nv">$PG_PATH</span>/bin
+./initdb<span class="w"> </span>-D<span class="w"> </span><span class="nv">$PG_DATA</span>
+</pre></div>
+</div>
+<p>To allow remote connections, edit the <code class="docutils literal notranslate"><span class="pre">postgresql.conf</span></code> and <code class="docutils literal notranslate"><span class="pre">pg_hba.conf</span></code> files located in the <code class="docutils literal notranslate"><span class="pre">PG_DATA</span></code> directory.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span><span class="nv">$PG_DATA</span><span class="w"> </span>
+
+<span class="c1"># Allow listening on all IP addresses</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;listen_addresses = &#39;*&#39;&quot;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>postgresql.conf
+
+<span class="c1"># Configure client authentication</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;host all all all md5&quot;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>pg_hba.conf
+
+<span class="c1"># Enable the PilotScope extension pg_hint_plan</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;shared_preload_libraries = &#39;pg_hint_plan&#39;&quot;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>postgresql.conf
+</pre></div>
+</div>
+<p>Start the PostgreSQL database:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span><span class="nv">$PG_PATH</span>/bin
+
+<span class="c1"># Start PostgreSQL</span>
+./pg_ctl<span class="w"> </span>-D<span class="w"> </span><span class="nv">$PG_DATA</span><span class="w"> </span>start
+</pre></div>
+</div>
+<p>Set the password for the database user <code class="docutils literal notranslate"><span class="pre">pilotscope</span></code> to enable remote client connections. If you are non-root user and did not create user <code class="docutils literal notranslate"><span class="pre">pilotscope</span></code>, replace <code class="docutils literal notranslate"><span class="pre">pilotscope</span></code> with your username.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span><span class="nv">$PG_PATH</span>/bin
+./psql<span class="w"> </span>-d<span class="w"> </span>template1<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;create database pilotscope;&quot;</span>
+./psql<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;ALTER USER pilotscope PASSWORD &#39;pilotscope&#39;;&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="verify-the-connection-to-postgresql-via-psql">
+<h4><span class="section-number">2.2.3.5. </span>Verify the connection to PostgreSQL via psql<a class="headerlink" href="#verify-the-connection-to-postgresql-via-psql" title="Permalink to this headline"></a></h4>
+<p>To ensure the PilotScope patch onto PostgreSQL was installed correctly and the database service is running, you can connect to the PostgreSQL database server via <code class="docutils literal notranslate"><span class="pre">psql</span></code> by typing the following command in the terminal.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span><span class="nv">$PG_PATH</span>/bin
+./psql<span class="w"> </span>-d<span class="w"> </span>template1<span class="w"> </span>
+</pre></div>
+</div>
+<p>If you can access the postgres prompt like following and observe the word <code class="docutils literal notranslate"><span class="pre">PilotScope</span></code> in the prompt, Pilotscope in the DB side has been installed and started correctly.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>psql<span class="w"> </span><span class="o">(</span><span class="m">13</span>.1<span class="o">)</span>
+PilotScope
+Type<span class="w"> </span><span class="s2">&quot;help&quot;</span><span class="w"> </span><span class="k">for</span><span class="w"> </span>help.
+
+<span class="nv">template1</span><span class="o">=</span><span class="c1">#</span>
+</pre></div>
+</div>
+<p>Finally, you can quit the postgres prompt by using the <code class="docutils literal notranslate"><span class="pre">\q</span></code> command:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">template1</span><span class="o">=</span><span class="c1"># \q</span>
+</pre></div>
+</div>
+<p>Congratulations! PostgreSQL is fully configured and operational.</p>
+<p>You can get started referring to the section <a class="reference external" href="#get-started">Get Started</a></p>
+</section>
+<section id="update-the-latest-pilotscope-patch-for-postgresql">
+<h4><span class="section-number">2.2.3.6. </span>Update the Latest PilotScope Patch for PostgreSQL<a class="headerlink" href="#update-the-latest-pilotscope-patch-for-postgresql" title="Permalink to this headline"></a></h4>
+<p>Besides, if you want to update the latest modified PostgreSQL, you should pull the latest code and recompile and install
+PostgreSQL.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Navigate to the PostgreSQL source code directory</span>
+<span class="nb">cd</span><span class="w"> </span>~/PilotScopePostgreSQL/
+
+<span class="c1"># Pull the latest code</span>
+git<span class="w"> </span>pull
+
+<span class="c1"># Recompile and install PostgreSQL.</span>
+make<span class="w"> </span>clean<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>make<span class="w"> </span>install
+</pre></div>
+</div>
+</section>
+<section id="a-guideline-for-installing-pilotscope-patch-into-your-postgresql-database">
+<h4><span class="section-number">2.2.3.7. </span>A Guideline for Installing PilotScope Patch into Your PostgreSQL Database.<a class="headerlink" href="#a-guideline-for-installing-pilotscope-patch-into-your-postgresql-database" title="Permalink to this headline"></a></h4>
+<p>Currently, PilotScope only support PostgreSQL 13.1 and have integrated some popular extension such as pg_hint_plan,
+what-if index. Thus, we do not recommend you to deploy PilotScope patch into your PostgreSQL database directly.
+In contrast, we recommend you to install our modified PostgreSQL 13.1 and migrate your origin data into the new
+PostgreSQL.
+This is valid if your origin PostgreSQL version is 13.1.</p>
+<p>Specifically, since the data is in your origin PostgreSQL data path, you should skip the command <code class="docutils literal notranslate"><span class="pre">./initdb</span> <span class="pre">-D</span> <span class="pre">$PG_DATA</span></code>
+when installing our modified PostgreSQL 13.1.
+Then, you can specify the origin PostgreSQL data path when executing the command <code class="docutils literal notranslate"><span class="pre">./pg_ctl</span> <span class="pre">-D</span> <span class="pre">$PG_DATA</span> <span class="pre">start</span></code>.
+We recommend backing up the data before performing this operation.</p>
+</section>
+</section>
+<section id="install-spark">
+<h3><span class="section-number">2.2.4. </span>Install Spark<a class="headerlink" href="#install-spark" title="Permalink to this headline"></a></h3>
+<p>We outline a comprehensive procedure for installing the PilotScope patch onto Spark from the scratch. Users could
+experience more customized installation through this method.</p>
+<section id="step-1-download-pilotscope-patch-for-spark">
+<h4><span class="section-number">2.2.4.1. </span>Step 1: Download PilotScope Patch for Spark<a class="headerlink" href="#step-1-download-pilotscope-patch-for-spark" title="Permalink to this headline"></a></h4>
+<p>Download the PilotScope patch as follows:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Navigate to the directory where you want to store the PilotScopeSpark repository, such as ~/</span>
+<span class="nb">cd</span><span class="w"> </span>~/
+
+<span class="c1"># Clone PilotScopeSpark repository</span>
+git<span class="w"> </span>clone<span class="w"> </span>--branch<span class="w"> </span>pilotscope-spark<span class="w"> </span>https://github.com/alibaba/pilotscope.git<span class="w"> </span>PilotScopeSpark
+<span class="nb">cd</span><span class="w"> </span>PilotScopeSpark/
+</pre></div>
+</div>
+</section>
+<section id="step-2-download-spark-and-apply-patch-for-spark">
+<h4><span class="section-number">2.2.4.2. </span>Step 2: Download Spark and Apply Patch for Spark<a class="headerlink" href="#step-2-download-spark-and-apply-patch-for-spark" title="Permalink to this headline"></a></h4>
+<p>Download and extract Spark 3.3.2. This is the only version supported by PilotScope at now stage.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Download the Spark 3.3.2</span>
+wget<span class="w"> </span>https://archive.apache.org/dist/spark/spark-3.3.2/spark-3.3.2.tgz
+tar<span class="w"> </span>-xzvf<span class="w"> </span>spark-3.3.2.tgz
+</pre></div>
+</div>
+<p>Now there is a <code class="docutils literal notranslate"><span class="pre">spark-3.3.2</span></code> directory which contains the source code of Spark in the same directory as <code class="docutils literal notranslate"><span class="pre">apply_patch.sh</span></code>
+.
+Apply the PilotScope patch into Spark as follows:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>bash<span class="w"> </span>apply_patch.sh<span class="w"> </span>pilotscope_spark.patch
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">apply_patch.sh</span></code> will make an initial git commit on the original code when first run, and then apply the patch to this
+source code of Spark.</p>
+</section>
+<section id="step-3-configuring-java-environment-variables">
+<h4><span class="section-number">2.2.4.3. </span>Step 3: Configuring Java Environment Variables<a class="headerlink" href="#step-3-configuring-java-environment-variables" title="Permalink to this headline"></a></h4>
+<p>Then, download JDK and configure the relevant environment variables.
+You can use the JDK provided by us (<code class="docutils literal notranslate"><span class="pre">jdk-8u202-linux-x64.tar.gz</span></code>), or download your own JDK.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># download and extract the JDK to the current directory</span>
+wget<span class="w"> </span>https://github.com/WoodyBryant/JDK/releases/download/v2/jdk-8u202-linux-x64.tar.gz
+tar<span class="w"> </span>-xzvf<span class="w"> </span>jdk-8u202-linux-x64.tar.gz
+
+<span class="c1"># move the JDK to the a directory where you have the access permission, e.g. home directory.</span>
+mv<span class="w"> </span>jdk1.8.0_202<span class="w"> </span>~/<span class="w"> </span>
+
+<span class="c1"># Set necessary environment variables, JAVA_HOME and PATH</span>
+<span class="c1"># for example:  echo &#39;export JAVA_HOME=~/jdk1.8.0_202/&#39; &gt;&gt; ~/.bashrc if your save jdk in &quot;~/jdk1.8.0_202&quot; path</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s1">&#39;export JAVA_HOME=/path/to/your/jdk&#39;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>~/.bashrc
+<span class="nb">echo</span><span class="w"> </span><span class="s1">&#39;export PATH=$JAVA_HOME/bin:$PATH&#39;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>~/.bashrc
+<span class="nb">source</span><span class="w"> </span>~/.bashrc
+</pre></div>
+</div>
+</section>
+<section id="step-4-compile-and-build-pilotscope-and-spark">
+<h4><span class="section-number">2.2.4.4. </span>Step 4: Compile and Build PilotScope and Spark<a class="headerlink" href="#step-4-compile-and-build-pilotscope-and-spark" title="Permalink to this headline"></a></h4>
+<p>Compile and build Spark.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>spark-3.3.2
+./build/mvn<span class="w"> </span>-DskipTests<span class="w"> </span>clean<span class="w"> </span>package
+</pre></div>
+</div>
+</section>
+<section id="step-5-install-pyspark">
+<h4><span class="section-number">2.2.4.5. </span>Step 5: Install PySpark<a class="headerlink" href="#step-5-install-pyspark" title="Permalink to this headline"></a></h4>
+<p>Finally, install PySpark for allowing a Python code to control Spark.</p>
+<p>You should use the Python environment used by PilotScope Core to install PySpark.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># This is provided by Spark </span>
+<span class="nb">cd</span><span class="w"> </span>python
+python3<span class="w"> </span>setup.py<span class="w"> </span>install
+</pre></div>
+</div>
+<p>From now on, the Spark is fully configured and operational. You could leverage the PilotScope Python package to
+establish a connection to the started database. This enables you to access and utilize the extensive range of
+functionalities, especially the AI4DB algorithms, offered by PilotScope.</p>
+</section>
+<section id="update-the-latest-pilotscope-patch-for-spark">
+<h4><span class="section-number">2.2.4.6. </span>Update the Latest PilotScope Patch for Spark<a class="headerlink" href="#update-the-latest-pilotscope-patch-for-spark" title="Permalink to this headline"></a></h4>
+<p>If you want to update the latest pilotscope patch for Spark , you should pull the latest patch and recompile and install
+Spark.</p>
+<p>Note that, <code class="docutils literal notranslate"><span class="pre">apply_patch.sh</span></code> will roll back the Spark into original Spark and then apply the lastest patch. Thus, if you
+have modified Spark codes for your requirements, you should not to execute the command directly.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>PilotScopeSpark/
+
+bash<span class="w"> </span>apply_patch.sh<span class="w"> </span>patch_to_update.patch
+</pre></div>
+</div>
+<p>This script will update the code for Spark. Then follow steps 5-6 to complete the update, just like the first
+installing.</p>
+</section>
+</section>
+<section id="get-started">
+<h3><span class="section-number">2.2.5. </span>Get Started<a class="headerlink" href="#get-started" title="Permalink to this headline"></a></h3>
+<p>After completing above steps, the PilotScope/PostgreSQL/Spark will be ready.</p>
+<p>You could leverage the PilotScope Python package to establish a connection to the started database.
+This enables you to access and utilize the extensive range of functionalities, especially the AI4DB algorithms, offered by PilotScope.</p>
+<p>Get started by following these steps:</p>
+<ul class="simple">
+<li><p>Load test databases referring to the section <a class="reference external" href="#load-test-databases">Load Test Databases</a></p></li>
+<li><p>Learn how the PilotScope system works when a SQL query is submitted into PilotScope referring to the chapter <a class="reference internal" href="system_pipeline.html#section-system-pipeline"><span class="std std-ref">3. System Pipeline</span></a>.</p></li>
+<li><p>Learn the components of PilotScope Core in ML side referring to the chapter <a class="reference internal" href="core_modules.html#section-core-components"><span class="std std-ref">4. Core Components (ML Side)</span></a>.</p></li>
+<li><p>Learn the algorithm examples referring to the chapter <a class="reference internal" href="example.html#section-example"><span class="std std-ref">5. Example</span></a>.</p></li>
+</ul>
+</section>
+</section>
+<section id="load-test-databases">
+<h2><span class="section-number">2.3. </span>Load Test Databases<a class="headerlink" href="#load-test-databases" title="Permalink to this headline"></a></h2>
+<p>Regardless of the installation method used from the above, you can follow these steps to load two test databases into PostgreSQL using PilotScope.</p>
+<p>Please ensure that:</p>
+<ol class="simple">
+<li><p>your database and pilotscope environment are in the same machine with the same user.</p></li>
+<li><p>modify the following Python code according to your actual database configuration.</p></li>
+</ol>
+<p>Here you will create a connection to PostgreSQL server at <code class="docutils literal notranslate"><span class="pre">localhost</span></code>, port <code class="docutils literal notranslate"><span class="pre">5432</span></code> using the username <code class="docutils literal notranslate"><span class="pre">pilotscope</span></code> and the password <code class="docutils literal notranslate"><span class="pre">pilotscope</span></code> and load <code class="docutils literal notranslate"><span class="pre">stats_tiny</span></code> database and <code class="docutils literal notranslate"><span class="pre">imdb_tiny</span></code> database into PostgreSQL.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pilotscope.Dataset.ImdbTinyDataset</span> <span class="kn">import</span> <span class="n">ImdbTinyDataset</span>
+<span class="kn">from</span> <span class="nn">pilotscope.Dataset.StatsTinyDataset</span> <span class="kn">import</span> <span class="n">StatsTinyDataset</span>
+<span class="kn">from</span> <span class="nn">pilotscope.PilotConfig</span> <span class="kn">import</span> <span class="n">PostgreSQLConfig</span>
+<span class="kn">from</span> <span class="nn">pilotscope.PilotEnum</span> <span class="kn">import</span> <span class="n">DatabaseEnum</span>
+
+<span class="c1"># configure database settings </span>
+<span class="n">db_port</span> <span class="o">=</span> <span class="s2">&quot;5432&quot;</span>  <span class="c1"># database server port (default: &quot;5432&quot;)</span>
+<span class="n">db_user</span> <span class="o">=</span> <span class="s2">&quot;pilotscope&quot;</span>  <span class="c1"># database user name (default: &quot;pilotscope&quot;)</span>
+<span class="n">db_user_pwd</span> <span class="o">=</span> <span class="s2">&quot;pilotscope&quot;</span>  <span class="c1"># database user password (default: &quot;pilotscope&quot;)</span>
+<span class="n">pg_bin_path</span> <span class="o">=</span> <span class="s2">&quot;/path/to/install/PostgreSQL/bin&quot;</span>  <span class="c1"># database bin path, i.e. $PG_PATH/bin (default: None)</span>
+<span class="n">pg_data_path</span> <span class="o">=</span> <span class="s2">&quot;/path/to/store/database/data&quot;</span>  <span class="c1"># database data path, i.e. $PG_DATA  (default: None)</span>
+
+<span class="n">db_config</span> <span class="o">=</span> <span class="n">PostgreSQLConfig</span><span class="p">(</span><span class="n">db_port</span><span class="o">=</span><span class="n">db_port</span><span class="p">,</span> <span class="n">db_user</span><span class="o">=</span><span class="n">db_user</span><span class="p">,</span> <span class="n">db_user_pwd</span><span class="o">=</span><span class="n">db_user_pwd</span><span class="p">)</span>
+<span class="c1"># Please ensure that your database and pilotscope Core are in the same machine with the same user.</span>
+<span class="n">db_config</span><span class="o">.</span><span class="n">enable_deep_control_local</span><span class="p">(</span><span class="n">pg_bin_path</span><span class="p">,</span> <span class="n">pg_data_path</span><span class="p">)</span>
+
+<span class="c1"># load stats_tiny</span>
+<span class="n">ds</span> <span class="o">=</span> <span class="n">StatsTinyDataset</span><span class="p">(</span><span class="n">DatabaseEnum</span><span class="o">.</span><span class="n">POSTGRESQL</span><span class="p">,</span> <span class="n">created_db_name</span><span class="o">=</span><span class="s2">&quot;stats_tiny&quot;</span><span class="p">)</span>
+<span class="n">ds</span><span class="o">.</span><span class="n">load_to_db</span><span class="p">(</span><span class="n">db_config</span><span class="p">)</span>
+
+<span class="c1"># load imdb_tiny</span>
+<span class="n">ds</span> <span class="o">=</span> <span class="n">ImdbTinyDataset</span><span class="p">(</span><span class="n">DatabaseEnum</span><span class="o">.</span><span class="n">POSTGRESQL</span><span class="p">,</span> <span class="n">created_db_name</span><span class="o">=</span><span class="s2">&quot;imdb_tiny&quot;</span><span class="p">)</span>
+<span class="n">ds</span><span class="o">.</span><span class="n">load_to_db</span><span class="p">(</span><span class="n">db_config</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If you can observe the following messages, these databases have been loaded successfully.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>...
+ALTER<span class="w"> </span>TABLE
+ALTER<span class="w"> </span>TABLE
+ALTER<span class="w"> </span>TABLE
+ALTER<span class="w"> </span>TABLE
+ALTER<span class="w"> </span>TABLE
+ALTER<span class="w"> </span>TABLE
+ALTER<span class="w"> </span>TABLE
+CREATE<span class="w"> </span>INDEX
+CREATE<span class="w"> </span>INDEX
+CREATE<span class="w"> </span>INDEX
+CREATE<span class="w"> </span>INDEX
+CREATE<span class="w"> </span>INDEX
+CREATE<span class="w"> </span>INDEX
+CREATE<span class="w"> </span>INDEX
+CREATE<span class="w"> </span>INDEX
+CREATE<span class="w"> </span>INDEX
+CREATE<span class="w"> </span>INDEX
+CREATE<span class="w"> </span>INDEX
+...
+</pre></div>
+</div>
+<p>Congratulations! You have successfully installed complete PilotScope components.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="overview.html" class="btn btn-neutral float-left" title="1. Overview" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="system_pipeline.html" class="btn btn-neutral float-right" title="3. System Pipeline" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Alibaba.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

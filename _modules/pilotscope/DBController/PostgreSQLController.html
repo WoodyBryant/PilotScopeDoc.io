@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pilotscope.DBController.PostgreSQLController &mdash; PilotScope 1.0 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            PilotScope
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../references/overview.html">1. Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references/install.html">2. Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references/system_pipeline.html">3. System Pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references/core_modules.html">4. Core Components (ML Side)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references/example.html">5. Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references/api.html">6. API (ML Side)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references/database_develop.html">7. Database Side Develop</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references/annotations.html">8. Annotations</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">PilotScope</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pilotscope.DBController.PostgreSQLController</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pilotscope.DBController.PostgreSQLController</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">subprocess</span>
+
+<span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">text</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy.exc</span> <span class="kn">import</span> <span class="n">OperationalError</span>
+
+<span class="kn">from</span> <span class="nn">pilotscope.Common.Index</span> <span class="kn">import</span> <span class="n">Index</span>
+<span class="kn">from</span> <span class="nn">pilotscope.Common.SSHConnector</span> <span class="kn">import</span> <span class="n">SSHConnector</span>
+<span class="kn">from</span> <span class="nn">pilotscope.DBController.BaseDBController</span> <span class="kn">import</span> <span class="n">BaseDBController</span>
+<span class="kn">from</span> <span class="nn">pilotscope.Exception.Exception</span> <span class="kn">import</span> <span class="n">DBStatementTimeoutException</span><span class="p">,</span> <span class="n">DatabaseCrashException</span><span class="p">,</span> \
+    <span class="n">PilotScopeInternalError</span><span class="p">,</span> <span class="n">PilotScopeExecCommandException</span>
+<span class="kn">from</span> <span class="nn">pilotscope.PilotConfig</span> <span class="kn">import</span> <span class="n">PostgreSQLConfig</span>
+
+
+<span class="c1"># noinspection PyProtectedMember</span>
+<div class="viewcode-block" id="PostgreSQLController"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.PostgreSQLController.html#pilotscope.DBController.PostgreSQLController.PostgreSQLController">[docs]</a><span class="k">class</span> <span class="nc">PostgreSQLController</span><span class="p">(</span><span class="n">BaseDBController</span><span class="p">):</span>
+    <span class="n">_instances</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">instance</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">_instances</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">instance</span>
+
+    <span class="k">def</span> <span class="fm">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_disconnect</span><span class="p">()</span>
+        <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_instances</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+<div class="viewcode-block" id="PostgreSQLController.__init__"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.PostgreSQLController.html#pilotscope.DBController.PostgreSQLController.PostgreSQLController.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">PostgreSQLConfig</span><span class="p">,</span> <span class="n">echo</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">enable_simulate_index</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">echo</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">:</span> <span class="n">PostgreSQLConfig</span> <span class="o">=</span> <span class="n">config</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">enable_simulate_index</span> <span class="o">=</span> <span class="n">enable_simulate_index</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_add_extension</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">enable_simulate_index</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">simulate_index_visitor</span> <span class="o">=</span> <span class="n">SimulateIndexVisitor</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_all_indexes</span><span class="p">():</span>
+                <span class="n">sql</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;SELECT hypopg_hide_index(&#39;</span><span class="si">{</span><span class="n">index</span><span class="o">.</span><span class="n">index_name</span><span class="si">}</span><span class="s2">&#39;::REGCLASS)&quot;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_add_extension</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">extensions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_available_extensions</span><span class="p">()</span>
+        <span class="k">if</span> <span class="s2">&quot;pg_buffercache&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">extensions</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create extension pg_buffercache&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;pg_hint_plan&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">extensions</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create extension pg_hint_plan&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">enable_simulate_index</span> <span class="ow">and</span> <span class="s2">&quot;hypopg&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">extensions</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;create extension hypopg&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="PostgreSQLController.get_available_extensions"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.PostgreSQLController.html#pilotscope.DBController.PostgreSQLController.PostgreSQLController.get_available_extensions">[docs]</a>    <span class="k">def</span> <span class="nf">get_available_extensions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get all extensions that have installed in the connected database</span>
+<span class="sd">        :return: the list of extension names</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sql</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;SELECT name, default_version, installed_version FROM&quot;</span>
+               <span class="s2">&quot; pg_available_extensions WHERE installed_version is not NULL ORDER BY name;&quot;</span><span class="p">)</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="p">,</span> <span class="n">fetch</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">extensions</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">res</span><span class="p">:</span>
+            <span class="n">extensions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">extensions</span></div>
+
+    <span class="k">def</span> <span class="nf">_create_conn_str</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">://</span><span class="si">{}</span><span class="s2">:</span><span class="si">{}</span><span class="s2">@</span><span class="si">{}</span><span class="s2">:</span><span class="si">{}</span><span class="s2">/</span><span class="si">{}</span><span class="s2">?</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;postgresql&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">db_user</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">db_user_pwd</span><span class="p">,</span>
+                                               <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">db_host</span><span class="p">,</span>
+                                               <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">db_port</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">db</span><span class="p">,</span> <span class="s2">&quot;connect_timeout=2&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="PostgreSQLController.execute"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.PostgreSQLController.html#pilotscope.DBController.PostgreSQLController.PostgreSQLController.execute">[docs]</a>    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sql</span><span class="p">,</span> <span class="n">fetch</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">fetch_column_name</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Execute a SQL query.</span>
+
+<span class="sd">        :param sql: the SQL query to execute</span>
+<span class="sd">        :param fetch: it indicates whether to fetch the result of the query</span>
+<span class="sd">        :param fetch_column_name: it indicates whether to fetch the column names of the result.</span>
+<span class="sd">        :return: the result of the query if fetch is True, otherwise None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">row</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_connect_if_loss</span><span class="p">()</span>
+            <span class="n">conn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_connection</span><span class="p">()</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">text</span><span class="p">(</span><span class="n">sql</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sql</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="n">sql</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">fetch</span><span class="p">:</span>
+                <span class="n">row</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">fetch_column_name</span><span class="p">:</span>
+                    <span class="n">row</span> <span class="o">=</span> <span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span> <span class="o">*</span><span class="n">row</span><span class="p">]</span>
+        <span class="k">except</span> <span class="n">OperationalError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;canceling statement due to statement timeout&quot;</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="n">DBStatementTimeoutException</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">e</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;Can not find the corresponding sub-plan query in push anchor&quot;</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="n">PilotScopeInternalError</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+            <span class="k">if</span> <span class="s2">&quot;PilotScopePullEnd&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="n">e</span>
+        <span class="k">return</span> <span class="n">row</span></div>
+
+<div class="viewcode-block" id="PostgreSQLController.set_hint"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.PostgreSQLController.html#pilotscope.DBController.PostgreSQLController.PostgreSQLController.set_hint">[docs]</a>    <span class="k">def</span> <span class="nf">set_hint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set the value of each hint (i.e., the run-time config) when execute SQL queries.</span>
+<span class="sd">        The hints can be used to control the behavior of the database system in a session.</span>
+<span class="sd">        For PostgreSQL, you can find all valid hints in https://www.postgresql.org/docs/13/runtime-config.html.</span>
+
+<span class="sd">        :param key: the name of the hint</span>
+<span class="sd">        :param value: the value of the hint</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sql</span> <span class="o">=</span> <span class="s2">&quot;SET </span><span class="si">{}</span><span class="s2"> TO </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PostgreSQLController.create_index"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.PostgreSQLController.html#pilotscope.DBController.PostgreSQLController.PostgreSQLController.create_index">[docs]</a>    <span class="k">def</span> <span class="nf">create_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="n">Index</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create an index on columns `index.columns` of table `index.table` with name `index.index_name`.</span>
+
+<span class="sd">        :param index: a Index object including the information of the index</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">enable_simulate_index</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">simulate_index_visitor</span><span class="o">.</span><span class="n">create_index</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">column_names</span> <span class="o">=</span> <span class="n">index</span><span class="o">.</span><span class="n">joined_column_names</span><span class="p">()</span>
+            <span class="n">sql</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;create index </span><span class="si">{</span><span class="n">index</span><span class="o">.</span><span class="n">index_name</span><span class="si">}</span><span class="s2"> on </span><span class="si">{</span><span class="n">index</span><span class="o">.</span><span class="n">table</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">column_names</span><span class="si">}</span><span class="s2">);&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="p">,</span> <span class="n">fetch</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PostgreSQLController.drop_index"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.PostgreSQLController.html#pilotscope.DBController.PostgreSQLController.PostgreSQLController.drop_index">[docs]</a>    <span class="k">def</span> <span class="nf">drop_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="n">Index</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Drop an index by its index name.</span>
+
+<span class="sd">        :param index: an index that will be dropped</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">enable_simulate_index</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">simulate_index_visitor</span><span class="o">.</span><span class="n">drop_index</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">statement</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;DROP INDEX IF EXISTS </span><span class="si">{</span><span class="n">index</span><span class="o">.</span><span class="n">index_name</span><span class="si">}</span><span class="s2">;&quot;</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">statement</span><span class="p">,</span> <span class="n">fetch</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PostgreSQLController.drop_all_indexes"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.PostgreSQLController.html#pilotscope.DBController.PostgreSQLController.PostgreSQLController.drop_all_indexes">[docs]</a>    <span class="k">def</span> <span class="nf">drop_all_indexes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Drop all indexes across all tables in the database. This will not delete the system indexes and unique indexes.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">enable_simulate_index</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">simulate_index_visitor</span><span class="o">.</span><span class="n">drop_all_indexes</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">indexes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_all_indexes</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="n">indexes</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">drop_index</span><span class="p">(</span><span class="n">index</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PostgreSQLController.get_all_indexes_byte"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.PostgreSQLController.html#pilotscope.DBController.PostgreSQLController.PostgreSQLController.get_all_indexes_byte">[docs]</a>    <span class="k">def</span> <span class="nf">get_all_indexes_byte</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the size of all indexes across all tables in the database in bytes.</span>
+<span class="sd">        This will include the system indexes and unique indexes.</span>
+
+<span class="sd">        :return: the size of all indexes in bytes</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">enable_simulate_index</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulate_index_visitor</span><span class="o">.</span><span class="n">get_all_indexes_byte</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">sql</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;select sum(pg_indexes_size(table_name::text)) from &quot;</span>
+                   <span class="s2">&quot;(select table_name from information_schema.tables &quot;</span>
+                   <span class="s2">&quot;where table_schema=&#39;public&#39;) as all_tables;&quot;</span><span class="p">)</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="p">,</span> <span class="n">fetch</span><span class="o">=</span><span class="kc">True</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+
+<div class="viewcode-block" id="PostgreSQLController.get_table_indexes_byte"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.PostgreSQLController.html#pilotscope.DBController.PostgreSQLController.PostgreSQLController.get_table_indexes_byte">[docs]</a>    <span class="k">def</span> <span class="nf">get_table_indexes_byte</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the size of all indexes on a table in bytes.</span>
+<span class="sd">        This will include the system indexes and unique indexes.</span>
+
+<span class="sd">        :param table_name: a table name that the indexes belong to</span>
+<span class="sd">        :return: the size of all indexes on the table in bytes</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">enable_simulate_index</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulate_index_visitor</span><span class="o">.</span><span class="n">get_table_indexes_byte</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">sql</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;select pg_indexes_size(&#39;</span><span class="si">{</span><span class="n">table_name</span><span class="si">}</span><span class="s2">&#39;);&quot;</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="p">,</span> <span class="n">fetch</span><span class="o">=</span><span class="kc">True</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+
+<div class="viewcode-block" id="PostgreSQLController.get_index_byte"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.PostgreSQLController.html#pilotscope.DBController.PostgreSQLController.PostgreSQLController.get_index_byte">[docs]</a>    <span class="k">def</span> <span class="nf">get_index_byte</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="n">Index</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the size of an index in bytes by its index name.</span>
+
+<span class="sd">        :param index: the index to get size</span>
+<span class="sd">        :return: the size of the index in bytes</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">enable_simulate_index</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulate_index_visitor</span><span class="o">.</span><span class="n">get_index_byte</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+        <span class="n">sql</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;select pg_table_size(&#39;</span><span class="si">{</span><span class="n">index</span><span class="o">.</span><span class="n">get_index_name</span><span class="p">()</span><span class="si">}</span><span class="s2">&#39;);&quot;</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="p">,</span> <span class="n">fetch</span><span class="o">=</span><span class="kc">True</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+
+<div class="viewcode-block" id="PostgreSQLController.get_existed_indexes"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.PostgreSQLController.html#pilotscope.DBController.PostgreSQLController.PostgreSQLController.get_existed_indexes">[docs]</a>    <span class="k">def</span> <span class="nf">get_existed_indexes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">enable_simulate_index</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulate_index_visitor</span><span class="o">.</span><span class="n">get_existed_index</span><span class="p">(</span><span class="n">table</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_existed_indexes</span><span class="p">(</span><span class="n">table</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PostgreSQLController.get_all_indexes"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.PostgreSQLController.html#pilotscope.DBController.PostgreSQLController.PostgreSQLController.get_all_indexes">[docs]</a>    <span class="k">def</span> <span class="nf">get_all_indexes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get all indexes across all tables in the database.</span>
+
+<span class="sd">        :return: A collection containing the details of all indexes.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">enable_simulate_index</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulate_index_visitor</span><span class="o">.</span><span class="n">get_all_indexes</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_all_indexes</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="PostgreSQLController.get_index_number"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.PostgreSQLController.html#pilotscope.DBController.PostgreSQLController.PostgreSQLController.get_index_number">[docs]</a>    <span class="k">def</span> <span class="nf">get_index_number</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the number of indexes built on the specified table.</span>
+
+<span class="sd">        :param table: The name of the table for which to count indexes.</span>
+<span class="sd">        :return: The number of indexes on the specified table.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">enable_simulate_index</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulate_index_visitor</span><span class="o">.</span><span class="n">get_index_number</span><span class="p">(</span><span class="n">table</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_index_number</span><span class="p">(</span><span class="n">table</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PostgreSQLController.explain_physical_plan"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.PostgreSQLController.html#pilotscope.DBController.PostgreSQLController.PostgreSQLController.explain_physical_plan">[docs]</a>    <span class="k">def</span> <span class="nf">explain_physical_plan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sql</span><span class="p">,</span> <span class="n">comment</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the physical plan from database&#39;s optimizer of a SQL query.</span>
+
+<span class="sd">        :param sql: The SQL query to be explained.</span>
+<span class="sd">        :param comment: A SQL comment will be added to the beginning of the SQL query.</span>
+<span class="sd">        :return: The physical plan of the SQL query.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_explain</span><span class="p">(</span><span class="n">sql</span><span class="p">,</span> <span class="n">comment</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PostgreSQLController.explain_execution_plan"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.PostgreSQLController.html#pilotscope.DBController.PostgreSQLController.PostgreSQLController.explain_execution_plan">[docs]</a>    <span class="k">def</span> <span class="nf">explain_execution_plan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sql</span><span class="p">,</span> <span class="n">comment</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the execution plan from database&#39;s optimizer of a SQL query.</span>
+
+<span class="sd">        :param sql: The SQL query to be explained.</span>
+<span class="sd">        :param comment: A SQL comment will be added to the beginning of the SQL query.</span>
+<span class="sd">        :return: The execution plan of the SQL query.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_explain</span><span class="p">(</span><span class="n">sql</span><span class="p">,</span> <span class="n">comment</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_explain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sql</span><span class="p">,</span> <span class="n">comment</span><span class="p">,</span> <span class="n">execute</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">text</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_explain_sql</span><span class="p">(</span><span class="n">sql</span><span class="p">,</span> <span class="n">execute</span><span class="p">,</span> <span class="n">comment</span><span class="p">)),</span> <span class="kc">True</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+
+<div class="viewcode-block" id="PostgreSQLController.get_estimated_cost"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.PostgreSQLController.html#pilotscope.DBController.PostgreSQLController.PostgreSQLController.get_estimated_cost">[docs]</a>    <span class="k">def</span> <span class="nf">get_estimated_cost</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sql</span><span class="p">,</span> <span class="n">comment</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get an estimated cost of a SQL query.</span>
+
+<span class="sd">        :param sql: The SQL query for which to estimate the cost.</span>
+<span class="sd">        :param comment:  A SQL comment will be added to the beginning of the SQL query.</span>
+<span class="sd">        :return: The estimated total cost of executing the SQL query.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">plan</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">explain_physical_plan</span><span class="p">(</span><span class="n">sql</span><span class="p">,</span> <span class="n">comment</span><span class="o">=</span><span class="n">comment</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">plan</span><span class="p">[</span><span class="s2">&quot;Plan&quot;</span><span class="p">][</span><span class="s2">&quot;Total Cost&quot;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="PostgreSQLController.get_explain_sql"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.PostgreSQLController.html#pilotscope.DBController.PostgreSQLController.PostgreSQLController.get_explain_sql">[docs]</a>    <span class="k">def</span> <span class="nf">get_explain_sql</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sql</span><span class="p">,</span> <span class="n">execute</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">comment</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Constructs an EXPLAIN SQL statement for a given SQL query.</span>
+
+<span class="sd">        :param sql: The SQL query to explain.</span>
+<span class="sd">        :param execute: A boolean flag indicating whether to execute the query plan.</span>
+<span class="sd">        :param comment:  A SQL comment will be added to the beginning of the SQL query.</span>
+<span class="sd">        :return: The result of executing the `EXPLAIN` SQL statement.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> explain (</span><span class="si">{}</span><span class="s2"> VERBOSE, SETTINGS, SUMMARY, FORMAT JSON) </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">comment</span><span class="p">,</span>
+                                                                                   <span class="s2">&quot;ANALYZE,&quot;</span> <span class="k">if</span> <span class="n">execute</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+                                                                                   <span class="n">sql</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PostgreSQLController.get_buffercache"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.PostgreSQLController.html#pilotscope.DBController.PostgreSQLController.PostgreSQLController.get_buffercache">[docs]</a>    <span class="k">def</span> <span class="nf">get_buffercache</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the numbers of buffer per table in the shared buffer cache in real time.</span>
+
+<span class="sd">        :return: a dict, where keys are the names of table and values are the numbers of buffer per table</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sql</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">            SELECT c.relname, count(*) AS buffers</span>
+<span class="s2">            FROM pg_buffercache b JOIN pg_class c</span>
+<span class="s2">            ON b.relfilenode = pg_relation_filenode(c.oid) AND</span>
+<span class="s2">            b.reldatabase IN (0, (SELECT oid FROM pg_database</span>
+<span class="s2">                                    WHERE datname = current_database()))</span>
+<span class="s2">            JOIN pg_namespace n ON n.oid = c.relnamespace</span>
+<span class="s2">            GROUP BY c.relname;</span>
+<span class="s2">            &quot;&quot;&quot;</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="p">,</span> <span class="n">fetch</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">res</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;pg_&quot;</span><span class="p">)}</span></div>
+
+<div class="viewcode-block" id="PostgreSQLController.shutdown"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.PostgreSQLController.html#pilotscope.DBController.PostgreSQLController.PostgreSQLController.shutdown">[docs]</a>    <span class="k">def</span> <span class="nf">shutdown</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Shutdown the database</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_enable_deep_control</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">instance</span> <span class="ow">in</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_instances</span><span class="p">:</span>
+            <span class="c1"># if hasattr(instance, &quot;engine&quot;):</span>
+            <span class="n">instance</span><span class="o">.</span><span class="n">_disconnect</span><span class="p">()</span>  <span class="c1"># to set DBController&#39;s self.connection_thread.conn is None</span>
+            <span class="n">instance</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">dispose</span><span class="p">(</span><span class="n">close</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="c1"># del instance.engine</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_surun</span><span class="p">(</span>
+            <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> stop -P </span><span class="si">{}</span><span class="s2"> -D </span><span class="si">{}</span><span class="s2"> 2&gt;&amp;1 &gt; /dev/null&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">pg_ctl</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">db_port</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">pgdata</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="PostgreSQLController.start"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.PostgreSQLController.html#pilotscope.DBController.PostgreSQLController.PostgreSQLController.start">[docs]</a>    <span class="k">def</span> <span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Try to start DBMS. If fails the first time, recover config to self.config.backup_db_config_path and raise DatabaseStartException.</span>
+<span class="sd">        If fails again after recovering config, raise DatabaseCrashException.</span>
+
+<span class="sd">        :raises DatabaseStartException</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_enable_deep_control</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_surun</span><span class="p">(</span>
+            <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> start -P </span><span class="si">{}</span><span class="s2"> -D </span><span class="si">{}</span><span class="s2"> 2&gt;&amp;1 &gt; /dev/null&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">pg_ctl</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">db_port</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">pgdata</span><span class="p">))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_running</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="n">DatabaseCrashException</span>
+
+        <span class="k">for</span> <span class="n">instance</span> <span class="ow">in</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_instances</span><span class="p">:</span>
+            <span class="n">instance</span><span class="o">.</span><span class="n">_connect_if_loss</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="PostgreSQLController.is_running"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.PostgreSQLController.html#pilotscope.DBController.PostgreSQLController.PostgreSQLController.is_running">[docs]</a>    <span class="k">def</span> <span class="nf">is_running</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check whether the database is running.</span>
+
+<span class="sd">        :return: True if the database is running, False otherwise.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_enable_deep_control</span><span class="p">()</span>
+
+        <span class="n">check_db_running_cmd</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> status -P </span><span class="si">{}</span><span class="s2"> -D </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">pg_ctl</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">db_port</span><span class="p">,</span>
+                                                              <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">pgdata</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">_is_local</span><span class="p">:</span>
+            <span class="n">res_out</span><span class="p">,</span> <span class="n">res_err</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_surun</span><span class="p">(</span><span class="n">check_db_running_cmd</span><span class="p">)</span>
+            <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">,</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">res_out</span><span class="p">,</span> <span class="n">res_err</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ssh_conn</span> <span class="o">=</span> <span class="n">SSHConnector</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">db_host</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">db_host_user</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">db_host_pwd</span><span class="p">,</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">db_host_port</span><span class="p">)</span>
+            <span class="n">ssh_conn</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
+            <span class="n">res_out</span><span class="p">,</span> <span class="n">res_err</span> <span class="o">=</span> <span class="n">ssh_conn</span><span class="o">.</span><span class="n">remote_exec_cmd</span><span class="p">(</span><span class="n">check_db_running_cmd</span><span class="p">)</span>
+            <span class="n">ssh_conn</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">,</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">res_out</span><span class="p">,</span> <span class="n">res_err</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="s2">&quot;server is running&quot;</span> <span class="ow">in</span> <span class="n">status</span></div>
+
+<div class="viewcode-block" id="PostgreSQLController.write_knob_to_file"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.PostgreSQLController.html#pilotscope.DBController.PostgreSQLController.PostgreSQLController.write_knob_to_file">[docs]</a>    <span class="k">def</span> <span class="nf">write_knob_to_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key_2_value_knob</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Write knobs to config file, you should restart database to make it work.</span>
+
+<span class="sd">        :param key_2_value_knob: a dict with keys as the names of the knobs and values as the values to be set.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_enable_deep_control</span><span class="p">()</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">db_config_path</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">key_2_value_knob</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> = </span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="PostgreSQLController.recover_config"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.PostgreSQLController.html#pilotscope.DBController.PostgreSQLController.PostgreSQLController.recover_config">[docs]</a>    <span class="k">def</span> <span class="nf">recover_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Recover config file of database to the lasted saved config file by `backup_config()`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_enable_deep_control</span><span class="p">()</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">backup_db_config_path</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">db_config_file</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">db_config_path</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">db_config_file</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PostgreSQLController.backup_config"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.PostgreSQLController.html#pilotscope.DBController.PostgreSQLController.PostgreSQLController.backup_config">[docs]</a>    <span class="k">def</span> <span class="nf">backup_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Creates a backup of the database configuration file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_enable_deep_control</span><span class="p">()</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">db_config_path</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">backup_db_config_path</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">w</span><span class="p">:</span>
+                <span class="n">w</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="PostgreSQLController.get_table_columns"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.PostgreSQLController.html#pilotscope.DBController.PostgreSQLController.PostgreSQLController.get_table_columns">[docs]</a>    <span class="k">def</span> <span class="nf">get_table_columns</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="p">,</span> <span class="n">enable_all_schema</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Retrieves all column names for a given table. If enable_all_schema is true,</span>
+<span class="sd">        Pilotscope will search it across all schemas in the database.</span>
+<span class="sd">        Otherwise, Pilotscope will only search it in the public schema.</span>
+
+<span class="sd">        :param table_name: The name of the table for which to retrieve column names.</span>
+<span class="sd">        :param enable_all_schema:</span>
+<span class="sd">        :return: A list of column names for the specified table.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">enable_all_schema</span><span class="p">:</span>
+            <span class="n">sql</span> <span class="o">=</span> <span class="s2">&quot;SELECT column_name FROM information_schema.columns WHERE table_name = &#39;</span><span class="si">{}</span><span class="s2">&#39;;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">table_name</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">sql</span> <span class="o">=</span> <span class="s2">&quot;SELECT column_name FROM information_schema.columns WHERE table_name = &#39;</span><span class="si">{}</span><span class="s2">&#39; and table_schema=&#39;public&#39;;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">table_name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="p">,</span> <span class="n">fetch</span><span class="o">=</span><span class="kc">True</span><span class="p">)]</span></div>
+
+<div class="viewcode-block" id="PostgreSQLController.get_number_of_distinct_value"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.PostgreSQLController.html#pilotscope.DBController.PostgreSQLController.PostgreSQLController.get_number_of_distinct_value">[docs]</a>    <span class="k">def</span> <span class="nf">get_number_of_distinct_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="p">,</span> <span class="n">column_name</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the number of distinct value of a column</span>
+
+<span class="sd">        :param table_name: the name of the table that the column belongs to</span>
+<span class="sd">        :param column_name: the name of the column</span>
+<span class="sd">        :return: the number of distinct value, type of which is same as the data of the column</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;select count(distinct </span><span class="si">{</span><span class="n">column_name</span><span class="si">}</span><span class="s2">) from </span><span class="si">{</span><span class="n">table_name</span><span class="si">}</span><span class="s2">;&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span></div>
+
+    <span class="c1"># switch user and run</span>
+    <span class="k">def</span> <span class="nf">_surun</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">_is_local</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                    <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">)</span>
+            <span class="n">std_out</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">stdout</span>
+            <span class="n">std_err</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">stderr</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ssh_conn</span> <span class="o">=</span> <span class="n">SSHConnector</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">db_host</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">db_host_user</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">db_host_pwd</span><span class="p">,</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">db_host_port</span><span class="p">)</span>
+            <span class="n">ssh_conn</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
+            <span class="n">out</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">ssh_conn</span><span class="o">.</span><span class="n">remote_exec_cmd</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+            <span class="n">std_out</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+            <span class="n">std_err</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">err</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+            <span class="n">ssh_conn</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">std_err</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">std_err</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">std_err</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">PilotScopeExecCommandException</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">std_out</span><span class="p">,</span> <span class="n">std_err</span></div>
+
+
+<div class="viewcode-block" id="SimulateIndexVisitor"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.PostgreSQLController.html#pilotscope.DBController.PostgreSQLController.SimulateIndexVisitor">[docs]</a><span class="k">class</span> <span class="nc">SimulateIndexVisitor</span><span class="p">:</span>
+
+<div class="viewcode-block" id="SimulateIndexVisitor.__init__"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.PostgreSQLController.html#pilotscope.DBController.PostgreSQLController.SimulateIndexVisitor.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db_controller</span><span class="p">:</span> <span class="n">PostgreSQLController</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db_controller</span> <span class="o">=</span> <span class="n">db_controller</span></div>
+
+<div class="viewcode-block" id="SimulateIndexVisitor.create_index"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.PostgreSQLController.html#pilotscope.DBController.PostgreSQLController.SimulateIndexVisitor.create_index">[docs]</a>    <span class="k">def</span> <span class="nf">create_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="n">Index</span><span class="p">):</span>
+        <span class="n">columns</span> <span class="o">=</span> <span class="n">index</span><span class="o">.</span><span class="n">joined_column_names</span><span class="p">()</span>
+        <span class="n">statement</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;select * from hypopg_create_index( &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;&#39;create index on </span><span class="si">{</span><span class="n">index</span><span class="o">.</span><span class="n">table</span><span class="si">}</span><span class="s2"> &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="n">columns</span><span class="si">}</span><span class="s2">)&#39;)&quot;</span>
+        <span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db_controller</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">statement</span><span class="p">,</span> <span class="n">fetch</span><span class="o">=</span><span class="kc">True</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">index</span><span class="o">.</span><span class="n">hypopg_oid</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">index</span><span class="o">.</span><span class="n">hypopg_name</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span></div>
+
+    <span class="k">def</span> <span class="nf">_get_oid_by_indexname</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index_name</span><span class="p">):</span>
+        <span class="n">sql</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;SELECT indexrelid FROM hypopg_list_indexes WHERE index_name like &#39;%</span><span class="si">{</span><span class="n">index_name</span><span class="si">}</span><span class="s2">%&#39;&quot;</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db_controller</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="p">,</span> <span class="n">fetch</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">res</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;No oid or more than one oid named like &#39;%</span><span class="si">{</span><span class="n">index_name</span><span class="si">}</span><span class="s2">%&#39;&quot;</span>
+        <span class="k">return</span> <span class="n">res</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_get_oid_of_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="n">Index</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">index</span><span class="o">.</span><span class="n">hypopg_oid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">index</span><span class="o">.</span><span class="n">hypopg_oid</span>
+        <span class="k">elif</span> <span class="n">index</span><span class="o">.</span><span class="n">hypopg_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_oid_by_indexname</span><span class="p">(</span><span class="n">index_name</span><span class="o">=</span><span class="n">index</span><span class="o">.</span><span class="n">hypopg_name</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_oid_by_indexname</span><span class="p">(</span><span class="n">index_name</span><span class="o">=</span><span class="n">index</span><span class="o">.</span><span class="n">index_name</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SimulateIndexVisitor.drop_index"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.PostgreSQLController.html#pilotscope.DBController.PostgreSQLController.SimulateIndexVisitor.drop_index">[docs]</a>    <span class="k">def</span> <span class="nf">drop_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="n">Index</span><span class="p">):</span>
+        <span class="n">oid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_oid_of_index</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+        <span class="n">statement</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;select * from hypopg_drop_index(</span><span class="si">{</span><span class="n">oid</span><span class="si">}</span><span class="s2">)&quot;</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db_controller</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">statement</span><span class="p">,</span> <span class="n">fetch</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Could not drop simulated index with oid = </span><span class="si">{</span><span class="n">oid</span><span class="si">}</span><span class="s2">.&quot;</span></div>
+
+<div class="viewcode-block" id="SimulateIndexVisitor.drop_all_indexes"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.PostgreSQLController.html#pilotscope.DBController.PostgreSQLController.SimulateIndexVisitor.drop_all_indexes">[docs]</a>    <span class="k">def</span> <span class="nf">drop_all_indexes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">sql</span> <span class="o">=</span> <span class="s2">&quot;select hypopg_reset()&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db_controller</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SimulateIndexVisitor.get_all_indexes_byte"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.PostgreSQLController.html#pilotscope.DBController.PostgreSQLController.SimulateIndexVisitor.get_all_indexes_byte">[docs]</a>    <span class="k">def</span> <span class="nf">get_all_indexes_byte</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_table_indexes_byte</span><span class="p">(</span><span class="s2">&quot;1&#39; or &#39;1&#39;=&#39;1&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SimulateIndexVisitor.get_table_indexes_byte"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.PostgreSQLController.html#pilotscope.DBController.PostgreSQLController.SimulateIndexVisitor.get_table_indexes_byte">[docs]</a>    <span class="k">def</span> <span class="nf">get_table_indexes_byte</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">):</span>
+        <span class="n">sql</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;SELECT sum(hypopg_relation_size(h.indexrelid)) from hypopg() h left join pg_class t on h.indrelid=t.oid where t.relname = &#39;</span><span class="si">{</span><span class="n">table</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db_controller</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="p">,</span> <span class="n">fetch</span><span class="o">=</span><span class="kc">True</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="mi">0</span> <span class="k">if</span> <span class="n">res</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="n">res</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SimulateIndexVisitor.get_index_byte"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.PostgreSQLController.html#pilotscope.DBController.PostgreSQLController.SimulateIndexVisitor.get_index_byte">[docs]</a>    <span class="k">def</span> <span class="nf">get_index_byte</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="n">Index</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">oid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_oid_of_index</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+            <span class="n">statement</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;select hypopg_relation_size(</span><span class="si">{</span><span class="n">oid</span><span class="si">}</span><span class="s2">)&quot;</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db_controller</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">statement</span><span class="p">,</span> <span class="n">fetch</span><span class="o">=</span><span class="kc">True</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">assert</span> <span class="n">result</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;Hypothetical index does not exist.&quot;</span>
+            <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span></div>
+
+<div class="viewcode-block" id="SimulateIndexVisitor.get_index_number"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.PostgreSQLController.html#pilotscope.DBController.PostgreSQLController.SimulateIndexVisitor.get_index_number">[docs]</a>    <span class="k">def</span> <span class="nf">get_index_number</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">):</span>
+        <span class="n">sql</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;SELECT COUNT(*) from hypopg() h left join pg_class t on h.indrelid=t.oid where t.relname = &#39;</span><span class="si">{</span><span class="n">table</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
+        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db_controller</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="p">,</span> <span class="n">fetch</span><span class="o">=</span><span class="kc">True</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="SimulateIndexVisitor.get_all_indexes"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.PostgreSQLController.html#pilotscope.DBController.PostgreSQLController.SimulateIndexVisitor.get_all_indexes">[docs]</a>    <span class="k">def</span> <span class="nf">get_all_indexes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_existed_index</span><span class="p">(</span><span class="s2">&quot;1&#39; or &#39;1&#39;=&#39;1&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SimulateIndexVisitor.get_existed_index"><a class="viewcode-back" href="../../../references/api_rst/pilotscope.DBController.PostgreSQLController.html#pilotscope.DBController.PostgreSQLController.SimulateIndexVisitor.get_existed_index">[docs]</a>    <span class="k">def</span> <span class="nf">get_existed_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">):</span>
+        <span class="n">sql</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;SELECT h.indexrelid, h.indexname, hypopg_get_indexdef(h.indexrelid), t.relname from hypopg() h left join pg_class t on h.indrelid=t.oid where t.relname = &#39;</span><span class="si">{</span><span class="n">table</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db_controller</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="p">,</span> <span class="n">fetch</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">indexes</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">indexrelid</span><span class="p">,</span> <span class="n">indexname</span><span class="p">,</span> <span class="n">indexdef</span><span class="p">,</span> <span class="n">relname</span> <span class="ow">in</span> <span class="n">res</span><span class="p">:</span>
+            <span class="n">col</span> <span class="o">=</span> <span class="p">[</span><span class="n">col</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;\([\S\s]*\)&quot;</span><span class="p">,</span> <span class="n">indexdef</span><span class="p">)</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">0</span><span class="p">)[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)]</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="n">Index</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">col</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="n">relname</span><span class="p">,</span> <span class="n">index_name</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+            <span class="n">index</span><span class="o">.</span><span class="n">hypopg_name</span> <span class="o">=</span> <span class="n">indexname</span>
+            <span class="n">index</span><span class="o">.</span><span class="n">hypopg_oid</span> <span class="o">=</span> <span class="n">indexrelid</span>
+            <span class="n">indexes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">indexes</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Alibaba.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
